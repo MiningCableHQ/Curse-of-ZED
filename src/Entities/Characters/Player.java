@@ -43,6 +43,8 @@ public abstract class Player extends Entity {
         x = 100;
         y = 100;
         entitySpeed = 4;
+        normalSpeed = entitySpeed;
+        sprintSpeed = 8;
         direction = "right";
         isMoving = false;
     }
@@ -62,15 +64,25 @@ public abstract class Player extends Entity {
     }
 
     public void update(){
+        if(keyH.shiftPressed){
+            entitySpeed = sprintSpeed;
+        }
+        if(!keyH.shiftPressed){
+            entitySpeed = normalSpeed;
+        }
+
         if(keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed){
             if(keyH.upPressed){
                 y -= entitySpeed;
-            }else if(keyH.downPressed){
+            }
+            if(keyH.downPressed){
                 y += entitySpeed;
-            }else if(keyH.leftPressed){
+            }
+            if(keyH.leftPressed){
                 direction = "left";
                 x -= entitySpeed;
-            }else if(keyH.rightPressed){
+            }
+            if(keyH.rightPressed){
                 direction = "right";
                 x += entitySpeed;
             }
