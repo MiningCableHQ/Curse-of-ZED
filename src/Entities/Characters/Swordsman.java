@@ -1,10 +1,11 @@
 package Entities.Characters;
 
-import Entities.Entity;
+import Main.*;
 import Moves.Swordsman.*;
 
-public class Swordsman extends Character {
-    public Swordsman(){
+public class Swordsman extends Player {
+    public Swordsman(GamePanel gp, KeyHandler keyH) {
+        super(gp, keyH);
         hp = 800;
         maxHp = hp;
         attack = 205;

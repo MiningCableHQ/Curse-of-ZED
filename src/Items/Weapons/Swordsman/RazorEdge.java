@@ -11,4 +11,9 @@ public class RazorEdge extends Weapon{
     public <T> void activatePassive(T Entity) {
         //TODO 30% chance to deal 120% | 140% | 160% | 180% | 200% the dmg
     }
+
+    @Override
+    public <T> void useItem(T Entity) {
+
+    }
 }

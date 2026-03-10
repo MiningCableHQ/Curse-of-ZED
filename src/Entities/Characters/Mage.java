@@ -1,11 +1,11 @@
 package Entities.Characters;
 
-import Entities.Entity;
+import Main.*;
 import Moves.Mage.*;
-import Moves.Swordsman.*;
 
-public class Mage extends Character {
-    public Mage(){
+public class Mage extends Player {
+    public Mage(GamePanel gp, KeyHandler keyH){
+        super(gp, keyH);
         hp = 650;
         maxHp = hp;
         attack = 335;

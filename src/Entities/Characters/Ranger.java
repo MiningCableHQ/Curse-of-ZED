@@ -1,11 +1,11 @@
 package Entities.Characters;
 
-import Entities.Entity;
+import Main.*;
 import Moves.Ranger.*;
-import Moves.Swordsman.*;
 
-public class Ranger extends Character {
-    public Ranger() {
+public class Ranger extends Player {
+    public Ranger(GamePanel gp, KeyHandler keyH) {
+        super(gp, keyH);
         hp = 680;
         maxHp = hp;
         attack = 240;
