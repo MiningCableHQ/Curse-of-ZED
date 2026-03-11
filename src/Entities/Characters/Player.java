@@ -55,8 +55,10 @@ public abstract class Player extends Entity {
             down2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
             left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
             left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/right1.png"));
+            right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right1.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right2.png"));
+            right3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right3.png"));
+            right4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right4.png"));
         }catch(IOException e){
             e.printStackTrace();
         }
@@ -75,7 +77,18 @@ public abstract class Player extends Entity {
 
             spriteCounter++;
             if (spriteCounter > 10) {
-                spriteNum = (spriteNum == 1) ? 2 : 1;
+                if(spriteNum == 1){
+                    spriteNum = 2;
+                }  
+                if(spriteNum == 2){
+                    spriteNum = 3;
+                }  
+                if(spriteNum == 3){
+                    spriteNum = 4;
+                }  
+                if(spriteNum == 4){
+                    spriteNum = 1;
+                }  
                 spriteCounter = 0;
             }
         }
@@ -104,7 +117,20 @@ public abstract class Player extends Entity {
                 image = (spriteNum == 1) ? left1 : left2;
                 break;
             case "right":
-                image = (spriteNum == 1) ? right1 : right2;
+                switch(spriteNum){
+                    case 1:
+                        image = right1;
+                        break;
+                    case 2:
+                        image = right2;
+                        break;
+                    case 3:
+                        image = right3;
+                        break;
+                    case 4:
+                        image = right4;
+                        break;
+                }  
                 break;
         }
 
