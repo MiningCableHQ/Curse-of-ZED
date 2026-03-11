@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class SweepingStrike extends Move {
     public SweepingStrike(){
-        super("Sweeping Strike", 0); //TODO implement attack stat
+        super("Sweeping Strike", 20);
         hasUnlocked = true;
     }
 

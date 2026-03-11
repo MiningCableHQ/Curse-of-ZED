@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class SacrificialBlade extends Move {
     public SacrificialBlade() {
-        super("Sacrificial Blade", 0); //TODO Implement attack stat
+        super("Sacrificial Blade", 20);
         hasUnlocked = false;
     }
 

@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class PreciseShot extends Move {
     public PreciseShot() {
-        super("Precise Shot", 0); //TODO Implement attack stat
+        super("Precise Shot", 20);
         hasUnlocked = true;
     }
 

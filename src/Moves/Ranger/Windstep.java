@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Windstep extends Move {
     public Windstep() {
-        super("Windstep", 0); //TODO Implement attack stat
+        super("Windstep", 0);
         hasUnlocked = true;
     }
 

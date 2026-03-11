@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Empower extends Move {
     public Empower() {
-        super("Empower", 0); //TODO Implement attack stat
+        super("Empower", 0);
         hasUnlocked = true;
     }
 

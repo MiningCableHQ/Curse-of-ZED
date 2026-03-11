@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class ElementalCodex extends Weapon {
     public ElementalCodex(){
-        //TODO implement attack stats
+        attack = 15;
     }
 
     @Override

@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Refraction extends Move {
     public Refraction() {
-        super("Refraction", 0); //TODO Implement attack stat
+        super("Refraction", 0);
         hasUnlocked = false;
     }
 

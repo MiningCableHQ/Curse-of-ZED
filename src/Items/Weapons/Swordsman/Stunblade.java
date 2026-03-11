@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Stunblade extends Weapon {
     public Stunblade(){
-        //TODO implement attack stats
+        attack = 15;
     }
 
     @Override

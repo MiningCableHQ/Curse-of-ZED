@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        //TODO implement attack stats
+        attack = 10;
     }
 
     @Override

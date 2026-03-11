@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class IronStance extends Move {
     public IronStance(){
-        super("Iron Stance", 0); //TODO implement attack stat
+        super("Iron Stance", 0);
         hasUnlocked = true;
     }
 

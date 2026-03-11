@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Arcanum extends Weapon {
     public Arcanum(){
-        //TODO implement attack stats
+        attack = 15;
     }
 
     @Override

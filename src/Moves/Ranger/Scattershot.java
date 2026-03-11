@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Scattershot extends Move {
     public Scattershot() {
-        super("Scattershot", 0); //TODO Implement attack stat
+        super("Scattershot", 20);
         hasUnlocked = true;
     }
 

@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class HeroicSlash extends Move {
     public HeroicSlash(){
-        super("Heroic Slash", 0); //TODO implement attack stat
+        super("Heroic Slash", 20);
         hasUnlocked = true;
     }
 

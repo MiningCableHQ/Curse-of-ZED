@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Swiftwind extends Weapon {
     public Swiftwind() {
-        //TODO implement attack stats
+        attack = 20;
     }
 
     @Override

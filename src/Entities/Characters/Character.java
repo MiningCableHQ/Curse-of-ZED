@@ -25,25 +25,36 @@ public abstract class Character extends Entity {
 
     public abstract void loadMoves();
 
-    public void gainExp(int experience){
-        this.experience += experience;
-        if(this.experience >= this.expNeeded){
-            levelUp();
-        }
-    }
     public void levelUp(){
-        //TODO implement max level threshold per chapter/map
-
         level++;
-
         experience -= expNeeded;
 
         if(level <= 4){
             expNeeded = 100;
         }else if(level <= 7){
-            expNeeded = 120;
+            expNeeded = 125;
         }else{
             expNeeded = 150;
+        }
+    }
+
+    public boolean canGainExp(int chapter){
+        return switch (chapter) {
+            case 1 -> level < 4;
+            case 2 -> level < 7;
+            case 3 -> level < 10;
+            default -> true;
+        };
+    }
+
+    public void gainExp(int experience, int chapter) {
+        if(canGainExp(chapter)){
+            this.experience += experience;
+            while (this.experience >= this.expNeeded && level < 10) {//level cap
+                levelUp();
+            }
+        }else{
+            //TODO Inform the player that he cannot gain exp
         }
     }
 }

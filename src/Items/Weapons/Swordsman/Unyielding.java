@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Unyielding extends Weapon {
     public Unyielding(){
-        //TODO implement attack stats
+        attack = 10;
     }
 
     @Override

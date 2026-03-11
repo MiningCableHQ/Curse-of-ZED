@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Slowstring extends Weapon {
     public Slowstring() {
-        //TODO implement attack stats
+        attack = 10;
     }
 
     @Override

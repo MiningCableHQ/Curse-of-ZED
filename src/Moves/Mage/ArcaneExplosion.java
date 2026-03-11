@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class ArcaneExplosion extends Move {
     public ArcaneExplosion(){
-        super("Arcane Bolt", 0); //TODO Implement attack stat
+        super("Arcane Bolt", 20);
         hasUnlocked = true;
     }
 

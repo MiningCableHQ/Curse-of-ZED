@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class LifeLeech extends Move {
     public LifeLeech() {
-        super("Life Leech", 0); //TODO Implement attack stat
+        super("Life Leech", 20);
         hasUnlocked = false;
     }
 
