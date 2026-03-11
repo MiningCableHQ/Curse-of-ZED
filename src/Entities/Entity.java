@@ -8,7 +8,7 @@ public abstract class Entity {
     public int normalSpeed;
     public int sprintSpeed;
 
-    public BufferedImage up1, up2, down1, down2, left1,  left2, right1, right2;
+    public BufferedImage up1, up2, down1, down2, left1,  left2, right1, right2, right3, right4;
     public String direction;
     public boolean isMoving;
 
