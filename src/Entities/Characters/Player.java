@@ -39,11 +39,11 @@ public abstract class Player extends Entity {
     }
 
     public void setDefaultValues(){
-        x = 100;
-        y = 100;
+        worldX = 100;
+        worldY = 100;
         entitySpeed = 4;
         normalSpeed = entitySpeed;
-        sprintSpeed = 8;
+        sprintSpeed = 6;
         direction = "right";
         isMoving = false;
     }
@@ -53,8 +53,10 @@ public abstract class Player extends Entity {
             up2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/right1.png"));
             down1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
             down2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
+            left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left1.png"));
+            left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left2.png"));
+            left3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left3.png"));
+            left4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left4.png"));
             right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right1.png"));
             right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right2.png"));
             right3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right3.png"));
@@ -70,72 +72,90 @@ public abstract class Player extends Entity {
 
         // Movement Logic
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
-            if (keyH.upPressed) y -= entitySpeed;
-            if (keyH.downPressed) y += entitySpeed;
-            if (keyH.leftPressed) { direction = "left"; x -= entitySpeed; }
-            if (keyH.rightPressed) { direction = "right"; x += entitySpeed; }
+            if (keyH.upPressed) {
+                worldY -= entitySpeed;
+            }
+            if (keyH.downPressed) {
+                worldY += entitySpeed;
+            }
+            if (keyH.leftPressed) {
+                direction = "left";
+                worldX -= entitySpeed;
+            }
+            if (keyH.rightPressed) {
+                direction = "right";
+                worldX += entitySpeed;
+            }
 
+            // Animation counter
             spriteCounter++;
-            if (spriteCounter > 10) {
-                if(spriteNum == 1){
-                    spriteNum = 2;
-                }  
-                if(spriteNum == 2){
-                    spriteNum = 3;
-                }  
-                if(spriteNum == 3){
-                    spriteNum = 4;
-                }  
-                if(spriteNum == 4){
+            if (spriteCounter > 5) {
+                spriteNum++;
+                if (spriteNum > 4) {
                     spriteNum = 1;
-                }  
+                }
                 spriteCounter = 0;
             }
+
+            isMoving = true;
+        } else {
+            isMoving = false;
+            spriteNum = 1;
         }
 
         // --- SEQUENTIAL MAP TRANSITION ---
-
         // 1. Move from Map 1 to Map 2 (Exiting Right)
-        if (x > gp.screenWidth) {
+        if (worldX > gp.screenWidth) {
             gp.tileM.loadMap("/maps/map02.txt");
-            x = 0;
+            worldX = 0;
         }
-        else if (x < -gp.tileSize && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
+        else if (worldX < -gp.tileSize && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
             gp.tileM.loadMap("/maps/map01.txt");
-            x = gp.screenWidth - gp.tileSize;
+            worldX = gp.screenWidth - gp.tileSize;
         }
     }
 
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
 
-        // Using left/right sprites even for up/down movement
         switch (direction) {
             case "up":
+                image = getWalkingImage("left");
+                break;
             case "down":
+                image = getWalkingImage("left");
+                break;
             case "left":
-                image = (spriteNum == 1) ? left1 : left2;
+                image = getWalkingImage("left");
                 break;
             case "right":
-                switch(spriteNum){
-                    case 1:
-                        image = right1;
-                        break;
-                    case 2:
-                        image = right2;
-                        break;
-                    case 3:
-                        image = right3;
-                        break;
-                    case 4:
-                        image = right4;
-                        break;
-                }  
+                image = getWalkingImage("right");
                 break;
         }
 
         if (image != null) {
-            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null);
+        }
+    }
+
+    // Helper method to get the correct walking frame
+    private BufferedImage getWalkingImage(String dir) {
+        if (!isMoving) {
+            // Return idle frame when not moving
+            return dir.equals("right") ? right1 : left1;
+        }
+
+        switch (spriteNum) {
+            case 1:
+                return dir.equals("right") ? right1 : left1;
+            case 2:
+                return dir.equals("right") ? right2 : left2;
+            case 3:
+                return dir.equals("right") ? right3 : left3;
+            case 4:
+                return dir.equals("right") ? right4 : left4;
+            default:
+                return dir.equals("right") ? right1 : left1;
         }
     }
 
