@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
 public abstract class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
@@ -63,93 +62,55 @@ public abstract class Player extends Entity {
         }
     }
 
-    public void update(){
-        if(keyH.shiftPressed){
-            entitySpeed = sprintSpeed;
-        }
-        if(!keyH.shiftPressed){
-            entitySpeed = normalSpeed;
-        }
+    public void update() {
+        // Sprint Logic
+        entitySpeed = keyH.shiftPressed ? sprintSpeed : normalSpeed;
 
-        if(keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed){
-            if(keyH.upPressed){
-                y -= entitySpeed;
-            }
-            if(keyH.downPressed){
-                y += entitySpeed;
-            }
-            if(keyH.leftPressed){
-                direction = "left";
-                x -= entitySpeed;
-            }
-            if(keyH.rightPressed){
-                direction = "right";
-                x += entitySpeed;
-            }
+        // Movement Logic
+        if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+            if (keyH.upPressed) y -= entitySpeed;
+            if (keyH.downPressed) y += entitySpeed;
+            if (keyH.leftPressed) { direction = "left"; x -= entitySpeed; }
+            if (keyH.rightPressed) { direction = "right"; x += entitySpeed; }
 
             spriteCounter++;
-            if(spriteCounter > 10){
-                if(spriteNum == 1){
-                    spriteNum = 2;
-                }else if(spriteNum == 2){
-                    spriteNum = 1;
-                }
+            if (spriteCounter > 10) {
+                spriteNum = (spriteNum == 1) ? 2 : 1;
                 spriteCounter = 0;
             }
         }
+
+        // --- SEQUENTIAL MAP TRANSITION ---
+
+        // 1. Move from Map 1 to Map 2 (Exiting Right)
+        if (x > gp.screenWidth) {
+            gp.tileM.loadMap("/maps/map02.txt");
+            x = 0;
+        }
+        else if (x < -gp.tileSize && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
+            gp.tileM.loadMap("/maps/map01.txt");
+            x = gp.screenWidth - gp.tileSize;
+        }
     }
-    public void draw(Graphics2D g2){
-        //g2.setColor(Color.white);
-        //g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 
-        BufferedImage image  = null;
+    public void draw(Graphics2D g2) {
+        BufferedImage image = null;
 
-        switch(direction){
+        // Using left/right sprites even for up/down movement
+        switch (direction) {
             case "up":
-                if(direction.equals("left")){
-                    if(spriteNum == 1){
-                        image = left1;
-                    }
-                    if(spriteNum == 2){
-                        image = left2;
-                    }
-                }
-                if(direction.equals("right")){
-                    if(spriteNum == 1){
-                        image = right1;
-                    }
-                    if(spriteNum == 2){
-                        image = right2;
-                    }
-                }
-                break;
             case "down":
-                if(direction.equals("left")){
-                    image = left1;
-                }
-                if(direction.equals("right")){
-                    image = right1;
-                }
-                break;
             case "left":
-                if(spriteNum == 1){
-                    image = left1;
-                }
-                if(spriteNum == 2){
-                    image = left2;
-                }
+                image = (spriteNum == 1) ? left1 : left2;
                 break;
             case "right":
-                if(spriteNum == 1){
-                    image = right1;
-                }
-                if(spriteNum == 2){
-                    image = right2;
-                }
+                image = (spriteNum == 1) ? right1 : right2;
                 break;
         }
 
-        g2.drawImage(image,x,y, gp.tileSize, gp.tileSize, null);
+        if (image != null) {
+            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+        }
     }
 
     public abstract void loadMoves();
