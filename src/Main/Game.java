@@ -1,23 +1,39 @@
 package Main;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 public class Game {
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame window = new JFrame();
+            window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            window.setResizable(false);
+            window.setTitle("Curse of ZED");
 
-        JFrame window = new JFrame();
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
-        window.setTitle("Curse of ZED");
+            TitlePanel titlePanel = new TitlePanel();
 
-        GamePanel gamePanel = new GamePanel();
-        window.add(gamePanel);
+            titlePanel.setOnStartCallback(() -> {
+                // Create GamePanel only when needed
+                GamePanel gamePanel = new GamePanel();
 
-        window.pack();
+                window.remove(titlePanel);
+                window.add(gamePanel);
+                window.revalidate();
+                window.repaint();
+                window.pack();
+                window.setLocationRelativeTo(null);
 
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
+                // Start game thread AFTER UI is updated
+                SwingUtilities.invokeLater(() -> {
+                    gamePanel.requestFocusInWindow();
+                    gamePanel.startGameThread();
+                });
+            });
 
-        gamePanel.startGameThread();
+            window.add(titlePanel);
+            window.pack();
+            window.setLocationRelativeTo(null);
+            window.setVisible(true);
+        });
     }
 }

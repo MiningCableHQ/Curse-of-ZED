@@ -39,8 +39,8 @@ public abstract class Player extends Entity {
     }
 
     public void setDefaultValues(){
-        x = 100;
-        y = 100;
+        worldX = 100;
+        worldY = 100;
         entitySpeed = 4;
         normalSpeed = entitySpeed;
         sprintSpeed = 8;
@@ -68,10 +68,10 @@ public abstract class Player extends Entity {
 
         // Movement Logic
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
-            if (keyH.upPressed) y -= entitySpeed;
-            if (keyH.downPressed) y += entitySpeed;
-            if (keyH.leftPressed) { direction = "left"; x -= entitySpeed; }
-            if (keyH.rightPressed) { direction = "right"; x += entitySpeed; }
+            if (keyH.upPressed) worldY -= entitySpeed;
+            if (keyH.downPressed) worldY += entitySpeed;
+            if (keyH.leftPressed) { direction = "left"; worldX -= entitySpeed; }
+            if (keyH.rightPressed) { direction = "right"; worldX += entitySpeed; }
 
             spriteCounter++;
             if (spriteCounter > 10) {
@@ -83,33 +83,25 @@ public abstract class Player extends Entity {
         // --- SEQUENTIAL MAP TRANSITION ---
 
         // 1. Move from Map 1 to Map 2 (Exiting Right)
-        if (x > gp.screenWidth) {
+        if (worldX > gp.worldWidth) {
             gp.tileM.loadMap("/maps/map02.txt");
-            x = 0;
-        }
-        else if (x < -gp.tileSize && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
+            worldX = 0;
+        } else if (worldX < 0 && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
             gp.tileM.loadMap("/maps/map01.txt");
-            x = gp.screenWidth - gp.tileSize;
+            worldX = gp.worldWidth - gp.tileSize;
         }
     }
 
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
-
-        // Using left/right sprites even for up/down movement
         switch (direction) {
-            case "up":
-            case "down":
-            case "left":
-                image = (spriteNum == 1) ? left1 : left2;
-                break;
+            case "up": case "down": case "left":
+                image = (spriteNum == 1) ? left1 : left2; break;
             case "right":
-                image = (spriteNum == 1) ? right1 : right2;
-                break;
+                image = (spriteNum == 1) ? right1 : right2; break;
         }
-
         if (image != null) {
-            g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null);
         }
     }
 

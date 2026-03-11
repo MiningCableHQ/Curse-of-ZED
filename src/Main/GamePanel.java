@@ -16,6 +16,11 @@ public class GamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
+    public final int maxWorldCol = maxScreenCol;
+    public final int maxWorldRow = maxScreenRow;
+    public final int worldWidth = screenWidth;
+    public final int worldHeight = screenHeight;
+
     // Fixed naming to tileM to match your Player class transitions
     public TileManager tileM = new TileManager(this);
 
