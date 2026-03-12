@@ -21,12 +21,13 @@ public class TileManager {
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadMap("/maps/world01.txt"); // Start with Map 1
+        loadMap("/maps/world01.txt");
     }
 
     public void getTileImage() {
         try {
             // Mapping your specific IDs
+            System.out.println("Image loaded started");
             tile[0] = new Tile();
             tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/grass.png"));
             tile[1] = new Tile();
@@ -53,7 +54,7 @@ public class TileManager {
             tile[11].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/brick_vines_32x32.png"));
             tile[12] = new Tile();
             tile[12].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grass_bottom_only_32x32.png"));
-
+            System.out.println("Image loaded finished");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,7 +92,7 @@ public class TileManager {
         int worldCol = 0;
         int worldRow = 0;
 
-        while(worldCol < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
+        while (worldRow < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
             int tileNum = mapTileNum[worldCol][worldRow];
 
             int worldX = worldCol * gp.tileSize;
@@ -99,7 +100,13 @@ public class TileManager {
             int screenX = worldX - gp.player.worldX + gp.player.screenX;
             int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-            g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+            if(worldX + gp.tileSize> gp.player.worldX - gp.player.screenX &&
+                    worldX  - gp.tileSize< gp.player.worldX + gp.player.screenX &&
+                    worldY  + gp.tileSize>  gp.player.worldY - gp.player.screenY &&
+                    worldY  - gp.tileSize< gp.player.worldY + gp.player.screenY) {
+                g2.drawImage(tile[tileNum].image,  screenX, screenY, gp.tileSize, gp.tileSize, null);
+            }
+            worldCol++;
 
             if(worldCol == gp.maxWorldCol){
                 worldCol = 0;

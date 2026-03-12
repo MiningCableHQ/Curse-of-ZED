@@ -91,17 +91,6 @@ public abstract class Player extends Entity {
             isMoving = false;
             spriteNum = 1;
         }
-
-        // --- SEQUENTIAL MAP TRANSITION ---
-        // 1. Move from Map 1 to Map 2 (Exiting Right)
-        if (worldX > gp.screenWidth) {
-            gp.tileM.loadMap("/maps/map02.txt");
-            worldX = 0;
-        }
-        else if (worldX < -gp.tileSize && "/maps/map02.txt".equals(gp.tileM.currentMapName)) {
-            gp.tileM.loadMap("/maps/map01.txt");
-            worldX = gp.screenWidth - gp.tileSize;
-        }
     }
 
     public void draw(Graphics2D g2) {
