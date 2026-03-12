@@ -49,10 +49,6 @@ public abstract class Player extends Entity {
     }
     public void getPlayerImage(){
         try{
-            up1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/right1.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/right1.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/left1.png"));
             left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left1.png"));
             left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left2.png"));
             left3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left3.png"));

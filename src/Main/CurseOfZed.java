@@ -50,12 +50,13 @@ public class CurseOfZed extends JFrame {
 //  Main Panel
 // ═════════════════════════════════════════════════════════════
 class TitlePanel extends JPanel {
+    public static GamePanel gm = new GamePanel();
     private Runnable onStartCallback;
 
     public void setOnStartCallback(Runnable callback) {
         this.onStartCallback = callback;
     }
-    static final int W = 1024, H = 640;
+    static final int W = gm.screenWidth, H = gm.screenHeight;
 
     // ── Assets ───────────────────────────────────────────────
     private BufferedImage bgImage;
