@@ -47,20 +47,7 @@ public abstract class Player extends Entity {
         direction = "right";
         isMoving = false;
     }
-    public void getPlayerImage(){
-        try{
-            left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left2.png"));
-            left3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left3.png"));
-            left4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left4.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right2.png"));
-            right3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right3.png"));
-            right4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right4.png"));
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-    }
+    public abstract void getPlayerImage();
 
     public void update() {
         // Sprint Logic
