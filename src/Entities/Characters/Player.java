@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public abstract class Player extends Entity {
+    public final int screenX;
+    public final int screenY;
+
     GamePanel gp;
     KeyHandler keyH;
 
@@ -23,6 +26,9 @@ public abstract class Player extends Entity {
     protected ArrayList<Move> moveset;
 
     public Player(GamePanel gp, KeyHandler keyH){
+        screenX = gp.screenWidth/2 - (gp.tileSize/2);
+        screenY = gp.screenHeight/2 - (gp.tileSize/2);
+
         this.gp = gp;
         this.keyH = keyH;
 
@@ -39,8 +45,8 @@ public abstract class Player extends Entity {
     }
 
     public void setDefaultValues(){
-        worldX = 100;
-        worldY = 100;
+        worldX = gp.tileSize * 23;
+        worldY = gp.tileSize * 21;
         entitySpeed = 4;
         normalSpeed = entitySpeed;
         sprintSpeed = 6;
@@ -117,7 +123,7 @@ public abstract class Player extends Entity {
         }
 
         if (image != null) {
-            g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null);
+            g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
         }
     }
 
@@ -164,5 +170,16 @@ public abstract class Player extends Entity {
         }else{
             expNeeded = 150;
         }
+    }
+
+    //Getters and Setters
+    public int getLevel(){
+        return level;
+    }
+    public int getExperience(){
+        return experience;
+    }
+    public int getExpNeeded(){
+        return expNeeded;
     }
 }

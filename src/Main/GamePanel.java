@@ -2,7 +2,9 @@ package Main;
 
 import javax.swing.*;
 import java.awt.*;
+
 import Entities.Characters.*;
+import Entities.Enemies.Enemy;
 import Tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -16,10 +18,11 @@ public class GamePanel extends JPanel implements Runnable {
     public final int screenWidth = tileSize * maxScreenCol;
     public final int screenHeight = tileSize * maxScreenRow;
 
-    public final int maxWorldCol = maxScreenCol;
-    public final int maxWorldRow = maxScreenRow;
-    public final int worldWidth = screenWidth;
-    public final int worldHeight = screenHeight;
+    //World Settings
+    public final int maxWorldCol = 50;
+    public final int maxWorldRow = 50;
+    public final int worldWidth = tileSize * maxWorldCol;
+    public final int worldHeight = tileSize * maxWorldRow;
 
     // Fixed naming to tileM to match your Player class transitions
     public TileManager tileM = new TileManager(this);
@@ -29,6 +32,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
+
+    //Player and Enemies
     public Player player = new Swordsman(this, keyH);
 
     public GamePanel() {

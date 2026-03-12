@@ -7,8 +7,6 @@ public abstract class Entity {
     public int entitySpeed;
     public int normalSpeed;
     public int sprintSpeed;
-    public double remainderX = 0;
-    public double remainderY = 0;
 
     public BufferedImage left1,  left2, left3, left4, right1, right2, right3, right4;
     public String direction;
@@ -18,6 +16,7 @@ public abstract class Entity {
     public int spriteNum = 1;
 
     //Entity Stats
+    protected String name;
     protected double hp;
     protected double maxHp;
     protected int attack;
@@ -28,4 +27,40 @@ public abstract class Entity {
     protected int speed;
     protected double accuracy;
 
+    //Methods
+    public void takeDamage(int damage){
+        hp -= damage;
+    }
+
+    //Getters and Setters
+    public String getName(){
+        return name;
+    }
+    public double getHp(){
+        return hp;
+    }
+    public double getMaxHp(){
+        return maxHp;
+    }
+    public int getAttack(){
+        return attack;
+    }
+    public int getMaxAttack(){
+        return maxAttack;
+    }
+    public int getDefense(){
+        return defense;
+    }
+    public int getMaxDefense(){
+        return maxDefense;
+    }
+    public double getDmgResistance(){
+        return dmgResistance;
+    }
+    public int getSpeed(){
+        return speed;
+    }
+    public double getAccuracy(){
+        return accuracy;
+    }
 }
