@@ -11,4 +11,9 @@ public class Stunblade extends Weapon {
     public <T> void activatePassive(T Entity) {
         //TODO 5% | 10% | 15% | 20% | 25% chance to stun enemy
     }
+
+    @Override
+    public <T> void useItem(T Entity) {
+
+    }
 }

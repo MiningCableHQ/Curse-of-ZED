@@ -1,3 +1,5 @@
+package Main;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -21,9 +23,15 @@ import java.util.Random;
  */
 public class CurseOfZed extends JFrame {
 
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new CurseOfZed().setVisible(true));
     }
+
+    public void setOnStartCallback(Runnable callback) {
+        this.onStartCallback = callback;
+    }
+    private Runnable onStartCallback;
 
     public CurseOfZed() {
         setTitle("Curse of Zed");
@@ -31,6 +39,7 @@ public class CurseOfZed extends JFrame {
         setUndecorated(false);
         setResizable(false);
         TitlePanel p = new TitlePanel();
+        p.setOnStartCallback(this.onStartCallback);
         add(p);
         pack();
         setLocationRelativeTo(null);
@@ -41,8 +50,13 @@ public class CurseOfZed extends JFrame {
 //  Main Panel
 // ═════════════════════════════════════════════════════════════
 class TitlePanel extends JPanel {
+    public static GamePanel gm = new GamePanel();
+    private Runnable onStartCallback;
 
-    static final int W = 1024, H = 640;
+    public void setOnStartCallback(Runnable callback) {
+        this.onStartCallback = callback;
+    }
+    static final int W = gm.screenWidth, H = gm.screenHeight;
 
     // ── Assets ───────────────────────────────────────────────
     private BufferedImage bgImage;
@@ -70,14 +84,19 @@ class TitlePanel extends JPanel {
         loadAssets();
 
         addMouseListener(new MouseAdapter() {
-            @Override public void mousePressed(MouseEvent e)  {
-                if (btnRect.contains(e.getPoint())) press = true;
+            @Override public void mousePressed(MouseEvent e) {
+                if (btnRect.contains(e.getPoint())) {
+                    press = true;
+                    if (onStartCallback != null) {
+                        onStartCallback.run();
+                    }
+                }
             }
             @Override public void mouseReleased(MouseEvent e) {
-                // No flash / sparkle — clean vintage click
                 press = false;
             }
         });
+
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override public void mouseMoved(MouseEvent e) {
                 hover = btnRect.contains(e.getPoint());
@@ -97,7 +116,7 @@ class TitlePanel extends JPanel {
 
         Font base = null;
         for (String n : new String[]{
-                "RingbearerMedium.ttf","Ringbearer Medium.ttf",
+                "RINGM___.TTF","RingbearerMedium.ttf","Ringbearer Medium.ttf",
                 "ringbearer medium.ttf","Ringbearer.ttf","ringbearer.ttf"}) {
             File f = new File(n);
             if (!f.exists()) continue;
@@ -116,8 +135,8 @@ class TitlePanel extends JPanel {
         rbTitle = base.deriveFont(Font.PLAIN, 72f);
         rbBtn   = base.deriveFont(Font.PLAIN, 17f);
         // Larger versions for pixel buffer rendering (drawn at 2x then downscaled)
-        rbTitlePx = base.deriveFont(Font.PLAIN, 90f);
-        rbBtnPx   = base.deriveFont(Font.PLAIN, 22f);
+        rbTitlePx = base.deriveFont(Font.PLAIN, 80f);
+        rbBtnPx   = base.deriveFont(Font.PLAIN, 30f);
     }
 
     // ── Tick ─────────────────────────────────────────────────

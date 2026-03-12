@@ -11,5 +11,10 @@ public class AnkhStaff extends Weapon {
     public <T> void activatePassive(T Entity){
         //TODO 30% Chance to heal after using a move by 10% | 20% | 30% | 40% | 50%
     }
+
+    @Override
+    public <T> void useItem(T Entity) {
+
+    }
 }
 

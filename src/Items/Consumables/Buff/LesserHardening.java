@@ -1,4 +1,17 @@
 package Items.Consumables.Buff;
 
-public class LesserHardening {
+import Items.Consumables.Consumable;
+
+public class LesserHardening extends Consumable {
+    protected double defenseBuffAmount;
+
+    public LesserHardening(){
+        name = "Lesser Hardening Potion";
+        defenseBuffAmount = 0.12;
+    }
+
+    @Override
+    public <T> void useItem(T Entity){
+        //TODO Buffs defense to entity
+    }
 }
