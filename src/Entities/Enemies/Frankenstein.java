@@ -1,8 +1,8 @@
 package Entities.Enemies;
 
-public class Vargas extends Boss{
-    public Vargas(){
-        hp = 1000;
+public class Frankenstein extends Boss{
+    public Frankenstein(){
+        hp = 1500;
         maxHp = hp;
         attack = 100;
         maxAttack = attack;

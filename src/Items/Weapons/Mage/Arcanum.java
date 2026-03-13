@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Arcanum extends Weapon {
     public Arcanum(){
-        attack = 15;
+        super("Arcanum", "Description pls", 20);
     }
 
     @Override

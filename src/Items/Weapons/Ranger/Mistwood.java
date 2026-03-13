@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Mistwood extends Weapon {
     public Mistwood() {
-        attack = 15;
+        super("Mistwood", "Description pls", 15);
     }
 
     @Override

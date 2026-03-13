@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Slowstring extends Weapon {
     public Slowstring() {
-        attack = 10;
+        super("Slowstring", "Description pls", 10);
     }
 
     @Override

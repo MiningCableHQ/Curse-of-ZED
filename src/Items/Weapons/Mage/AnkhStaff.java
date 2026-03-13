@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        attack = 10;
+        super("Ankh Staff", "Description pls", 10);
     }
 
     @Override

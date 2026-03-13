@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Stunblade extends Weapon {
     public Stunblade(){
-        attack = 15;
+        super("Stunblade", "Description pls", 15);
     }
 
     @Override

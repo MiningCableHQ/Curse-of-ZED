@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class ElementalCodex extends Weapon {
     public ElementalCodex(){
-        attack = 15;
+        super("ElementalCodex", "Description pls", 15);
     }
 
     @Override

@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class RazorEdge extends Weapon{
     public RazorEdge(){
-        attack = 20;
+        super("RazorEdge", "Description pls", 20);
     }
 
     @Override
