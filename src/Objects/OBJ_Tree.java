@@ -9,7 +9,7 @@ public class OBJ_Tree extends SuperObject {
         name = "Tree";
         try {
             // Path matches your sidebar: /map2assets/tree_64x96.png
-            image = ImageIO.read(getClass().getResourceAsStream("/map2assets/tree_64x96.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/map2assets/tree_cloud_64x96.png"));
         } catch (IOException e) {
             System.out.println("Could not find the tree image!");
             e.printStackTrace();
