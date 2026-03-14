@@ -9,7 +9,7 @@ public class AssetSetter {
         this.gp = gp;
     }
 
-
+//To put layers here
     public void setObject() {
 
         // Clear the array so old map objects don't haunt the new map
