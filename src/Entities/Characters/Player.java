@@ -1,5 +1,4 @@
 package Entities.Characters;
-
 import Entities.Entity;
 import Items.Inventory;
 import Main.*;
@@ -59,33 +58,33 @@ public abstract class Player extends Entity {
         // Sprint Logic
         entitySpeed = keyH.shiftPressed ? sprintSpeed : normalSpeed;
 
-        // Movement Logic
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
-            if (keyH.upPressed) {
-                worldY -= entitySpeed;
-            }
-            if (keyH.downPressed) {
-                worldY += entitySpeed;
-            }
-            if (keyH.leftPressed) {
-                direction = "left";
-                worldX -= entitySpeed;
-            }
-            if (keyH.rightPressed) {
-                direction = "right";
-                worldX += entitySpeed;
+            if (keyH.upPressed) direction = "up";
+            else if (keyH.downPressed) direction = "down";
+            else if (keyH.leftPressed) direction = "left";
+            else if (keyH.rightPressed) direction = "right";
+
+            // CHECK COLLISION
+            collisionOn = false;
+            gp.cChecker.checkObject(this, true);
+
+            // MOVE ONLY IF NOT COLLIDING
+            if (!collisionOn) {
+                switch (direction) {
+                    case "up":    worldY -= entitySpeed; break;
+                    case "down":  worldY += entitySpeed; break;
+                    case "left":  worldX -= entitySpeed; break;
+                    case "right": worldX += entitySpeed; break;
+                }
             }
 
-            // Animation counter
+            // Animation
             spriteCounter++;
             if (spriteCounter > 5) {
                 spriteNum++;
-                if (spriteNum > 4) {
-                    spriteNum = 1;
-                }
+                if (spriteNum > 4) spriteNum = 1;
                 spriteCounter = 0;
             }
-
             isMoving = true;
         } else {
             isMoving = false;

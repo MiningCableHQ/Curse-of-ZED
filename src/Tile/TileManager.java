@@ -14,6 +14,8 @@ public class TileManager {
     public Tile[] tile;
     public int mapTileNum[][];
     public String currentMapName; // Tracks which map is currently loaded
+    int spriteCounter = 0;
+    int spriteNum = 1;
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
@@ -21,7 +23,7 @@ public class TileManager {
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadMap("/maps/world01.txt");
+        loadMap("/maps/world02.txt");
     }
 
     public void getTileImage() {
@@ -54,6 +56,10 @@ public class TileManager {
             tile[11].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/brick_vines_32x32.png"));
             tile[12] = new Tile();
             tile[12].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grass_bottom_only_32x32.png"));
+            tile[13] = new Tile();
+            tile[13].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame1_dark_32x32.png"));
+            tile[14] = new Tile();
+            tile[14].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame2_dark_32x32.png"));
             System.out.println("Image loaded finished");
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,46 +71,61 @@ public class TileManager {
             InputStream is = getClass().getResourceAsStream(filePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-            int col = 0;
             int row = 0;
 
-            while (col < gp.maxWorldCol && row < gp.maxWorldRow) {
+            while (row < gp.maxWorldRow) {
                 String line = br.readLine();
-                while(col < gp.maxWorldCol){
-                    String numbers[] = line.split(" ");
-                    int num = Integer.parseInt(numbers[col]);
+                if (line == null) break;
 
-                    mapTileNum[col][row] = num;
-                    col++;
+                // This handles multiple spaces and leading/trailing spaces
+                String[] numbers = line.trim().split("\\s+");
+
+                for (int col = 0; col < gp.maxWorldCol; col++) {
+                    if (col < numbers.length) {
+                        int num = Integer.parseInt(numbers[col]);
+                        mapTileNum[col][row] = num;
+                    }
                 }
-                if(col == gp.maxWorldCol){
-                    col = 0;
-                    row++;
-                }
+                row++;
             }
             br.close();
+            System.out.println("Loaded map: " + filePath);
+            currentMapName = filePath;
         } catch (Exception e) {
-            System.out.println("Error loading map: " + filePath);
+            System.err.println("ERROR loading map: " + filePath);
+            e.printStackTrace();
         }
     }
 
+
     public void draw(Graphics2D g2) {
+        spriteCounter++;
+        if (spriteCounter > 20) { // Every 20 frames (~3 times per second), switch
+            if (spriteNum == 1) spriteNum = 2;
+            else if (spriteNum == 2) spriteNum = 1;
+            spriteCounter = 0;
+        }
         int worldCol = 0;
         int worldRow = 0;
 
         while (worldRow < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
             int tileNum = mapTileNum[worldCol][worldRow];
 
+// 2. THE ANIMATION SWAP
+            if (tileNum == 13 && spriteNum == 2) {
+                tileNum = 14; // Visually replace frame 1 with frame 2
+            }
             int worldX = worldCol * gp.tileSize;
             int worldY = worldRow * gp.tileSize;
             int screenX = worldX - gp.player.worldX + gp.player.screenX;
             int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-            if(worldX + gp.tileSize> gp.player.worldX - gp.player.screenX &&
-                    worldX  - gp.tileSize< gp.player.worldX + gp.player.screenX &&
-                    worldY  + gp.tileSize>  gp.player.worldY - gp.player.screenY &&
-                    worldY  - gp.tileSize< gp.player.worldY + gp.player.screenY) {
-                g2.drawImage(tile[tileNum].image,  screenX, screenY, gp.tileSize, gp.tileSize, null);
+            if (worldX + gp.tileSize > gp.player.worldX - gp.player.screenX &&
+                    worldX - gp.tileSize < gp.player.worldX + gp.player.screenX &&
+                    worldY + gp.tileSize > gp.player.worldY - gp.player.screenY &&
+                    worldY - gp.tileSize < gp.player.worldY + gp.player.screenY) {
+
+                g2.drawImage(tile[tileNum].image, screenX, screenY, gp.tileSize, gp.tileSize, null);
             }
             worldCol++;
 
