@@ -23,7 +23,7 @@ public class TileManager {
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadMap("/maps/world02.txt");
+        loadMap("/maps/world01.txt");
     }
 
     public void getTileImage() {
@@ -60,6 +60,51 @@ public class TileManager {
             tile[13].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame1_dark_32x32.png"));
             tile[14] = new Tile();
             tile[14].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame2_dark_32x32.png"));
+
+            tile[15] = new Tile();
+            tile[15].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/water32x32.png"));
+            tile[16] = new Tile();
+            tile[16].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/waterfall32x32.png"));
+            tile[17] = new Tile();
+            tile[17].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/topleftwaterfall32x32.png"));
+            tile[18] = new Tile();
+            tile[18].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/toprightwaterfall32x32.png"));
+            tile[19] = new Tile();
+            tile[19].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/splash_32x32.png"));
+            tile[20] = new Tile();
+            tile[20].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/sand_32x32.png"));
+            tile[21] = new Tile();
+            tile[21].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/leftwaterfall32x32.png"));
+            tile[22] = new Tile();
+            tile[22].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/rightwaterfall32x32.png"));
+            tile[23] = new Tile();
+            tile[23].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/leftstairs_32x32.png"));
+            tile[24] = new Tile();
+            tile[24].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/rightstairs_32x32.png"));
+            tile[25] = new Tile();
+            tile[25].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/path_32x32.png"));
+            tile[26] = new Tile();
+            tile[26].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/mud_32x32.png"));
+            tile[27] = new Tile();
+            tile[27].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/leftsidemud_32x32.png"));
+            tile[28] = new Tile();
+            tile[28].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/curvemud_32x32.png"));
+            tile[29] = new Tile();
+            tile[29].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/frontmud_32x32.png"));
+            tile[30] = new Tile();
+            tile[30].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/grey_dirt_32x32.png"));
+            tile[31] = new Tile();
+            tile[31].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/graypath_32x32.png"));
+            tile[32] = new Tile();
+            tile[32].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/grass_32x32.png"));
+            tile[33] = new Tile();
+            tile[33].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/fnbridge_32x32.png"));
+            tile[34] = new Tile();
+            tile[34].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/fence_32x32.png"));
+            tile[35] = new Tile();
+            tile[35].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/crops_32x32.png"));
+
+
             System.out.println("Image loaded finished");
         } catch (IOException e) {
             e.printStackTrace();
