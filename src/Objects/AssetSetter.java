@@ -3357,32 +3357,18 @@ public class AssetSetter {
 
             //GREEN
             gp.obj[824] = new OBJ_Green();
-            gp.obj[824].worldX = 2 * gp.tileSize; // Col 2
-            gp.obj[824].worldY = 23 * gp.tileSize; // Row 23
+            gp.obj[824].worldX = 1 * gp.tileSize; // Col 2
+            gp.obj[824].worldY = 24 * gp.tileSize; // Row 2
 
-            gp.obj[825] = new OBJ_Green();
-            gp.obj[825].worldX = 15 * gp.tileSize; // Col 15
-            gp.obj[825].worldY = 23 * gp.tileSize; // Row 23
-
-            gp.obj[826] = new OBJ_Green();
-            gp.obj[826].worldX = 37 * gp.tileSize; // Col 37
-            gp.obj[826].worldY = 23 * gp.tileSize; // Row 23
-
-            gp.obj[827] = new OBJ_Green();
-            gp.obj[827].worldX = 8 * gp.tileSize; // Col 8
-            gp.obj[827].worldY = 22 * gp.tileSize; // Row 22
 
             gp.obj[828] = new OBJ_Green();
-            gp.obj[828].worldX = 24 * gp.tileSize; // Col 24
-            gp.obj[828].worldY = 22 * gp.tileSize; // Row 22
+            gp.obj[828].worldX = 22 * gp.tileSize; // Col 24
+            gp.obj[828].worldY = 20 * gp.tileSize; // Row 22
 
-            gp.obj[829] = new OBJ_Green();
-            gp.obj[829].worldX = 30 * gp.tileSize; // Col 30
-            gp.obj[829].worldY = 22 * gp.tileSize; // Row 22
 
             gp.obj[830] = new OBJ_Green();
-            gp.obj[830].worldX = 42 * gp.tileSize; // Col 42
-            gp.obj[830].worldY = 22 * gp.tileSize; // Row 22
+            gp.obj[830].worldX = 38 * gp.tileSize; // Col 42
+            gp.obj[830].worldY = 24 * gp.tileSize; // Row 22
 
 
             //YELLOW
