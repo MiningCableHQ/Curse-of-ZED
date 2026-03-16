@@ -44,8 +44,8 @@ public abstract class Player extends Entity {
     }
 
     public void setDefaultValues(){
-        worldX = gp.tileSize * 23;
-        worldY = gp.tileSize * 21;
+        worldX = gp.tileSize * 27;
+        worldY = gp.tileSize * 27;
         entitySpeed = 4;
         normalSpeed = entitySpeed;
         sprintSpeed = 6;

@@ -5,19 +5,19 @@ import java.io.IOException;
 import java.awt.Rectangle;
 
 
-public class OBJ_House1 extends SuperObject {
-    public OBJ_House1 () {
-        name = "House1 ";
+public class OBJ_BridgeHorizontal extends SuperObject {
+    public OBJ_BridgeHorizontal () {
+        name = "BridgeHorizontal";
         try {
             // Make sure the filename matches your sidebar exactly!
-            image = ImageIO.read(getClass().getResourceAsStream("/map2assets/house_mysterious_128x128.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/map2assets/woodbridgehor.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        collision = true;
+        collision = false;
 
-        this.solidArea = new Rectangle(12, 40, 232, 210);
+        solidArea = new Rectangle(0, 0, 0, 0);
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
     }

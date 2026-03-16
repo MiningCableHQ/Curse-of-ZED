@@ -17,8 +17,7 @@ public class OBJ_Stall extends SuperObject {
 
         collision = true;
 
-        // Since rocks are usually shorter, the hitbox can cover almost the whole tile
-        solidArea = new Rectangle(4, 4, 24, 24);
+        this.solidArea = new Rectangle(8, 50, 112, 74);
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
     }

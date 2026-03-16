@@ -17,8 +17,7 @@ public class OBJ_House3 extends SuperObject {
 
         collision = true;
 
-        // Since rocks are usually shorter, the hitbox can cover almost the whole tile
-        solidArea = new Rectangle(4, 4, 24, 24);
+        solidArea = new Rectangle(2, 2, 12, 12);
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
     }

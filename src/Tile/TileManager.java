@@ -47,7 +47,7 @@ public class TileManager {
             tile[7] = new Tile();
             tile[7].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/gloomy_grass_right_32x32.png"));
             tile[8] = new Tile();
-            tile[8].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grey_dirt_32x32.png"));
+            tile[8].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/brick_tile_32x32_full.png"));
             tile[9] = new Tile();
             tile[9].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grass_left_only_32x32.png"));
             tile[10] = new Tile();
@@ -57,9 +57,27 @@ public class TileManager {
             tile[12] = new Tile();
             tile[12].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grass_bottom_only_32x32.png"));
             tile[13] = new Tile();
-            tile[13].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame1_dark_32x32.png"));
+            tile[13].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_tile_32x32.png"));
+            tile[13].collision = true;
             tile[14] = new Tile();
-            tile[14].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_frame2_dark_32x32.png"));
+            tile[14].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/water_tile_32x32_frame3.png"));
+            tile[14].collision = true;
+            tile[15] = new Tile();
+            tile[15].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurple.png"));
+            tile[16] = new Tile();
+            tile[16].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurpleedge.png"));
+            tile[17] = new Tile();
+            tile[17].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurpleedgel.png"));
+            /*
+            tile[15] = new Tile();
+            tile[15].image = ImageIO.read(getClass().getResourceAsStream("/map2assets/torch_frame1.png"));
+            tile[15].collision = true; // Optional, if you don't want the player walking through the wall it's on
+
+            tile[16] = new Tile();
+            tile[16].image = ImageIO.read(getClass().getResourceAsStream("/map2assets/torch_frame2.png"));
+            tile[16].collision = true;
+            */
+
             System.out.println("Image loaded finished");
         } catch (IOException e) {
             e.printStackTrace();
