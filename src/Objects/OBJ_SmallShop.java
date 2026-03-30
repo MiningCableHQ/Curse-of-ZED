@@ -18,7 +18,7 @@ public class OBJ_SmallShop extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(16 * scale, 64 * scale, 32 * scale, 32 * scale);
+        solidArea = new Rectangle(8 * scale, 8 * scale, 48 * scale, 48 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;

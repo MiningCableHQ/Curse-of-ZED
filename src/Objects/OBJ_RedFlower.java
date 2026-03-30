@@ -18,7 +18,7 @@ public class OBJ_RedFlower extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(16 * scale, 64 * scale, 32 * scale, 32 * scale);
+        solidArea = new Rectangle(4 * scale, 4 * scale, 24 * scale, 24 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;

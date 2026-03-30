@@ -37,7 +37,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     // Entities and Objects
     public Player player = new Swordsman(this, keyH);
-    public SuperObject obj[] = new SuperObject[10];
+    public SuperObject obj[] = new SuperObject[500];
     public int currentMap = 0;
 
     public GamePanel() {

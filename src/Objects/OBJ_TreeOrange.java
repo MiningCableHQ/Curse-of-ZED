@@ -18,7 +18,7 @@ public class OBJ_TreeOrange extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(16 * scale, 64 * scale, 32 * scale, 32 * scale);
+        solidArea = new Rectangle(8 * scale, 12 * scale, 48 * scale, 72 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
