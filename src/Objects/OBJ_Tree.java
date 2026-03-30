@@ -18,10 +18,13 @@ public class OBJ_Tree extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(8 * scale, 12 * scale, 48 * scale, 72 * scale);
+        solidArea = new Rectangle();
+        solidArea.x = 25 * scale;      // Center it
+        solidArea.y = 75 * scale;      // Start near the bottom of the tree
+        solidArea.width = 20 * scale;  // Width of the trunk
+        solidArea.height = 20 * scale; // Height of the base/roots
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
-
     }
 }

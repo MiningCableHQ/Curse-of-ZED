@@ -36,7 +36,7 @@ public class GamePanel extends JPanel implements Runnable {
     // Entities and Objects
     public Player player = new Swordsman(this, keyH);
     public SuperObject obj[] = new SuperObject[100000];
-    public int currentMap = 1;
+    public int currentMap = 0;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -88,53 +88,33 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void checkMapTransition() {
 
-        // --- MAP 0 (First Map) ---
+        // --- MAP 0 (Starting Map) ---
         if (currentMap == 0) {
-            // Exit Right -> To Map 1
-            if (player.worldX > worldWidth - tileSize) {
+            // EXIT RIGHT: If player hits the right edge of Map 0
+            if (player.worldX > worldWidth - (tileSize * 1.5)) {
                 currentMap = 1;
                 tileM.loadMap("/maps/world02.txt");
                 aSetter.setObject();
-                player.worldX = tileSize * 2;
+
+                // SPAWN ON MAP 1: Move to Column 3 to stay away from the left-exit trigger
+                player.worldX = tileSize * 3;
+                player.worldY = tileSize * 10;
             }
         }
 
-        // --- MAP 1 (Your "Map 2" / Middle Map) ---
+        // --- MAP 1 (Middle Map) ---
         else if (currentMap == 1) {
-            // Exit Left -> Back to Map 0
-            if (player.worldX < tileSize / 2) {
+            // EXIT LEFT: Back to Map 0
+            // We check if player is at the far left (less than 1 tile in)
+            if (player.worldX < tileSize) {
                 currentMap = 0;
                 tileM.loadMap("/maps/world01.txt");
                 aSetter.setObject();
-                player.worldX = worldWidth - (tileSize * 2);
-            }
 
-            // EXIT AT LOWER RIGHT BOTTOM -> To Map 2 (Final Map)
-            // We check BOTH X (Right) and Y (Bottom)
-            else if (player.worldX > worldWidth - (tileSize * 2) &&
-                    player.worldY > worldHeight - (tileSize * 2)) {
-
-                currentMap = 2;
-                tileM.loadMap("/maps/world03.txt");
-                aSetter.setObject();
-
-                // Spawn at the top-left of the final map
-                player.worldX = tileSize * 2;
-                player.worldY = tileSize * 2;
-            }
-        }
-
-        // --- MAP 2 (Final Map) ---
-        else if (currentMap == 2) {
-            // Exit Top-Left -> Back to Map 1's corner
-            if (player.worldX < tileSize && player.worldY < tileSize) {
-                currentMap = 1;
-                tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
-
-                // Spawn back at the bottom-right corner of Map 1
+                // SPAWN ON MAP 0: Move them back to the right side
+                // (worldWidth minus 3 tiles keeps you away from the right-exit trigger)
                 player.worldX = worldWidth - (tileSize * 3);
-                player.worldY = worldHeight - (tileSize * 3);
+                player.worldY = tileSize * 10;
             }
         }
     }
