@@ -4,21 +4,24 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.awt.Rectangle;
 
-
 public class OBJ_Gate extends SuperObject {
-    public OBJ_Gate () {
+    public OBJ_Gate() {
         name = "Gate";
         try {
-            // Make sure the filename matches your sidebar exactly!
-            image = ImageIO.read(getClass().getResourceAsStream("/map2assets/gate_64x64.png"));
+            // Path matches your sidebar: /map2assets/tree_64x96.png
+            image = ImageIO.read(getClass().getResourceAsStream("/map1assets/gate_64x64 (1).png"));
         } catch (IOException e) {
+            System.out.println("Could not find the gate image!");
             e.printStackTrace();
         }
 
         collision = true;
 
-        this.solidArea = new Rectangle(0, 64, 128, 64);
+        int scale = 2; // Or gp.scale if you pass it in
+        solidArea = new Rectangle(8 * scale, 8 * scale, 48 * scale, 48 * scale);
+
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
+
     }
 }
