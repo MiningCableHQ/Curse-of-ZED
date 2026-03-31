@@ -1,11 +1,13 @@
 package Main;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Game {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame window = new JFrame();
+
             window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             window.setResizable(false);
             window.setTitle("Curse of ZED");

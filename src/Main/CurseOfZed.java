@@ -25,8 +25,30 @@ public class CurseOfZed extends JFrame {
 
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new CurseOfZed().setVisible(true));
-    }
+
+                SwingUtilities.invokeLater(() -> {
+                    // 1. Initialize the window
+                    CurseOfZed window = new CurseOfZed();
+
+                    // 2. Initialize the GamePanel (your map/player logic)
+                    GamePanel gamePanel = new GamePanel();
+
+                    // 3. TELL THE BUTTON WHAT TO DO
+                    window.setOnStartCallback(() -> {
+                        window.getContentPane().removeAll(); // Clear the Title Screen
+                        window.add(gamePanel);               // Add your Game World
+                        window.revalidate();                 // Refresh the UI
+                        window.pack();                       // Resize to fit the 16x12 tiles
+
+                        gamePanel.setupGame();
+                        gamePanel.requestFocusInWindow();    // Allow keyboard control
+                        gamePanel.startGameThread();         // Start the 60 FPS loop
+                    });
+
+                    window.setVisible(true);
+                });
+            }
+
 
     public void setOnStartCallback(Runnable callback) {
         this.onStartCallback = callback;
@@ -39,7 +61,11 @@ public class CurseOfZed extends JFrame {
         setUndecorated(false);
         setResizable(false);
         TitlePanel p = new TitlePanel();
-        p.setOnStartCallback(this.onStartCallback);
+        p.setOnStartCallback(() -> {
+            if (this.onStartCallback != null) {
+                this.onStartCallback.run();
+            }
+        });
         add(p);
         pack();
         setLocationRelativeTo(null);
@@ -50,12 +76,13 @@ public class CurseOfZed extends JFrame {
 //  Main Panel
 // ═════════════════════════════════════════════════════════════
 class TitlePanel extends JPanel {
+    public static GamePanel gm = new GamePanel();
     private Runnable onStartCallback;
 
     public void setOnStartCallback(Runnable callback) {
         this.onStartCallback = callback;
     }
-    static final int W = 1024, H = 640;
+    static final int W = gm.screenWidth, H = gm.screenHeight;
 
     // ── Assets ───────────────────────────────────────────────
     private BufferedImage bgImage;
