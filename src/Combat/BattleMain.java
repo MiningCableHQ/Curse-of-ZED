@@ -2,9 +2,7 @@ package Combat;
 
 import Entities.Characters.*;
 import Entities.Characters.Player;
-import Entities.Enemies.Enemy1;
-import Entities.Enemies.Enemy;
-import Entities.Enemies.FinalBoss;
+import Entities.Enemies.*;
 import Main.GamePanel;
 import Main.KeyHandler;
 
@@ -26,10 +24,12 @@ public class BattleMain {
             KeyHandler keyH = new KeyHandler();
 
             Player testPlayer = new Mage(gp, keyH);
-            Enemy  testEnemy  = new FinalBoss();
+            Enemy  testEnemy1  = new Enemy1();
+            Enemy  testEnemy2  = new Enemy2();
+            Enemy  testEnemy3  = new FinalBoss();
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, testEnemy);
+            BattlePanel battlePanel = new BattlePanel(testPlayer, testEnemy1, testEnemy2, testEnemy3);
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

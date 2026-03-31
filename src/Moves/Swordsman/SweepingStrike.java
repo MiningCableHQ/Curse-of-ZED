@@ -7,7 +7,7 @@ import Moves.Move;
 
 public class SweepingStrike extends Move {
     public SweepingStrike(){
-        super("Sweeping Strike", 20);
+        super("Sweeping Strike", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
     }
 

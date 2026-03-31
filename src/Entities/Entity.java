@@ -25,6 +25,7 @@ public abstract class Entity {
 
     //Entity Stats
     protected String name;
+    protected int level;
     protected double hp;
     protected double maxHp;
     protected double attack;
@@ -36,6 +37,11 @@ public abstract class Entity {
     protected double accuracy;
 
     Random rand = new Random();
+
+    public Entity(){
+        level = 1;
+        name = "Entity_Name";
+    }
 
     //Methods
     public double takeDamage(double damage, int defense, double dmgResistance) {
@@ -50,6 +56,9 @@ public abstract class Entity {
     //Getters and Setters
     public String getName(){
         return name;
+    }
+    public int getLevel(){
+        return level;
     }
     public double getHp(){
         return hp;

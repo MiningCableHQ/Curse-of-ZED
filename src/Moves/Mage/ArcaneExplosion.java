@@ -7,7 +7,7 @@ import Moves.Move;
 
 public class ArcaneExplosion extends Move {
     public ArcaneExplosion(){
-        super("Arcane Bolt", 20);
+        super("Arcane Explosion", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
     }
 

@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Revitalize extends Move {
     public Revitalize() {
-        super("Revitalize", 0);
+        super("Revitalize", 0, TargetType.SELF);
         hasUnlocked = true;
     }
 

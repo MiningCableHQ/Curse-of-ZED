@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Empower extends Move {
     public Empower() {
-        super("Empower", 0);
+        super("Empower", 0, TargetType.SELF);
         hasUnlocked = true;
     }
 

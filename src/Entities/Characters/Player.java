@@ -18,7 +18,6 @@ public abstract class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
 
-    protected int level;
     protected int experience;
     protected int expNeeded;
     protected Inventory inventory;
@@ -174,9 +173,6 @@ public abstract class Player extends Entity {
     }
 
     //Getters and Setters
-    public int getLevel(){
-        return level;
-    }
     public int getExperience(){
         return experience;
     }

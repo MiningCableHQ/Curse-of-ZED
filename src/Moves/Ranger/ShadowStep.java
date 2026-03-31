@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class ShadowStep extends Move {
     public ShadowStep(){
-        super("Shadow Step", 0);
+        super("Shadow Step", 0, TargetType.SELF);
         hasUnlocked = false;
     }
 

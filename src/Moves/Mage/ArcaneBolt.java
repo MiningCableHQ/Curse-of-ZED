@@ -5,9 +5,11 @@ import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
+import java.lang.annotation.Target;
+
 public class ArcaneBolt extends Move {
     public ArcaneBolt() {
-        super("Arcane Bolt", 20);
+        super("Arcane Bolt", 20, TargetType.ENEMY);
         hasUnlocked = true;
     }
 

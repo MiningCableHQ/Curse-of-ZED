@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class Windstep extends Move {
     public Windstep() {
-        super("Windstep", 0);
+        super("Windstep", 0, TargetType.SELF);
         hasUnlocked = true;
     }
 

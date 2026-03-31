@@ -7,7 +7,7 @@ import Moves.Move;
 
 public class Scattershot extends Move {
     public Scattershot() {
-        super("Scattershot", 20);
+        super("Scattershot", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
     }
 
