@@ -21,7 +21,7 @@ public abstract class Move {
         this.attack = attack;
         isDisabled = false;
         disabledCounter = 0;
-        this.targetType = targetType; // Default target type
+        this.targetType = targetType.ENEMY; // Default target type
     }
 
     // Overloaded constructor with target type

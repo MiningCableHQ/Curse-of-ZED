@@ -7,6 +7,9 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 
 public class Ranger extends Player {
+    private int windstepStacks = 0;
+    private double originalSpeed;
+
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
         name = "Ranger";
@@ -19,6 +22,8 @@ public class Ranger extends Player {
         speed = 50;
         dmgResistance = 0.10;
         loadMoves();
+
+        originalSpeed = speed;
     }
 
     @Override
@@ -51,5 +56,33 @@ public class Ranger extends Player {
         moves.add(new Scattershot());
         moves.add(new Windstep());
         moves.add(new SnipersMark());
+    }
+
+    // --- For move: Windstep ------------------------------------------------------------------------------------------
+    public int getWindstepStacks() {
+        return windstepStacks;
+    }
+    public boolean canUseWindstep() {
+        return windstepStacks < 3;
+    }
+    public void addWindstepStack() {
+        if (windstepStacks < 3) {
+            windstepStacks++;
+            // Increase SPD by 4%
+            speed = originalSpeed + (originalSpeed * 0.04 * windstepStacks);
+        }
+    }
+    public void resetBattleBuffs() {
+        windstepStacks = 0;
+        speed = originalSpeed;
+    }
+    public void setInBattle(boolean inBattle) {
+        if (!inBattle) {
+            resetBattleBuffs();
+        }
+    }
+    @Override
+    public double getSpeed() {
+        return speed;
     }
 }

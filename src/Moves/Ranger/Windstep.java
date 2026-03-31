@@ -1,5 +1,6 @@
 package Moves.Ranger;
 
+import Entities.Characters.Ranger;
 import Moves.Move;
 
 public class Windstep extends Move {
@@ -10,6 +11,15 @@ public class Windstep extends Move {
 
     @Override
     public <T> void execute(T Entity){
-        //TODO Increase SPD by 4% (max of 3 stacks)
+        if (Entity instanceof Ranger) {
+            Ranger ranger = (Ranger) Entity;
+
+            if (ranger.canUseWindstep()) {
+                ranger.addWindstepStack();
+                //Increase SPD by 4% per stack
+            } else {
+                //TODO inform player "Windstep cannot be used! Already at max stacks (3)!"
+            }
+        }
     }
 }

@@ -24,9 +24,9 @@ public class BattleMain {
             KeyHandler keyH = new KeyHandler();
 
             Player testPlayer = new Mage(gp, keyH);
-            Enemy  testEnemy1  = new Enemy1();
-            Enemy  testEnemy2  = new Enemy2();
-            Enemy  testEnemy3  = new FinalBoss();
+            Enemy  testEnemy1  = new Enemy3();
+            Enemy  testEnemy2  = new Enemy4();
+            Enemy  testEnemy3  = new Frankenstein();
 
             // ── Build the battle panel ──────────────────────────
             BattlePanel battlePanel = new BattlePanel(testPlayer, testEnemy1, testEnemy2, testEnemy3);

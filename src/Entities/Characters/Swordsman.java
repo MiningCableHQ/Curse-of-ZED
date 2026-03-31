@@ -8,6 +8,9 @@ import java.awt.*;
 import java.io.IOException;
 
 public class Swordsman extends Player {
+    private int ironStanceStacks = 0;
+    private double originalDefense;
+
     public Swordsman(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
         name = "Swordsman";
@@ -20,6 +23,8 @@ public class Swordsman extends Player {
         speed = 28;
         dmgResistance = 0.15;
         loadMoves();
+
+        originalDefense = defense;
     }
 
     @Override
@@ -52,5 +57,33 @@ public class Swordsman extends Player {
         moves.add(new SweepingStrike());
         moves.add(new IronStance());
         moves.add(new CounterStance());
+    }
+
+    // --- For move: Iron stance ---------------------------------------------------------------------------------------
+    public int getIronStanceStacks() {
+        return ironStanceStacks;
+    }
+    public boolean canUseIronStance() {
+        return ironStanceStacks < 3;
+    }
+    public void addIronStanceStack() {
+        if (ironStanceStacks < 3) {
+            ironStanceStacks++;
+            //Increase DEF by 8%
+            defense = originalDefense + (originalDefense * 0.08 * ironStanceStacks);
+        }
+    }
+    public void resetBattleBuffs() {
+        ironStanceStacks = 0;
+        defense = originalDefense;
+    }
+    public void setInBattle(boolean inBattle) {
+        if (!inBattle) {
+            resetBattleBuffs();
+        }
+    }
+    @Override
+    public double getDefense() {
+        return defense;
     }
 }

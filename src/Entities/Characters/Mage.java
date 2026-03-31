@@ -7,6 +7,9 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 
 public class Mage extends Player {
+    private int empowerStacks = 0;
+    private double originalAttack;
+
     public Mage(GamePanel gp, KeyHandler keyH){
         super(gp, keyH);
         name = "Mage";
@@ -19,6 +22,8 @@ public class Mage extends Player {
         speed = 35;
         dmgResistance = 0.13;
         loadMoves();
+
+        originalAttack = attack;
     }
 
     @Override
@@ -51,5 +56,33 @@ public class Mage extends Player {
         moves.add(new ArcaneExplosion());
         moves.add(new Empower());
         moves.add(new Revitalize());
+    }
+
+    // --- For move: Empower -------------------------------------------------------------------------------------------
+    public int getEmpowerStacks() {
+        return empowerStacks;
+    }
+    public boolean canUseEmpower() {
+        return empowerStacks < 3;
+    }
+    public void addEmpowerStack() {
+        if (empowerStacks < 3) {
+            empowerStacks++;
+            // Increase attack by 6% per stack
+            attack = originalAttack + (originalAttack * 0.06 * empowerStacks);
+        }
+    }
+    public void resetBattleBuffs() {
+        empowerStacks = 0;
+        attack = originalAttack;
+    }
+    public void setInBattle(boolean inBattle) {
+        if (!inBattle) {
+            resetBattleBuffs();
+        }
+    }
+    @Override
+    public double getAttack() {
+        return attack;
     }
 }

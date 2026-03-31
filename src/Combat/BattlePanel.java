@@ -1,8 +1,14 @@
 package Combat;
 
 import Entities.Characters.Player;
+import Entities.Characters.Ranger;
+import Entities.Characters.Swordsman;
+import Entities.Characters.Mage;
 import Entities.Enemies.Enemy;
 import Moves.Move;
+import Moves.Swordsman.*;
+import Moves.Ranger.*;
+import Moves.Mage.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -407,11 +413,12 @@ public class BattlePanel extends JPanel {
         if (index < moves.size()) {
             Move selectedMove = moves.get(index);
 
-            // Check if move requires target selection
-            if (enemies.size() > 1 && selectedMove.getTargetType() == Move.TargetType.ENEMY) {
+            //Check target type
+            if (selectedMove.getTargetType() == Move.TargetType.SELF) {                               //Self target
+                executePlayerMove(selectedMove);
+            } else if (enemies.size() > 1 && selectedMove.getTargetType() == Move.TargetType.ENEMY) { //Single target
                 showTargetSelection(selectedMove);
-            } else {
-                // Single enemy or move targets all enemies
+            } else {                                                                                  //AOE target
                 currentTargetEnemy = enemies.get(0);
                 executePlayerMove(selectedMove);
             }
@@ -429,6 +436,40 @@ public class BattlePanel extends JPanel {
     private void executePlayerMove(Move move) {
         setButtonsEnabled(false);
         isExecutingMove = true;
+
+        // Handle different target types
+        if (move.getTargetType() == Move.TargetType.SELF) {
+            // Self-targeting moves (buffs, heals)
+            Move.currentTarget = playerEntity;
+            move.execute(playerEntity);
+            Move.currentTarget = null;
+
+            // For swordsman IRON STANCE
+            if (move instanceof IronStance && playerEntity instanceof Swordsman) {
+                Swordsman swordsman = (Swordsman) playerEntity;
+                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
+                        "Defense increased to " + String.format("%.0f", swordsman.getDefense());
+            } else if (move instanceof Windstep && playerEntity instanceof Ranger) {
+                Ranger ranger = (Ranger) playerEntity;
+                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
+                        "Speed increased to " + String.format("%.0f", ranger.getSpeed());
+            } else if (move instanceof Empower && playerEntity instanceof Mage) {
+                Mage mage = (Mage) playerEntity;
+                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
+                        "Attack increased to " + String.format("%.0f", mage.getAttack());
+            } else {
+                battleMessage = playerEntity.getName() + " uses " + move.getName() + "!";
+            }
+            repaint();
+
+            // Enemy turn after a short delay
+            Timer enemyTurnTimer = new Timer(1500, e -> {
+                executeEnemyTurn();
+            });
+            enemyTurnTimer.setRepeats(false);
+            enemyTurnTimer.start();
+            return;
+        }
 
         // Determine target
         Enemy target;
@@ -492,6 +533,14 @@ public class BattlePanel extends JPanel {
             repaint();
 
             Timer victoryTimer = new Timer(2000, e -> {
+                if (playerEntity instanceof Swordsman) {
+                    ((Swordsman) playerEntity).resetBattleBuffs();
+                } else if (playerEntity instanceof Ranger) {
+                    ((Ranger) playerEntity).resetBattleBuffs();
+                } else if (playerEntity instanceof Mage) {
+                    ((Mage) playerEntity).resetBattleBuffs();
+                }
+
                 if (onBattleEnd != null) {
                     onBattleEnd.run();
                 }
@@ -544,6 +593,14 @@ public class BattlePanel extends JPanel {
                     repaint();
 
                     Timer gameOverTimer = new Timer(2000, e -> {
+                        if (playerEntity instanceof Swordsman) {
+                            ((Swordsman) playerEntity).resetBattleBuffs();
+                        } else if (playerEntity instanceof Ranger) {
+                            ((Ranger) playerEntity).resetBattleBuffs();
+                        } else if (playerEntity instanceof Mage) {
+                            ((Mage) playerEntity).resetBattleBuffs();
+                        }
+
                         if (onBattleEnd != null) {
                             onBattleEnd.run();
                         }
@@ -598,6 +655,15 @@ public class BattlePanel extends JPanel {
         repaint();
 
         Timer escapeTimer = new Timer(1000, e -> {
+            // Reset battle buffs when escaping
+            if (playerEntity instanceof Swordsman) {
+                ((Swordsman) playerEntity).resetBattleBuffs();
+            } else if (playerEntity instanceof Ranger) {
+                ((Ranger) playerEntity).resetBattleBuffs();
+            } else if (playerEntity instanceof Mage) {
+                ((Mage) playerEntity).resetBattleBuffs();
+            }
+
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
@@ -738,9 +804,49 @@ public class BattlePanel extends JPanel {
         // EXP (player only)
         if (showExp && expLine != null) {
             ty += 12;
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 9));
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
             g2.setColor(new Color(50, 50, 160));
             g2.drawString(expLine, tx, ty);
+        }
+
+        if (showExp) {
+            int tyOffset = 0;
+
+            // Show Iron Stance stacks for Swordsman
+            if (playerEntity instanceof Swordsman) {
+                Swordsman swordsman = (Swordsman) playerEntity;
+                int stacks = swordsman.getIronStanceStacks();
+                if (stacks > 0) {
+                    tyOffset += 12;
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                    g2.setColor(new Color(100, 150, 255));
+                    g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + tyOffset);
+                }
+            }
+
+            // Show Windstep stacks for Ranger
+            if (playerEntity instanceof Ranger) {
+                Ranger ranger = (Ranger) playerEntity;
+                int stacks = ranger.getWindstepStacks();
+                if (stacks > 0) {
+                    tyOffset += 12;
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                    g2.setColor(new Color(100, 200, 100));
+                    g2.drawString("Windstep: " + stacks + "/3", tx, ty + tyOffset);
+                }
+            }
+
+            // Show Empower stacks for Mage
+            if (playerEntity instanceof Mage) {
+                Mage mage = (Mage) playerEntity;
+                int stacks = mage.getEmpowerStacks();
+                if (stacks > 0) {
+                    tyOffset += 12;
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                    g2.setColor(new Color(255, 150, 100));
+                    g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
+                }
+            }
         }
     }
 
