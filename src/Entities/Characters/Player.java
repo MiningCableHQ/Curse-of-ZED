@@ -170,4 +170,7 @@ public abstract class Player extends Entity {
     public int getExpNeeded(){
         return expNeeded;
     }
+    public ArrayList<Move> getMoves(){
+        return  moves;
+    }
 }

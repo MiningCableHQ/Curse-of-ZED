@@ -9,9 +9,15 @@ public abstract class Move {
     protected boolean hasUnlocked;
 
     public Move(String name, int attack){
+        this.name = name;
+        this.attack = attack;
         isDisabled = false;
         disabledCounter = 0;
     }
 
     public abstract <T> void execute(T Entity);
+
+    public String getName(){
+        return name;
+    }
 }

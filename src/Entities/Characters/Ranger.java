@@ -9,6 +9,7 @@ import java.io.IOException;
 public class Ranger extends Player {
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
+        name = "Ranger";
         hp = 680;
         maxHp = hp;
         attack = 240;

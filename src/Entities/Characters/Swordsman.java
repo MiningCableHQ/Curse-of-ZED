@@ -10,6 +10,7 @@ import java.io.IOException;
 public class Swordsman extends Player {
     public Swordsman(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
+        name = "Swordsman";
         hp = 800;
         maxHp = hp;
         attack = 205;
