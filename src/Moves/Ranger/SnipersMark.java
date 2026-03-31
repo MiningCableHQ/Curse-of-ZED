@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class SnipersMark extends Move {
     public SnipersMark() {
-        super("Sniper's Mark", 0); //TODO Implement attack stat
+        super("Sniper's Mark", 0);
         hasUnlocked = true;
     }
 

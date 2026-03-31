@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class RazorEdge extends Weapon{
     public RazorEdge(){
-        //TODO implement attack stats
+        super("RazorEdge", "Description pls", 20);
     }
 
     @Override

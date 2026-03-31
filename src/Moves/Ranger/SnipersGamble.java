@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class SnipersGamble extends Move {
     public SnipersGamble() {
-        super("Sniper's Gamble", 0); //TODO Implement attack stat
+        super("Sniper's Gamble", 20);
         hasUnlocked = false;
     }
 

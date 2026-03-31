@@ -1,6 +1,9 @@
 package Entities;
 
 import java.awt.Rectangle;
+import Moves.Move;
+import java.util.*;
+
 import java.awt.image.BufferedImage;
 
 public abstract class Entity {
@@ -18,21 +21,30 @@ public abstract class Entity {
     public Rectangle solidArea = new Rectangle(0, 0, 48, 48);
     public int solidAreaDefaultX, solidAreaDefaultY;
     public boolean collisionOn = false;
+    public Move weapon;
+
     //Entity Stats
     protected String name;
     protected double hp;
     protected double maxHp;
-    protected int attack;
-    protected int maxAttack;
-    protected int defense;
-    protected int maxDefense;
+    protected double attack;
+    protected double maxAttack;
+    protected double defense;
+    protected double maxDefense;
     protected double dmgResistance;
-    protected int speed;
+    protected double speed;
     protected double accuracy;
 
+    Random rand = new Random();
+
     //Methods
-    public void takeDamage(int damage){
-        hp -= damage;
+    public double takeDamage(double damage, int defense, double dmgResistance) {
+        double actualDamage = damage * (1 - dmgResistance) - defense;
+        if (actualDamage < 1) actualDamage = rand.nextDouble(1,11);
+
+        hp -= actualDamage;
+
+        return actualDamage;
     }
 
     //Getters and Setters
@@ -45,22 +57,22 @@ public abstract class Entity {
     public double getMaxHp(){
         return maxHp;
     }
-    public int getAttack(){
+    public double getAttack(){
         return attack;
     }
-    public int getMaxAttack(){
+    public double getMaxAttack(){
         return maxAttack;
     }
-    public int getDefense(){
+    public double getDefense(){
         return defense;
     }
-    public int getMaxDefense(){
+    public double getMaxDefense(){
         return maxDefense;
     }
     public double getDmgResistance(){
         return dmgResistance;
     }
-    public int getSpeed(){
+    public double getSpeed(){
         return speed;
     }
     public double getAccuracy(){

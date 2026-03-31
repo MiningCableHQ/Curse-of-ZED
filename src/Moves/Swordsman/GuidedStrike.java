@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class GuidedStrike extends Move {
     public GuidedStrike() {
-        super("Guided Strike", 0); //TODO Implement attack stat
+        super("Guided Strike", 0);
         hasUnlocked = false;
     }
 

@@ -3,7 +3,7 @@ package Moves;
 public abstract class Move {
     protected String name;
     protected String description;
-    protected int attack;
+    protected double attack;
     protected boolean isDisabled;
     protected int disabledCounter;
     protected boolean hasUnlocked;
@@ -17,7 +17,15 @@ public abstract class Move {
 
     public abstract <T> void execute(T Entity);
 
-    public String getName(){
+    //getters
+    public String getName() {
         return name;
     }
+    public String getDescription() {
+        return description;
+    }
+    public double getAttack() {
+        return attack;
+    }
+
 }

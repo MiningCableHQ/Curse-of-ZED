@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class CounterStance extends Move {
     public CounterStance() {
-        super("Counter Stance", 0); //TODO implement attack stat
+        super("Counter Stance", 20);
         hasUnlocked = true;
     }
 

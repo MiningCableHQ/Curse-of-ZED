@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class FlurryShot extends Move {
     public FlurryShot() {
-        super("Flurry Shot", 0); //TODO Implement attack stat
+        super("Flurry Shot", 20);
         hasUnlocked = false;
     }
 

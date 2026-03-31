@@ -4,7 +4,7 @@ import Moves.Move;
 
 public class PurifyingStance extends Move {
     public PurifyingStance() {
-        super("Purifying Stance", 0); //TODO Implement attack stat
+        super("Purifying Stance", 0);
         hasUnlocked = false;
     }
 
