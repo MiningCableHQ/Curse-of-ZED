@@ -1,9 +1,10 @@
 package Combat;
 
-import Entities.Characters.Swordsman;
+import Entities.Characters.*;
 import Entities.Characters.Player;
 import Entities.Enemies.Enemy1;
 import Entities.Enemies.Enemy;
+import Entities.Enemies.FinalBoss;
 import Main.GamePanel;
 import Main.KeyHandler;
 
@@ -24,8 +25,8 @@ public class BattleMain {
             GamePanel  gp   = new GamePanel();
             KeyHandler keyH = new KeyHandler();
 
-            Player testPlayer = new Swordsman(gp, keyH);
-            Enemy  testEnemy  = new Enemy1();
+            Player testPlayer = new Mage(gp, keyH);
+            Enemy  testEnemy  = new FinalBoss();
 
             // ── Build the battle panel ──────────────────────────
             BattlePanel battlePanel = new BattlePanel(testPlayer, testEnemy);

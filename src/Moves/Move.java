@@ -1,5 +1,7 @@
 package Moves;
 
+import Entities.Entity;
+
 public abstract class Move {
     protected String name;
     protected String description;
@@ -7,6 +9,9 @@ public abstract class Move {
     protected boolean isDisabled;
     protected int disabledCounter;
     protected boolean hasUnlocked;
+
+    //Current target type shi
+    public static Entity currentTarget;
 
     public Move(String name, int attack){
         this.name = name;
@@ -27,5 +32,4 @@ public abstract class Move {
     public double getAttack() {
         return attack;
     }
-
 }

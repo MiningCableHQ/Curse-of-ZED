@@ -7,6 +7,7 @@ public class Consumable extends Item {
         super(name, description);
     }
 
+
     @Override
     public <T> void useItem(T Entity){
         System.out.println("Item used (but nothing happened)");

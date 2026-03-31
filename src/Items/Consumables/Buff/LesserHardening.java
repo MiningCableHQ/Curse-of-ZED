@@ -6,7 +6,8 @@ public class LesserHardening extends Consumable {
     protected double defenseBuffAmount;
 
     public LesserHardening(){
-        name = "Lesser Hardening Potion";
+        super("Lesser Dulling Potion", "");
+        //name = "Lesser Dulling Potion";
         defenseBuffAmount = 0.12;
     }
 

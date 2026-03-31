@@ -1,5 +1,7 @@
 package Entities.Enemies;
 
+import Moves.Frankenstein.*;
+
 public class Frankenstein extends Boss{
     public Frankenstein(){
         hp = 1500;
@@ -10,5 +12,13 @@ public class Frankenstein extends Boss{
         maxDefense = defense;
         speed = 60;
         dmgResistance = 0.10;
+        loadMoves();
+    }
+
+    @Override
+    public void loadMoves(){
+        moveset.add(new Move1());
+        moveset.add(new Move2());
+        moveset.add(new Move3());
     }
 }

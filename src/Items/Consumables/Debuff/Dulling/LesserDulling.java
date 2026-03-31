@@ -6,7 +6,8 @@ public class LesserDulling extends Consumable {
     protected double attackDebuffAmount;
 
     public LesserDulling() {
-        name = "Lesser Dulling Potion";
+        super("Lesser Dulling Potion", "");
+        //name = "Lesser Dulling Potion";
         attackDebuffAmount = 0.08;
     }
 

@@ -6,7 +6,8 @@ public class LesserHealing extends Consumable {
     protected double healingAmount;
 
     public LesserHealing(){
-        name = "Lesser Healing Potion";
+        super("Lesser Healing Potion", "");
+        //name = "Lesser Healing Potion";
         healingAmount = 0.30;
     }
 

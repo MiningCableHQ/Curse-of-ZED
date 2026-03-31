@@ -1,6 +1,7 @@
 package Moves.Swordsman;
 
 import Entities.Characters.Swordsman;
+import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
@@ -12,26 +13,24 @@ public class HeroicSlash extends Move {
 
     @Override
     public <T> void execute(T Entity) {
-        if(Entity instanceof Swordsman){
+        if(Entity instanceof Swordsman && Move.currentTarget != null){
             Swordsman swordsman = (Swordsman) Entity;
+            Entity enemy = Move.currentTarget;
 
             //all 3 needed ATK stats
-            double totalATK = swordsman.getAttack(); //swordsman atk
+            double totalATK = swordsman.getAttack();
             if (swordsman.getWeapon() != null) {
                 if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = swordsman.getWeapon();
                     totalATK += equippedWeapon.getAttack();
                 }
             }
-            totalATK += this.attack; //this move's atk
+            totalATK += this.attack;
 
-            //multiply sum to dmg multiplier
             double dmgMultiplier = 1.60;
             double damage = totalATK * dmgMultiplier;
-            /*
-            TODO Enemy class needs take damage method to make use of the damage variable above
-            TODO Add single target dmg type
-            */
+            double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
+            //TODO Add single target dmg type
         }
     }
 }

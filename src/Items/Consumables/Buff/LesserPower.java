@@ -6,7 +6,8 @@ public class LesserPower extends Consumable {
     protected double attackBuffAmount;
 
     public LesserPower() {
-        name = "Lesser Power";
+        super("Lesser Power", "");
+        //name = "Lesser Power";
         attackBuffAmount = 0.16;
     }
 

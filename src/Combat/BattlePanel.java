@@ -2,7 +2,6 @@ package Combat;
 
 import Entities.Characters.Player;
 import Entities.Enemies.Enemy;
-import Main.GamePanel;
 import Moves.Move;
 
 import javax.swing.*;
@@ -10,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class BattlePanel extends JPanel {
 
@@ -53,6 +53,10 @@ public class BattlePanel extends JPanel {
     private final Player playerEntity;
     private final Enemy  enemyEntity;
 
+    // ── Battle State ──────────────────────────────────────────────
+    private String battleMessage = "";
+    private boolean isExecutingMove = false;
+
     // ── Layout rects ──────────────────────────────────────────────
     private Rectangle enemyImgRect;
     private Rectangle playerImgRect;
@@ -75,7 +79,7 @@ public class BattlePanel extends JPanel {
     private Runnable onBattleEnd;
 
     // ─────────────────────────────────────────────────────────────
-    //  Constructor  (called from BattleMain or from the game world)
+    //  Constructor
     // ─────────────────────────────────────────────────────────────
     public BattlePanel(Player player, Enemy enemy) {
         this.playerEntity = player;
@@ -246,44 +250,150 @@ public class BattlePanel extends JPanel {
     //  Action handlers
     // ─────────────────────────────────────────────────────────────
     private void onMoveSelected(int index) {
+        if (isExecutingMove) return; // Prevent multiple move executions
+
         ArrayList<Move> moves = playerEntity.getMoves();
         if (index < moves.size()) {
-            System.out.println("[Battle] Player used: " + moves.get(index).getName());
-            // TODO: execute the move against enemyEntity, process enemy turn, etc.
+            Move selectedMove = moves.get(index);
+            System.out.println("[Battle] Player used: " + selectedMove.getName());
 
+            //Disable buttons during animation, tho wala pay animation
+            setButtonsEnabled(false);
+            isExecutingMove = true;
+
+            //Execute the move
+            executePlayerMove(selectedMove);
         }
-        showMainMenu();
+    }
+
+    private void executePlayerMove(Move move) {
+        double beforeHp = enemyEntity.getHp();
+        Move.currentTarget = enemyEntity;
+        move.execute(playerEntity);
+        Move.currentTarget = null;
+        double afterHp = enemyEntity.getHp();
+        double damageDealt = beforeHp - afterHp;
+
+        // Show battle message
+        if (damageDealt > 0) {
+            battleMessage = playerEntity.getName() + " used " + move.getName() + " and dealt " +
+                    String.format("%.1f", damageDealt) + " damage!";
+        } else {
+            battleMessage = playerEntity.getName() + " used " + move.getName() + " but it had no effect!";
+        }
+        repaint();
+
+        // Check if enemy is defeated
+        if (enemyEntity.getHp() <= 0) {
+            battleMessage = enemyEntity.getName() + " has been defeated! You win!";
+            repaint();
+
+            // Handle victory
+            Timer victoryTimer = new Timer(2000, e -> {
+                if (onBattleEnd != null) {
+                    onBattleEnd.run();
+                }
+                Window w = SwingUtilities.getWindowAncestor(this);
+                if (w != null) w.dispose();
+            });
+            victoryTimer.setRepeats(false);
+            victoryTimer.start();
+            return;
+        }
+
+        // Enemy turn after a short delay
+        Timer enemyTurnTimer = new Timer(1500, e -> {
+            executeEnemyTurn();
+        });
+        enemyTurnTimer.setRepeats(false);
+        enemyTurnTimer.start();
+    }
+
+    private void executeEnemyTurn() {
+        // Get enemy's moves
+        ArrayList<Move> enemyMoves = enemyEntity.getMoves();
+
+        if (enemyMoves != null && !enemyMoves.isEmpty()) {
+            // Choose a random move for the enemy
+            Random random = new Random();
+            int moveIndex = random.nextInt(enemyMoves.size());
+            Move enemyMove = enemyMoves.get(moveIndex);
+
+            // Store current HP to calculate damage
+            double beforeHp = playerEntity.getHp();
+
+            // Execute enemy move
+            enemyMove.execute(enemyEntity);
+
+            // Calculate damage dealt
+            double afterHp = playerEntity.getHp();
+            double damageDealt = beforeHp - afterHp;
+
+            // Show battle message
+            if (damageDealt > 0) {
+                battleMessage = enemyEntity.getName() + " used " + enemyMove.getName() + " and dealt " +
+                        String.format("%.1f", damageDealt) + " damage!";
+            } else {
+                battleMessage = enemyEntity.getName() + " used " + enemyMove.getName() + " but it had no effect!";
+            }
+            repaint();
+
+            // Check if player is defeated
+            if (playerEntity.getHp() <= 0) {
+                battleMessage = playerEntity.getName() + " has been defeated! Game Over!";
+                repaint();
+
+                Timer gameOverTimer = new Timer(2000, e -> {
+                    if (onBattleEnd != null) {
+                        onBattleEnd.run();
+                    }
+                    Window w = SwingUtilities.getWindowAncestor(this);
+                    if (w != null) w.dispose();
+                });
+                gameOverTimer.setRepeats(false);
+                gameOverTimer.start();
+                return;
+            }
+        }
+
+        // After enemy turn, show main menu again
+        Timer resetTimer = new Timer(1500, e -> {
+            battleMessage = "";
+            showMainMenu();
+            setButtonsEnabled(true);
+            isExecutingMove = false;
+            repaint();
+        });
+        resetTimer.setRepeats(false);
+        resetTimer.start();
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        btnFight.setEnabled(enabled);
+        btnBag.setEnabled(enabled);
+        btnRun.setEnabled(enabled);
+        for (BattleButton btn : moveBtns) {
+            btn.setEnabled(enabled);
+        }
+        btnBack.setEnabled(enabled);
     }
 
     private void runAway() {
-        System.out.println("[Battle] Player escaped!");
-        if (onBattleEnd != null) {
-            onBattleEnd.run();   // return control to exploration
-        }
-        // Fallback: close containing window (for standalone BattleMain testing)
-        Window w = SwingUtilities.getWindowAncestor(this);
-        if (w != null) w.dispose();
-    }
+        if (isExecutingMove) return;
 
-    // ─────────────────────────────────────────────────────────────
-    //  Reflection helper: get the player's active move list
-    // ─────────────────────────────────────────────────────────────
-    @SuppressWarnings("unchecked")
-    private ArrayList<Move> getPlayerMoves() {
-        // Walks the class hierarchy to find the protected "moves" field in Player
-        Class<?> cls = playerEntity.getClass();
-        while (cls != null) {
-            try {
-                java.lang.reflect.Field f = cls.getDeclaredField("moves");
-                f.setAccessible(true);
-                return (ArrayList<Move>) f.get(playerEntity);
-            } catch (NoSuchFieldException ignored) {
-                cls = cls.getSuperclass();
-            } catch (Exception e) {
-                break;
+        System.out.println("[Battle] Player escaped!");
+        battleMessage = playerEntity.getName() + " escaped from battle!";
+        repaint();
+
+        Timer escapeTimer = new Timer(1000, e -> {
+            if (onBattleEnd != null) {
+                onBattleEnd.run();
             }
-        }
-        return new ArrayList<>();
+            Window w = SwingUtilities.getWindowAncestor(this);
+            if (w != null) w.dispose();
+        });
+        escapeTimer.setRepeats(false);
+        escapeTimer.start();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -298,19 +408,19 @@ public class BattlePanel extends JPanel {
 
         paintBackground(g2);
 
-        // Enemy stat box (no EXP display)
+        // Enemy stat box
         paintStatBox(g2, enemyStatRect,
                 enemyEntity.getName() != null ? enemyEntity.getName() : "Enemy",
                 -1,
                 (int) enemyEntity.getHp(), (int) enemyEntity.getMaxHp(),
                 null, false);
 
-        // Player stat box (with EXP display)
+        // Player stat box (with EXP display - placeholder)
         paintStatBox(g2, playerStatRect,
                 playerEntity.getName() != null ? playerEntity.getName() : "Player",
-                playerEntity.getLevel(),
+                1, // Placeholder level
                 (int) playerEntity.getHp(), (int) playerEntity.getMaxHp(),
-                "EXP: " + playerEntity.getExperience() + " / " + playerEntity.getExpNeeded(),
+                "EXP: 0 / 100", // Placeholder EXP
                 true);
 
         paintUIBox(g2);
@@ -426,13 +536,28 @@ public class BattlePanel extends JPanel {
         g2.setStroke(new BasicStroke(1f));
         g2.drawLine(r.x + 14, r.y + 34, r.x + r.width - 14, r.y + 34);
 
-        // Context prompt
+        // Context prompt or battle message
         g2.setFont(FONT_TITLE);
-        g2.setColor(TEXT_GOLD);
-        String prompt = (uiState == UIState.MAIN)
-                ? "What will " + (playerEntity.getName() != null ? playerEntity.getName() : "you") + " do?"
-                : "Choose a move:";
-        g2.drawString(prompt, r.x + 20, r.y + 24);
+        if (!battleMessage.isEmpty()) {
+            g2.setColor(TEXT_GOLD);
+            // Wrap message if too long
+            String displayMessage = battleMessage;
+            FontMetrics fm = g2.getFontMetrics();
+            if (fm.stringWidth(displayMessage) > r.width - 40) {
+                // Truncate if too long
+                while (fm.stringWidth(displayMessage + "...") > r.width - 40 && displayMessage.length() > 0) {
+                    displayMessage = displayMessage.substring(0, displayMessage.length() - 1);
+                }
+                displayMessage = displayMessage + "...";
+            }
+            g2.drawString(displayMessage, r.x + 20, r.y + 24);
+        } else {
+            g2.setColor(TEXT_GOLD);
+            String prompt = (uiState == UIState.MAIN && !isExecutingMove)
+                    ? "What will " + (playerEntity.getName() != null ? playerEntity.getName() : "you") + " do?"
+                    : (uiState == UIState.FIGHT ? "Choose a move:" : "");
+            g2.drawString(prompt, r.x + 20, r.y + 24);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

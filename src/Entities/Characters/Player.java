@@ -184,7 +184,7 @@ public abstract class Player extends Entity {
         return expNeeded;
     }
     public ArrayList<Move> getMoves(){
-        return  moves;
+        return moves;
     }
     public Weapon getWeapon(){
         return weapon;
