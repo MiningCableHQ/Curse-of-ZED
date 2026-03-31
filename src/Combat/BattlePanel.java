@@ -129,7 +129,7 @@ public class BattlePanel extends JPanel {
     private void loadBackgroundImage() {
         try {
             // Try to load from resources folder
-            java.net.URL imgUrl = getClass().getResource("/logos/curse_of_zed_logo.jpg");
+            java.net.URL imgUrl = getClass().getResource("/logos/basta_bg.jpg");
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
