@@ -13,7 +13,6 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class BattlePanel extends JPanel {
 
@@ -54,13 +53,10 @@ public class BattlePanel extends JPanel {
     // ── Entity refs ───────────────────────────────────────────────
     private final Player playerEntity;
     private final List<Enemy> enemies;
-    private Enemy currentTargetEnemy;
-    private Move pendingMove;
 
     // ── Battle State ──────────────────────────────────────────────
     private String battleMessage = "";
     private boolean isExecutingMove = false;
-    private int currentEnemyIndex = 0;
 
     // ── Layout rects ──────────────────────────────────────────────
     private Rectangle playerImgRect;
@@ -81,6 +77,9 @@ public class BattlePanel extends JPanel {
     private BattleButton btnBack;
     private BattleButton btnBackTarget;
     private final List<BattleButton> targetButtons = new ArrayList<>();
+
+    // ── Battle ────────────────────────────────────────────────────
+    private Battle battle;
 
     // ── Close-to-exploration callback ─────────────────────────────
     private Runnable onBattleEnd;
@@ -112,7 +111,7 @@ public class BattlePanel extends JPanel {
         }
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setLayout(null);   // absolute positioning
+        setLayout(null);
         setOpaque(true);
 
         computeLayout();
@@ -120,18 +119,25 @@ public class BattlePanel extends JPanel {
         buildButtons();
         loadBackgroundImage();
 
-        showMainMenu();
+        // Initialize battle system
+        this.battle = new Battle(this, playerEntity, this.enemies);
+        this.battle.setOnBattleEnd(() -> {
+            if (onBattleEnd != null) {
+                onBattleEnd.run();
+            }
+        });
+
+        // Start the battle
+        battle.startBattle();
     }
 
     /** Load the background image */
     private void loadBackgroundImage() {
         try {
-            // Try to load from resources folder
             java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2.gif");
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
-                // Fallback: try to load from file path
                 backgroundImage = new ImageIcon("/map2assets/combat_bg_map2.gif").getImage();
             }
         } catch (Exception e) {
@@ -146,7 +152,7 @@ public class BattlePanel extends JPanel {
         repaint();
     }
 
-    /** Register a callback invoked when the battle ends (e.g. player runs). */
+    /** Register a callback invoked when the battle ends */
     public void setOnBattleEnd(Runnable callback) {
         this.onBattleEnd = callback;
     }
@@ -159,23 +165,20 @@ public class BattlePanel extends JPanel {
         int uiY    = HEIGHT - uiH - 10;
         int battleH = uiY - 10;
 
-        // Smaller sizes to prevent overlapping
         int imgW = 150, imgH = 135;
         int statW = 180, statH = 70;
-        int margin = 40;
 
         int enemyCount = enemies.size();
 
-        // Calculate total width needed for all entities (player + enemies + spacing)
-        int playerX = 100;
+        // Calculate total width needed for all entities
         int enemySpacing = 50;
         int totalEnemyWidth = enemyCount * (imgW + enemySpacing) - enemySpacing;
-        int totalWidth = imgW + 100 + totalEnemyWidth; // 100 is spacing between player and first enemy
+        int totalWidth = imgW + 100 + totalEnemyWidth;
 
         // Calculate starting X position to center everything
         int startX = (WIDTH - totalWidth) / 2;
 
-        // Y position - place entities above UI box with some padding
+        // Y position - place entities above UI box
         int entityY = uiY - imgH - statH - 40;
 
         // Player on left side
@@ -203,7 +206,7 @@ public class BattlePanel extends JPanel {
     //  GIF labels
     // ─────────────────────────────────────────────────────────────
     private void buildGifLabels() {
-        // Enemy labels with proper placeholder text
+        // Enemy labels
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
             JLabel enemyGifLabel = new JLabel("[ " + enemy.getName().toUpperCase() + " ]", SwingConstants.CENTER);
@@ -226,19 +229,17 @@ public class BattlePanel extends JPanel {
         add(playerGifLabel);
     }
 
-    /** Swap in the real player GIF once sprite assets are available. */
     public void setPlayerGif(ImageIcon icon) {
         playerGifLabel.setIcon(icon);
         playerGifLabel.setText(null);
-        playerGifLabel.setBorder(null); // Remove placeholder border when actual GIF is set
+        playerGifLabel.setBorder(null);
     }
 
-    /** Swap in the real enemy GIF once sprite assets are available. */
     public void setEnemyGif(int enemyIndex, ImageIcon icon) {
         if (enemyIndex < enemyGifLabels.size()) {
             enemyGifLabels.get(enemyIndex).setIcon(icon);
             enemyGifLabels.get(enemyIndex).setText(null);
-            enemyGifLabels.get(enemyIndex).setBorder(null); // Remove placeholder border when actual GIF is set
+            enemyGifLabels.get(enemyIndex).setBorder(null);
         }
     }
 
@@ -246,7 +247,7 @@ public class BattlePanel extends JPanel {
     //  Button construction
     // ─────────────────────────────────────────────────────────────
     private void buildButtons() {
-        // ── Main menu buttons (Fight / Bag / Run) ─────────────
+        // Main menu buttons
         int btnW = 140, btnH = 46, gap = 18;
         int rowY = uiBoxRect.y + uiBoxRect.height - btnH - 20;
         int startX = uiBoxRect.x + 20;
@@ -263,10 +264,10 @@ public class BattlePanel extends JPanel {
 
         btnRun = new BattleButton("Run");
         btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);
-        btnRun.addActionListener(e -> runAway());
+        btnRun.addActionListener(e -> battle.handleRunAway());
         add(btnRun);
 
-        // ── Fight sub-menu (Move 1-4 + Back) ──────────────────
+        // Fight sub-menu moves
         ArrayList<Move> moves = playerEntity.getMoves();
         String[] moveNames = {"Move 1", "Move 2", "Move 3", "Move 4"};
         for (int i = 0; i < moves.size() && i < 4; i++) {
@@ -296,27 +297,19 @@ public class BattlePanel extends JPanel {
         btnBack.addActionListener(e -> showMainMenu());
         add(btnBack);
 
-        // ── Target selection buttons ───────────────────────────
+        // Target selection buttons
         buildTargetButtons();
     }
 
     private void buildTargetButtons() {
-        // Button dimensions
         int btnW = 195, btnH = 42;
-        int gap = 20; // Gap between buttons
-
+        int gap = 20;
         int enemyCount = enemies.size();
 
-        // Calculate total width needed for all target buttons
         int totalButtonsWidth = (enemyCount * btnW) + ((enemyCount - 1) * gap);
-
-        // Calculate starting X position to center buttons in UI box
         int startX = uiBoxRect.x + (uiBoxRect.width - totalButtonsWidth) / 2;
-
-        // Button Y position - centered vertically in the UI box's upper area
         int btnY = uiBoxRect.y + 70;
 
-        // Create target buttons centered horizontally in UI box
         for (int i = 0; i < enemyCount; i++) {
             final int enemyIndex = i;
             int btnX = startX + (i * (btnW + gap));
@@ -329,16 +322,15 @@ public class BattlePanel extends JPanel {
             targetButtons.add(targetBtn);
         }
 
-        // Back button - positioned at bottom left of UI box
         int backBtnW = 140, backBtnH = 46;
-        int backBtnX = uiBoxRect.x + 20; // 20px padding from left edge
-        int backBtnY = uiBoxRect.y + uiBoxRect.height - backBtnH - 20; // 20px padding from bottom
+        int backBtnX = uiBoxRect.x + 20;
+        int backBtnY = uiBoxRect.y + uiBoxRect.height - backBtnH - 20;
 
         btnBackTarget = new BattleButton("← Back");
         btnBackTarget.setBounds(backBtnX, backBtnY, backBtnW, backBtnH);
         btnBackTarget.addActionListener(e -> {
+            battle.cancelTargetSelection();
             showFightMenu();
-            battleMessage = "";
             repaint();
         });
         btnBackTarget.setVisible(false);
@@ -346,35 +338,46 @@ public class BattlePanel extends JPanel {
     }
 
     // ── UI state switching ─────────────────────────────────────────────
-    private void showMainMenu() {
+    public void showMainMenu() {
         uiState = UIState.MAIN;
         btnFight.setVisible(true);
-        btnBag  .setVisible(true);
-        btnRun  .setVisible(true);
+        btnBag.setVisible(true);
+        btnRun.setVisible(true);
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
         hideTargetButtons();
         repaint();
     }
 
-    private void showFightMenu() {
+    public void hideMainMenu(){
+        uiState = UIState.MAIN;
+        btnFight.setVisible(false);
+        btnBag.setVisible(false);
+        btnRun.setVisible(false);
+        repaint();
+    }
+
+    public void showFightMenu() {
         uiState = UIState.FIGHT;
         btnFight.setVisible(false);
-        btnBag  .setVisible(false);
-        btnRun  .setVisible(false);
+        btnBag.setVisible(false);
+        btnRun.setVisible(false);
         for (BattleButton mb : moveBtns) mb.setVisible(true);
         btnBack.setVisible(true);
+        battleMessage = "";
         hideTargetButtons();
         repaint();
     }
 
-    private void showTargetSelection(Move move) {
+    public void showTargetSelection(Move move) {
         uiState = UIState.TARGET_SELECT;
-        pendingMove = move;
 
         // Hide move buttons and back button
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
+
+        // Update target button states based on enemy HP
+        updateTargetButtonStates();
 
         // Show target selection buttons and back button
         for (BattleButton targetBtn : targetButtons) {
@@ -382,11 +385,11 @@ public class BattlePanel extends JPanel {
         }
         btnBackTarget.setVisible(true);
 
-        battleMessage = "Choose a target for " + pendingMove.getName() + "!";
+        battleMessage = "Choose a target for " + move.getName() + "!";
         repaint();
     }
 
-    private void hideTargetButtons() {
+    public void hideTargetButtons() {
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(false);
         }
@@ -395,236 +398,46 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    public void hideBattleButtons() {
+        for (BattleButton mb : moveBtns) mb.setVisible(false);
+        btnBack.setVisible(false);
+    }
+
+    public void updateTargetButtonStates() {
+        for (int i = 0; i < enemies.size() && i < targetButtons.size(); i++) {
+            Enemy enemy = enemies.get(i);
+            BattleButton targetBtn = targetButtons.get(i);
+
+            if (enemy.getHp() <= 0) {
+                // Enemy is defeated - disable button and change appearance
+                targetBtn.setEnabled(false);
+                targetBtn.setForeground(Color.GRAY);
+                targetBtn.setText(enemy.getName());
+            } else {
+                // Enemy is alive - enable button
+                targetBtn.setEnabled(true);
+                targetBtn.setForeground(TEXT_LIGHT);
+                targetBtn.setText(enemy.getName());
+            }
+        }
+        repaint();
+    }
+
     // ── Action handlers ─────────────────────────────────────────────
     private void onMoveSelected(int index) {
-        if (isExecutingMove) return;
-
         ArrayList<Move> moves = playerEntity.getMoves();
         if (index < moves.size()) {
             Move selectedMove = moves.get(index);
-
-            //Check target type
-            if (selectedMove.getTargetType() == Move.TargetType.SELF) {                               //Self target
-                executePlayerMove(selectedMove);
-            } else if (enemies.size() > 1 && selectedMove.getTargetType() == Move.TargetType.ENEMY) { //Single target
-                showTargetSelection(selectedMove);
-            } else {                                                                                  //AOE target
-                currentTargetEnemy = enemies.get(0);
-                executePlayerMove(selectedMove);
-            }
+            battle.handlePlayerMove(selectedMove);
         }
     }
 
     private void onTargetSelected(int enemyIndex) {
-        if (pendingMove != null && enemyIndex < enemies.size()) {
-            currentTargetEnemy = enemies.get(enemyIndex);
-            executePlayerMove(pendingMove);
-            pendingMove = null;
-        }
+        battle.handleTargetSelected(enemyIndex);
     }
 
-    private void executePlayerMove(Move move) {
-        setButtonsEnabled(false);
-        isExecutingMove = true;
-
-        // Handle different target types
-        if (move.getTargetType() == Move.TargetType.SELF) {
-            // Self-targeting moves (buffs, heals)
-            Move.currentTarget = playerEntity;
-            move.execute(playerEntity);
-            Move.currentTarget = null;
-
-            // For swordsman IRON STANCE
-            if (move instanceof IronStance && playerEntity instanceof Swordsman) {
-                Swordsman swordsman = (Swordsman) playerEntity;
-                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
-                        "Defense increased to " + String.format("%.0f", swordsman.getDefense());
-            } else if (move instanceof Windstep && playerEntity instanceof Ranger) {
-                Ranger ranger = (Ranger) playerEntity;
-                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
-                        "Speed increased to " + String.format("%.0f", ranger.getSpeed());
-            } else if (move instanceof Empower && playerEntity instanceof Mage) {
-                Mage mage = (Mage) playerEntity;
-                battleMessage = playerEntity.getName() + " uses " + move.getName() + "! " +
-                        "Attack increased to " + String.format("%.0f", mage.getAttack());
-            } else {
-                battleMessage = playerEntity.getName() + " uses " + move.getName() + "!";
-            }
-            repaint();
-
-            // Enemy turn after a short delay
-            Timer enemyTurnTimer = new Timer(1500, e -> {
-                executeEnemyTurn();
-            });
-            enemyTurnTimer.setRepeats(false);
-            enemyTurnTimer.start();
-            return;
-        }
-
-        // Determine target
-        Enemy target;
-        if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
-            target = null; // Will handle all enemies
-        } else {
-            target = currentTargetEnemy != null ? currentTargetEnemy : enemies.get(0);
-        }
-
-        // Execute move and calculate damage
-        StringBuilder damageMessage = new StringBuilder();
-
-        if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
-            // Handle multi-target move
-            for (Enemy enemy : enemies) {
-                if (enemy.getHp() > 0) {
-                    double beforeHp = enemy.getHp();
-                    Move.currentTarget = enemy;
-                    move.execute(playerEntity);
-                    double afterHp = enemy.getHp();
-                    double damageDealt = beforeHp - afterHp;
-
-                    if (damageDealt > 0) {
-                        damageMessage.append(enemy.getName()).append(": ").append(String.format("%.1f", damageDealt)).append(" dmg; ");
-                    }
-                }
-            }
-            Move.currentTarget = null;
-            battleMessage = playerEntity.getName() + " used " + move.getName() + "! " + damageMessage.toString();
-        } else {
-            // Single target move
-            double beforeHp = target.getHp();
-            Move.currentTarget = target;
-            move.execute(playerEntity);
-            Move.currentTarget = null;
-            double afterHp = target.getHp();
-            double damageDealt = beforeHp - afterHp;
-
-            if (damageDealt > 0) {
-                battleMessage = playerEntity.getName() + " used " + move.getName() + " on " +
-                        target.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
-            } else {
-                battleMessage = playerEntity.getName() + " used " + move.getName() + " on " +
-                        target.getName() + " but it had no effect!";
-            }
-        }
-
-        repaint();
-
-        // Check if all enemies are defeated
-        boolean allDefeated = true;
-        for (Enemy enemy : enemies) {
-            if (enemy.getHp() > 0) {
-                allDefeated = false;
-                break;
-            }
-        }
-
-        if (allDefeated) {
-            battleMessage = "All enemies have been defeated! You win!";
-            repaint();
-
-            Timer victoryTimer = new Timer(2000, e -> {
-                if (playerEntity instanceof Swordsman) {
-                    ((Swordsman) playerEntity).resetBattleBuffs();
-                } else if (playerEntity instanceof Ranger) {
-                    ((Ranger) playerEntity).resetBattleBuffs();
-                } else if (playerEntity instanceof Mage) {
-                    ((Mage) playerEntity).resetBattleBuffs();
-                }
-
-                if (onBattleEnd != null) {
-                    onBattleEnd.run();
-                }
-                Window w = SwingUtilities.getWindowAncestor(this);
-                if (w != null) w.dispose();
-            });
-            victoryTimer.setRepeats(false);
-            victoryTimer.start();
-            return;
-        }
-
-        // Enemy turn after a short delay
-        Timer enemyTurnTimer = new Timer(1500, e -> {
-            executeEnemyTurn();
-        });
-        enemyTurnTimer.setRepeats(false);
-        enemyTurnTimer.start();
-    }
-
-    private void executeEnemyTurn() {
-        // Execute turn for each alive enemy
-        for (Enemy enemy : enemies) {
-            if (enemy.getHp() <= 0) continue;
-
-            ArrayList<Move> enemyMoves = enemy.getMoves();
-
-            if (enemyMoves != null && !enemyMoves.isEmpty()) {
-                Random random = new Random();
-                int moveIndex = random.nextInt(enemyMoves.size());
-                Move enemyMove = enemyMoves.get(moveIndex);
-
-                double beforeHp = playerEntity.getHp();
-                Move.currentTarget = playerEntity;
-                enemyMove.execute(enemy);
-                Move.currentTarget = null;
-                double afterHp = playerEntity.getHp();
-                double damageDealt = beforeHp - afterHp;
-
-                if (damageDealt > 0) {
-                    battleMessage = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
-                            String.format("%.1f", damageDealt) + " damage!";
-                } else {
-                    battleMessage = enemy.getName() + " used " + enemyMove.getName() + " but it had no effect!";
-                }
-                repaint();
-
-                // Check if player is defeated
-                if (playerEntity.getHp() <= 0) {
-                    battleMessage = playerEntity.getName() + " has been defeated! Game Over!";
-                    repaint();
-
-                    Timer gameOverTimer = new Timer(2000, e -> {
-                        if (playerEntity instanceof Swordsman) {
-                            ((Swordsman) playerEntity).resetBattleBuffs();
-                        } else if (playerEntity instanceof Ranger) {
-                            ((Ranger) playerEntity).resetBattleBuffs();
-                        } else if (playerEntity instanceof Mage) {
-                            ((Mage) playerEntity).resetBattleBuffs();
-                        }
-
-                        if (onBattleEnd != null) {
-                            onBattleEnd.run();
-                        }
-                        Window w = SwingUtilities.getWindowAncestor(this);
-                        if (w != null) w.dispose();
-                    });
-                    gameOverTimer.setRepeats(false);
-                    gameOverTimer.start();
-                    return;
-                }
-
-                // Small delay between enemy moves
-                try {
-                    Thread.sleep(800);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-
-        // After enemy turn, show main menu again
-        Timer resetTimer = new Timer(1500, e -> {
-            battleMessage = "";
-            showMainMenu();
-            setButtonsEnabled(true);
-            isExecutingMove = false;
-            currentTargetEnemy = null;
-            repaint();
-        });
-        resetTimer.setRepeats(false);
-        resetTimer.start();
-    }
-
-    private void setButtonsEnabled(boolean enabled) {
+    // ── Public methods for Battle class ─────────────────────────────
+    public void setButtonsEnabled(boolean enabled) {
         btnFight.setEnabled(enabled);
         btnBag.setEnabled(enabled);
         btnRun.setEnabled(enabled);
@@ -638,33 +451,30 @@ public class BattlePanel extends JPanel {
         if (btnBackTarget != null) {
             btnBackTarget.setEnabled(enabled);
         }
+
+        // Update target button states to reflect current enemy HP
+        updateTargetButtonStates();
     }
 
-    private void runAway() {
-        if (isExecutingMove) return;
-
-        System.out.println("[Battle] Player escaped!");
-        battleMessage = playerEntity.getName() + " escaped from battle!";
+    public void setBattleMessage(String message) {
+        this.battleMessage = message;
         repaint();
+    }
 
-        Timer escapeTimer = new Timer(1000, e -> {
-            // Reset battle buffs when escaping
-            if (playerEntity instanceof Swordsman) {
-                ((Swordsman) playerEntity).resetBattleBuffs();
-            } else if (playerEntity instanceof Ranger) {
-                ((Ranger) playerEntity).resetBattleBuffs();
-            } else if (playerEntity instanceof Mage) {
-                ((Mage) playerEntity).resetBattleBuffs();
-            }
+    public void setExecutingMove(boolean executing) {
+        this.isExecutingMove = executing;
+    }
 
-            if (onBattleEnd != null) {
-                onBattleEnd.run();
-            }
-            Window w = SwingUtilities.getWindowAncestor(this);
-            if (w != null) w.dispose();
-        });
-        escapeTimer.setRepeats(false);
-        escapeTimer.start();
+    public boolean isExecutingMove() {
+        return isExecutingMove;
+    }
+
+    public Player getPlayerEntity() {
+        return playerEntity;
+    }
+
+    public List<Enemy> getEnemies() {
+        return enemies;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -674,18 +484,15 @@ public class BattlePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Draw background image if available
+        // Draw background
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, this);
         } else {
-            // Fallback to solid color if no image is loaded
             g2.setColor(new Color(15, 10, 35));
             g2.fillRect(0, 0, WIDTH, HEIGHT);
-
-            // Draw a simple gradient as fallback
             GradientPaint gradient = new GradientPaint(0, 0, new Color(15, 10, 35),
                     0, HEIGHT, new Color(35, 15, 55));
             g2.setPaint(gradient);
@@ -702,7 +509,6 @@ public class BattlePanel extends JPanel {
                         (int) enemy.getHp(), (int) enemy.getMaxHp(),
                         null, false);
             } else {
-                // Show defeated indicator
                 paintDefeatedStatBox(g2, enemyStatRects.get(i), enemy.getName());
             }
         }
@@ -727,16 +533,14 @@ public class BattlePanel extends JPanel {
         g2.draw(new RoundRectangle2D.Float(r.x, r.y, r.width, r.height, 12, 12));
 
         g2.setFont(FONT_NAME);
-        g2.setColor(Color.DARK_GRAY);
+        g2.setColor(Color.GREEN);
         int tx = r.x + 12;
         int ty = r.y + r.height / 2 + 5;
-        g2.drawString(name + " (DEFEATED)", tx, ty);
+        g2.drawString("DEFEATED", tx, ty);
     }
 
-    // ── Stat box ──────────────────────────────────────────────────
     private void paintStatBox(Graphics2D g2, Rectangle r, String name, int level,
                               int hp, int maxHp, String expLine, boolean showExp) {
-        // White rounded box
         g2.setColor(STAT_BG);
         g2.fill(new RoundRectangle2D.Float(r.x, r.y, r.width, r.height, 10, 10));
         g2.setColor(STAT_BORDER);
@@ -746,26 +550,20 @@ public class BattlePanel extends JPanel {
         int tx = r.x + 8;
         int ty = r.y + 14;
 
-        // Name (left side) - smaller font
         Font nameFont = new Font("Serif", Font.BOLD, 14);
         g2.setFont(nameFont);
         g2.setColor(Color.BLACK);
         g2.drawString(name, tx, ty);
 
-        // Level (right side)
         if (level >= 0) {
             String lvlTag = "Lv. " + level;
             g2.setFont(nameFont);
-
-            // Calculate text width for right alignment
             FontMetrics fm = g2.getFontMetrics();
             int lvlWidth = fm.stringWidth(lvlTag);
             int lvlX = r.x + r.width - 8 - lvlWidth;
-
             g2.drawString(lvlTag, lvlX, ty);
         }
 
-        // HP label + bar
         ty += 16;
         Font statFont = new Font("Monospaced", Font.BOLD, 11);
         g2.setFont(statFont);
@@ -774,11 +572,9 @@ public class BattlePanel extends JPanel {
         int barX = tx + 28, barY = ty - 10;
         int barW = r.width - 42, barH = 10;
 
-        // Bar background
         g2.setColor(new Color(190, 190, 190));
         g2.fillRoundRect(barX, barY, barW, barH, 5, 5);
 
-        // HP fill
         double ratio = (maxHp > 0) ? Math.max(0, Math.min(1.0, (double) hp / maxHp)) : 0;
         Color hpColor = (ratio > 0.5) ? HP_GREEN : (ratio > 0.25) ? HP_YELLOW : HP_RED;
         g2.setColor(hpColor);
@@ -788,13 +584,11 @@ public class BattlePanel extends JPanel {
         g2.setStroke(new BasicStroke(1f));
         g2.drawRoundRect(barX, barY, barW, barH, 5, 5);
 
-        // HP numbers
         ty += 13;
         g2.setFont(statFont);
         g2.setColor(Color.BLACK);
         g2.drawString(hp + " / " + maxHp, barX, ty);
 
-        // EXP (player only)
         if (showExp && expLine != null) {
             ty += 12;
             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
@@ -804,8 +598,6 @@ public class BattlePanel extends JPanel {
 
         if (showExp) {
             int tyOffset = 0;
-
-            // Show Iron Stance stacks for Swordsman
             if (playerEntity instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) playerEntity;
                 int stacks = swordsman.getIronStanceStacks();
@@ -816,8 +608,6 @@ public class BattlePanel extends JPanel {
                     g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + tyOffset);
                 }
             }
-
-            // Show Windstep stacks for Ranger
             if (playerEntity instanceof Ranger) {
                 Ranger ranger = (Ranger) playerEntity;
                 int stacks = ranger.getWindstepStacks();
@@ -828,8 +618,6 @@ public class BattlePanel extends JPanel {
                     g2.drawString("Windstep: " + stacks + "/3", tx, ty + tyOffset);
                 }
             }
-
-            // Show Empower stacks for Mage
             if (playerEntity instanceof Mage) {
                 Mage mage = (Mage) playerEntity;
                 int stacks = mage.getEmpowerStacks();
@@ -843,7 +631,6 @@ public class BattlePanel extends JPanel {
         }
     }
 
-    // ── UI box ────────────────────────────────────────────────────
     private void paintUIBox(Graphics2D g2) {
         Rectangle r = uiBoxRect;
 
@@ -854,21 +641,18 @@ public class BattlePanel extends JPanel {
         g2.setStroke(new BasicStroke(2.5f));
         g2.draw(new RoundRectangle2D.Float(r.x, r.y, r.width, r.height, 14, 14));
 
-        // Divider line
         g2.setColor(new Color(80, 150, 200, 90));
         g2.setStroke(new BasicStroke(1f));
         g2.drawLine(r.x + 14, r.y + 34, r.x + r.width - 14, r.y + 34);
 
-        // Context prompt or battle message
         g2.setFont(FONT_TITLE);
         if (!battleMessage.isEmpty()) {
             g2.setColor(TEXT_GOLD);
-            // Wrap message if too long
             String displayMessage = battleMessage;
             FontMetrics fm = g2.getFontMetrics();
-            if (fm.stringWidth(displayMessage) > r.width - 40) {
-                // Truncate if too long
-                while (fm.stringWidth(displayMessage + "...") > r.width - 40 && displayMessage.length() > 0) {
+            int maxWidth = r.width - 40;
+            if (fm.stringWidth(displayMessage) > maxWidth) {
+                while (fm.stringWidth(displayMessage + "...") > maxWidth && displayMessage.length() > 0) {
                     displayMessage = displayMessage.substring(0, displayMessage.length() - 1);
                 }
                 displayMessage = displayMessage + "...";
@@ -901,10 +685,26 @@ public class BattlePanel extends JPanel {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered (MouseEvent e) { hovered = true;  repaint(); }
-                @Override public void mouseExited  (MouseEvent e) { hovered = false; repaint(); }
-                @Override public void mousePressed (MouseEvent e) { pressed = true;  repaint(); }
-                @Override public void mouseReleased(MouseEvent e) { pressed = false; repaint(); }
+                @Override public void mouseEntered (MouseEvent e) {
+                    if (isEnabled()) {
+                        hovered = true;
+                        repaint();
+                    }
+                }
+                @Override public void mouseExited  (MouseEvent e) {
+                    hovered = false;
+                    repaint();
+                }
+                @Override public void mousePressed (MouseEvent e) {
+                    if (isEnabled()) {
+                        pressed = true;
+                        repaint();
+                    }
+                }
+                @Override public void mouseReleased(MouseEvent e) {
+                    pressed = false;
+                    repaint();
+                }
             });
         }
 
@@ -913,30 +713,52 @@ public class BattlePanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            Color fill = pressed ? BTN_PRESS : hovered ? BTN_HOVER : BTN_NORMAL;
-            g2.setColor(fill);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
+            // Handle disabled state differently
+            if (!isEnabled()) {
+                // Grayed out disabled button
+                Color disabledFill = new Color(60, 60, 60);
+                g2.setColor(disabledFill);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
 
-            // Top sheen when hovered
-            if (hovered && !pressed) {
-                g2.setColor(new Color(255, 255, 255, 25));
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight() / 2f, 10, 10));
+                g2.setColor(new Color(100, 100, 100));
+                g2.setStroke(new BasicStroke(1.8f));
+                g2.draw(new RoundRectangle2D.Float(1, 1, getWidth() - 2, getHeight() - 2, 10, 10));
+
+                // Draw text in gray
+                FontMetrics fm = g2.getFontMetrics(getFont());
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+
+                g2.setFont(getFont());
+                g2.setColor(Color.GRAY);
+                g2.drawString(getText(), tx, ty);
+            } else {
+                // Normal enabled state
+                Color fill = pressed ? BTN_PRESS : hovered ? BTN_HOVER : BTN_NORMAL;
+                g2.setColor(fill);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
+
+                // Top sheen when hovered
+                if (hovered && !pressed) {
+                    g2.setColor(new Color(255, 255, 255, 25));
+                    g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight() / 2f, 10, 10));
+                }
+
+                g2.setColor(BTN_BORDER);
+                g2.setStroke(new BasicStroke(1.8f));
+                g2.draw(new RoundRectangle2D.Float(1, 1, getWidth() - 2, getHeight() - 2, 10, 10));
+
+                // Label with shadow
+                FontMetrics fm = g2.getFontMetrics(getFont());
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+
+                g2.setFont(getFont());
+                g2.setColor(new Color(0, 0, 0, 100));
+                g2.drawString(getText(), tx + 1, ty + 1);
+                g2.setColor(getForeground());
+                g2.drawString(getText(), tx, ty);
             }
-
-            g2.setColor(BTN_BORDER);
-            g2.setStroke(new BasicStroke(1.8f));
-            g2.draw(new RoundRectangle2D.Float(1, 1, getWidth() - 2, getHeight() - 2, 10, 10));
-
-            // Label with shadow
-            FontMetrics fm = g2.getFontMetrics(getFont());
-            int tx = (getWidth()  - fm.stringWidth(getText())) / 2;
-            int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
-
-            g2.setFont(getFont());
-            g2.setColor(new Color(0, 0, 0, 100));
-            g2.drawString(getText(), tx + 1, ty + 1);
-            g2.setColor(getForeground());
-            g2.drawString(getText(), tx, ty);
 
             g2.dispose();
         }
