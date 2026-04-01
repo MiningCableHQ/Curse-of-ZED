@@ -1,9 +1,6 @@
 package Combat;
 
-import Entities.Characters.Player;
-import Entities.Characters.Ranger;
-import Entities.Characters.Swordsman;
-import Entities.Characters.Mage;
+import Entities.Characters.*;
 import Entities.Enemies.Enemy;
 import Moves.Move;
 import Moves.Swordsman.*;
@@ -82,6 +79,7 @@ public class BattlePanel extends JPanel {
     private BattleButton btnRun;
     private BattleButton[] moveBtns;
     private BattleButton btnBack;
+    private BattleButton btnBackTarget;
     private final List<BattleButton> targetButtons = new ArrayList<>();
 
     // ── Close-to-exploration callback ─────────────────────────────
@@ -129,12 +127,12 @@ public class BattlePanel extends JPanel {
     private void loadBackgroundImage() {
         try {
             // Try to load from resources folder
-            java.net.URL imgUrl = getClass().getResource("/logos/basta_bg.jpg");
+            java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2.gif");
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
                 // Fallback: try to load from file path
-                backgroundImage = new ImageIcon("/logos/curse_of_zed_logo.jpg").getImage();
+                backgroundImage = new ImageIcon("/map2assets/combat_bg_map2.gif").getImage();
             }
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
@@ -166,75 +164,35 @@ public class BattlePanel extends JPanel {
         int statW = 180, statH = 70;
         int margin = 40;
 
-        // Calculate center positions
-        int centerX = WIDTH / 2;
-        int centerY = battleH / 2;
-
         int enemyCount = enemies.size();
 
-        // Player on left side (centered vertically)
-        int playerOffset = 200;
-        int pX = centerX - playerOffset - imgW;
-        int pY = centerY - (imgH + statH + 15) / 2;
+        // Calculate total width needed for all entities (player + enemies + spacing)
+        int playerX = 100;
+        int enemySpacing = 50;
+        int totalEnemyWidth = enemyCount * (imgW + enemySpacing) - enemySpacing;
+        int totalWidth = imgW + 100 + totalEnemyWidth; // 100 is spacing between player and first enemy
+
+        // Calculate starting X position to center everything
+        int startX = (WIDTH - totalWidth) / 2;
+
+        // Y position - place entities above UI box with some padding
+        int entityY = uiY - imgH - statH - 40;
+
+        // Player on left side
+        int pX = startX;
+        int pY = entityY;
         playerImgRect = new Rectangle(pX, pY, imgW, imgH);
         playerStatRect = new Rectangle(pX - 8, pY + imgH + 8, statW + 15, statH + 8);
 
-        // Enemy start X position (right side)
-        int enemyStartX = centerX + playerOffset - 20;
+        // Position enemies horizontally to the right of player
+        int enemyStartX = startX + imgW + 100;
 
-        if (enemyCount == 1) {
-            // Single enemy - center it vertically
-            int eY = centerY - (imgH + statH + 15) / 2;
-            enemyImgRects.add(new Rectangle(enemyStartX, eY, imgW, imgH));
-            enemyStatRects.add(new Rectangle(enemyStartX - 8, eY + imgH + 8, statW, statH));
-        }
-        else if (enemyCount == 2) {
-            // Two enemies - positioned at top and bottom with more spacing
-            int topY = 30;
-            int bottomY = battleH - imgH - statH - 50;
+        for (int i = 0; i < enemyCount; i++) {
+            int eX = enemyStartX + (i * (imgW + enemySpacing));
+            int eY = entityY;
 
-            // Add extra spacing to prevent overlap
-            int verticalGap = (bottomY - topY - imgH) / 2;
-            topY = Math.max(20, topY);
-            bottomY = Math.min(battleH - imgH - statH - 30, bottomY);
-
-            // Top enemy
-            enemyImgRects.add(new Rectangle(enemyStartX, topY, imgW, imgH));
-            enemyStatRects.add(new Rectangle(enemyStartX - 8, topY + imgH + 8, statW, statH));
-
-            // Bottom enemy
-            enemyImgRects.add(new Rectangle(enemyStartX, bottomY, imgW, imgH));
-            enemyStatRects.add(new Rectangle(enemyStartX - 8, bottomY + imgH + 8, statW, statH));
-        }
-        else {
-            // Three enemies - positioned with clear separation
-            int topY = 15;
-            int bottomY = battleH - imgH - statH - 35;
-            int middleY = centerY - (imgH + statH + 15) / 2;
-
-            // Ensure no overlap by checking spacing
-            int minSpacing = 20;
-            if (middleY - topY - imgH < minSpacing) {
-                middleY = topY + imgH + minSpacing;
-            }
-            if (bottomY - middleY - imgH < minSpacing) {
-                bottomY = middleY + imgH + minSpacing;
-            }
-
-            // Top enemy - slightly to the right
-            int topX = enemyStartX + 80;
-            enemyImgRects.add(new Rectangle(topX, topY, imgW - 10, imgH - 10));
-            enemyStatRects.add(new Rectangle(topX - 8, topY + imgH - 2, statW - 20, statH - 10));
-
-            // Bottom enemy - slightly to the right
-            int bottomX = enemyStartX + 80;
-            enemyImgRects.add(new Rectangle(bottomX, bottomY, imgW - 10, imgH - 10));
-            enemyStatRects.add(new Rectangle(bottomX - 8, bottomY + imgH - 2, statW - 20, statH - 10));
-
-            // Middle enemy - in front (more to the left)
-            int middleX = enemyStartX - 150;
-            enemyImgRects.add(new Rectangle(middleX, middleY, imgW, imgH));
-            enemyStatRects.add(new Rectangle(middleX - 8, middleY + imgH + 8, statW, statH));
+            enemyImgRects.add(new Rectangle(eX, eY, imgW, imgH));
+            enemyStatRects.add(new Rectangle(eX - 8, eY + imgH + 8, statW, statH));
         }
 
         // UI box
@@ -331,9 +289,10 @@ public class BattlePanel extends JPanel {
             add(moveBtns[i]);
         }
 
+        int backW = 140, backH = 46;
         int backY = mY + 2 * (mH + mGapY) + 6;
         btnBack = new BattleButton("← Back");
-        btnBack.setBounds(mX, backY, mW, mH);
+        btnBack.setBounds(mX, backY, backW, backH);
         btnBack.addActionListener(e -> showMainMenu());
         add(btnBack);
 
@@ -342,21 +301,48 @@ public class BattlePanel extends JPanel {
     }
 
     private void buildTargetButtons() {
-        int btnW = 180, btnH = 40, gap = 15;
-        int startY = uiBoxRect.y + 60;
-        int centerX = WIDTH / 2;
-        int totalWidth = (enemies.size() * btnW) + ((enemies.size() - 1) * gap);
-        int startX = centerX - (totalWidth / 2);
+        // Button dimensions
+        int btnW = 195, btnH = 42;
+        int gap = 20; // Gap between buttons
 
-        for (int i = 0; i < enemies.size(); i++) {
+        int enemyCount = enemies.size();
+
+        // Calculate total width needed for all target buttons
+        int totalButtonsWidth = (enemyCount * btnW) + ((enemyCount - 1) * gap);
+
+        // Calculate starting X position to center buttons in UI box
+        int startX = uiBoxRect.x + (uiBoxRect.width - totalButtonsWidth) / 2;
+
+        // Button Y position - centered vertically in the UI box's upper area
+        int btnY = uiBoxRect.y + 70;
+
+        // Create target buttons centered horizontally in UI box
+        for (int i = 0; i < enemyCount; i++) {
             final int enemyIndex = i;
+            int btnX = startX + (i * (btnW + gap));
+
             BattleButton targetBtn = new BattleButton(enemies.get(i).getName());
-            targetBtn.setBounds(startX + (i * (btnW + gap)), startY, btnW, btnH);
+            targetBtn.setBounds(btnX, btnY, btnW, btnH);
             targetBtn.addActionListener(e -> onTargetSelected(enemyIndex));
             targetBtn.setVisible(false);
             add(targetBtn);
             targetButtons.add(targetBtn);
         }
+
+        // Back button - positioned at bottom left of UI box
+        int backBtnW = 140, backBtnH = 46;
+        int backBtnX = uiBoxRect.x + 20; // 20px padding from left edge
+        int backBtnY = uiBoxRect.y + uiBoxRect.height - backBtnH - 20; // 20px padding from bottom
+
+        btnBackTarget = new BattleButton("← Back");
+        btnBackTarget.setBounds(backBtnX, backBtnY, backBtnW, backBtnH);
+        btnBackTarget.addActionListener(e -> {
+            showFightMenu();
+            battleMessage = "";
+            repaint();
+        });
+        btnBackTarget.setVisible(false);
+        add(btnBackTarget);
     }
 
     // ── UI state switching ─────────────────────────────────────────────
@@ -386,14 +372,15 @@ public class BattlePanel extends JPanel {
         uiState = UIState.TARGET_SELECT;
         pendingMove = move;
 
-        // Hide move buttons and show target buttons
+        // Hide move buttons and back button
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
 
-        // Show target selection buttons
+        // Show target selection buttons and back button
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(true);
         }
+        btnBackTarget.setVisible(true);
 
         battleMessage = "Choose a target for " + pendingMove.getName() + "!";
         repaint();
@@ -402,6 +389,9 @@ public class BattlePanel extends JPanel {
     private void hideTargetButtons() {
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(false);
+        }
+        if (btnBackTarget != null) {
+            btnBackTarget.setVisible(false);
         }
     }
 
@@ -644,6 +634,9 @@ public class BattlePanel extends JPanel {
         btnBack.setEnabled(enabled);
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setEnabled(enabled);
+        }
+        if (btnBackTarget != null) {
+            btnBackTarget.setEnabled(enabled);
         }
     }
 
