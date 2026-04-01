@@ -44,7 +44,7 @@ public abstract class Entity {
     }
 
     //Methods
-    public double takeDamage(double damage, int defense, double dmgResistance) {
+    public double takeDamage(double damage, double defense, double dmgResistance) {
         double actualDamage = damage * (1 - dmgResistance) - defense;
         if (actualDamage < 1) actualDamage = rand.nextDouble(1,11);
 
@@ -53,7 +53,7 @@ public abstract class Entity {
         return actualDamage;
     }
 
-    //Getters and Setters
+    //Getters
     public String getName(){
         return name;
     }
@@ -86,5 +86,23 @@ public abstract class Entity {
     }
     public double getAccuracy(){
         return accuracy;
+    }
+
+    //Setters
+    public void setHp(double hp) {
+        this.hp = Math.max(0, Math.min(hp, maxHp)); //Makes sure HP stays between 0 and maxHp
+    }
+    public void setAttack(double attack) {
+        this.attack = Math.min(attack, maxAttack * 2); // Ensure attack doesn't exceed maxAttack x 2
+    }
+
+    //Unique enemy methods
+    public void heal(double amount) {
+        double newHp = this.hp + amount;
+        this.hp = Math.min(newHp, maxHp);
+    }
+    public void buffAttack(double amount) {
+        double newAttack = this.attack + amount;
+        this.attack = Math.min(newAttack, maxAttack * 2);
     }
 }

@@ -1,20 +1,21 @@
 package Entities.Enemies;
 
-import Moves.Frankenstein.*;
+import Moves.Enemy3.*;
 import Moves.Move;
 
 import java.util.Random;
 
-public class Frankenstein extends Boss{
-    public Frankenstein(){
-        name = "Frankenstein";
-        hp = 1500;
+// --- ENEMY 3 ---------------------------------------------------------------------------------------------------------
+public class Sanjveil extends Enemy{
+    public Sanjveil(){
+        name = "Sanjveil";
+        hp = 800;
         maxHp = hp;
-        attack = 100;
+        attack = 180;
         maxAttack = attack;
-        defense = 30;
+        defense = 22;
         maxDefense = defense;
-        speed = 60;
+        speed = 26;
         dmgResistance = 0.10;
         loadMoves();
     }
@@ -23,21 +24,19 @@ public class Frankenstein extends Boss{
     public void loadMoves(){
         moveset.add(new Move1());
         moveset.add(new Move2());
-        moveset.add(new Move3());
     }
 
+    //Move selection logic
     @Override
     public Move selectMove() {
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 67% chance for Move1, 23% chance for Move2, 10% for ult
-        if (randomValue < 67) {
+        // 60% chance for Move1, 40% chance for Move2
+        if (randomValue < 60) {
             return moveset.get(0); // Move1
-        } else if(randomValue < 90) {
-            return moveset.get(1); // Move2
         } else {
-            return moveset.get(2); // Move3 (Ult)
+            return moveset.get(1); // Move2
         }
     }
 }

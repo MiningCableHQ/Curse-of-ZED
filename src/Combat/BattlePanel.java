@@ -2,10 +2,8 @@ package Combat;
 
 import Entities.Characters.*;
 import Entities.Enemies.Enemy;
+import Entities.Enemies.*;
 import Moves.Move;
-import Moves.Swordsman.*;
-import Moves.Ranger.*;
-import Moves.Mage.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -626,6 +624,29 @@ public class BattlePanel extends JPanel {
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(255, 150, 100));
                     g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
+                }
+            }
+        }
+
+        if (!showExp && enemies.size() > 0) {
+            // Find which enemy this stat box belongs to
+            for (int i = 0; i < enemies.size(); i++) {
+                if (enemies.get(i).getName().equals(name)) {
+                    Enemy enemy = enemies.get(i);
+                    int tyOffset = 0;
+
+                    // Show DEF buffs for Final Boss
+                    if (enemy instanceof ZED) {
+                        ZED zed = (ZED) enemy;
+                        int stacks = zed.getDefBuffStacks();
+                        if (stacks > 0) {
+                            tyOffset += 12;
+                            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                            g2.setColor(new Color(255, 200, 100));
+                            g2.drawString("DEF: +" + (stacks * 5), tx, ty + tyOffset);
+                        }
+                    }
+                    break;
                 }
             }
         }

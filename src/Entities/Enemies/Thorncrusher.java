@@ -1,20 +1,21 @@
 package Entities.Enemies;
 
-import Moves.Frankenstein.*;
+import Moves.Boss1.*;
 import Moves.Move;
 
 import java.util.Random;
 
-public class Frankenstein extends Boss{
-    public Frankenstein(){
-        name = "Frankenstein";
-        hp = 1500;
+// --- BOSS 1 ----------------------------------------------------------------------------------------------------------
+public class Thorncrusher extends Boss{
+    public Thorncrusher(){
+        name = "Thorncrusher";
+        hp = 800;
         maxHp = hp;
-        attack = 100;
+        attack = 120;
         maxAttack = attack;
-        defense = 30;
+        defense = 5;
         maxDefense = defense;
-        speed = 60;
+        speed = 28;
         dmgResistance = 0.10;
         loadMoves();
     }
@@ -31,8 +32,8 @@ public class Frankenstein extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 67% chance for Move1, 23% chance for Move2, 10% for ult
-        if (randomValue < 67) {
+        // 60% chance for Move1, 30% chance for Move2, 10% for ult
+        if (randomValue < 60) {
             return moveset.get(0); // Move1
         } else if(randomValue < 90) {
             return moveset.get(1); // Move2

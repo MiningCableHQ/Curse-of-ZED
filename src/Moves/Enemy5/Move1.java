@@ -1,24 +1,28 @@
 package Moves.Enemy5;
 
-import Entities.Enemies.Enemy5;
+import Entities.Enemies.Reyven;
+import Entities.Entity;
 import Moves.Move;
 
 public class Move1 extends Move {
     public Move1(){
-        super("Move 1", 10);
+        super("Reyven Strike", 10);
     }
 
     @Override
     public <T> void execute(T Entity){
-        if(Entity instanceof Enemy5){
-            Enemy5 enemy5 = (Enemy5) Entity;
+        if(Entity instanceof Reyven && Move.currentTarget != null){
+            Reyven reyven = (Reyven) Entity;
+            Entity target = Move.currentTarget;
 
             //Add total atk from enemy and this move
-            double totalATK = enemy5.getAttack();
+            double totalATK = reyven.getAttack();
             totalATK += this.attack;
 
             //multiply sum to multiplier
             double damage = totalATK * 1.40;
+
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
         }
     }
 }

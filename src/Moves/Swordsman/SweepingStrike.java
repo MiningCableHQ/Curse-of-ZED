@@ -33,7 +33,6 @@ public class SweepingStrike extends Move {
             double damage = totalATK * dmgMultiplier;
 
             double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
-            //TODO Add AOE dmg type
         }
     }
 }

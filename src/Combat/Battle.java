@@ -327,13 +327,9 @@ public class Battle {
         for (Enemy enemy : enemies) {
             if (enemy.getHp() <= 0) continue;
 
-            ArrayList<Move> enemyMoves = enemy.getMoves();
+            Move enemyMove = enemy.selectMove();
 
-            if (enemyMoves != null && !enemyMoves.isEmpty()) {
-                // Choose a random move for the enemy
-                int moveIndex = random.nextInt(enemyMoves.size());
-                Move enemyMove = enemyMoves.get(moveIndex);
-
+            if (enemyMove != null) {
                 double beforeHp = player.getHp();
                 Move.currentTarget = player;
                 enemyMove.execute(enemy);
@@ -346,7 +342,7 @@ public class Battle {
                     message = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
                             String.format("%.1f", damageDealt) + " damage!";
                 } else {
-                    message = enemy.getName() + " used " + enemyMove.getName() + " but it had no effect!";
+                    message = enemy.getName() + " used " + enemyMove.getName();
                 }
 
                 battlePanel.setBattleMessage(message);

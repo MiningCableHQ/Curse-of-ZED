@@ -31,7 +31,6 @@ public class PreciseShot extends Move {
             double dmgMultiplier = 1.50;
             double damage = totalATK * dmgMultiplier;
             double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
-            //TODO Add single target dmg type
         }
     }
 }

@@ -31,7 +31,6 @@ public class Scattershot extends Move {
             double dmgMultiplier = 0.55;
             double damage = totalATK * dmgMultiplier;
             double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
-            //TODO Add AOE dmg type
         }
     }
 }

@@ -1,15 +1,29 @@
 package Moves.Enemy3;
 
-import Entities.Enemies.Enemy3;
+import Entities.Enemies.Sanjveil;
+import Entities.Entity;
 import Moves.Move;
 
 public class Move2 extends Move {
     public Move2(){
-        super("Move 2", 10);
+        super("Cinder Veil", 10);
     }
 
     @Override
     public <T> void execute(T Entity){
-        //TODO deals 20% of atk as dmg, inflicts burn
+        if(Entity instanceof Sanjveil && Move.currentTarget != null){
+            Sanjveil sanjveil = (Sanjveil) Entity;
+            Entity target = Move.currentTarget;
+
+            //Add total atk from enemy and this move
+            double totalATK = sanjveil.getAttack();
+            totalATK += this.attack;
+
+            //multiply sum to multiplier
+            double damage = totalATK * 0.50;
+
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            //TODO FRANK guaranteed inflict burn
+        }
     }
 }
