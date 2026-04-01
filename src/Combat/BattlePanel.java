@@ -134,11 +134,11 @@ public class BattlePanel extends JPanel {
     /** Load the background image */
     private void loadBackgroundImage() {
         try {
-            java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2.gif");
+            java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2v2.gif");
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
-                backgroundImage = new ImageIcon("/map2assets/combat_bg_map2.gif").getImage();
+                backgroundImage = new ImageIcon("/map2assets/combat_bg_map2v2.gif").getImage();
             }
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
