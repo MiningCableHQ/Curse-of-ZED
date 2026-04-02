@@ -52,40 +52,7 @@ public class Battle {
         isBattleActive = true;
         battlePanel.hideMainMenu();
         battlePanel.hideBattleButtons();
-        determineFirstTurn();
-    }
-
-    /** Determine who goes first based on speed */
-    private void determineFirstTurn() {
-        if (playerUsedItem) {
-            // Player used an item, guaranteed to go first
-            isPlayerTurn = true;
-            playerUsedItem = false;
-            startPlayerTurn();
-        } else {
-            // Compare speed stats
-            double playerSpeed = player.getSpeed();
-            double highestEnemySpeed = getHighestEnemySpeed();
-
-            if (playerSpeed >= highestEnemySpeed) {
-                isPlayerTurn = true;
-                startPlayerTurn();
-            } else {
-                isPlayerTurn = false;
-                startEnemyTurn();
-            }
-        }
-    }
-
-    /** Get the highest speed among all enemies */
-    private double getHighestEnemySpeed() {
-        double highestSpeed = 0;
-        for (Enemy enemy : enemies) {
-            if (enemy.getHp() > 0) {
-                highestSpeed = Math.max(highestSpeed, enemy.getSpeed());
-            }
-        }
-        return highestSpeed;
+        startPlayerTurn();
     }
 
     /** Start player's turn */
@@ -104,7 +71,6 @@ public class Battle {
 
         isExecutingAction = true;
         battlePanel.setButtonsEnabled(false);
-        battlePanel.setBattleMessage("Enemy turn...");
 
         // Small delay before enemy acts
         Timer enemyTurnDelay = new Timer(1000, e -> {
@@ -122,10 +88,13 @@ public class Battle {
 
     /** Handle player selecting a move */
     public void handlePlayerMove(Move move) {
-        if (isExecutingAction || !isPlayerTurn || !isBattleActive) return;
+        if (isExecutingAction || !isBattleActive) return;
 
         isExecutingAction = true;
         pendingMove = move;
+
+        // Hide main menu buttons immediately
+        battlePanel.hideMainMenu();
 
         // Check if move requires target selection
         if (move.getTargetType() == Move.TargetType.SELF) {
@@ -157,11 +126,11 @@ public class Battle {
         isExecutingAction = false;
         pendingMove = null;
         selectedTarget = null;
+        startPlayerTurn();
     }
 
     /** Execute the player's selected move */
     private void executePlayerMove(Move move, Enemy target) {
-
         battlePanel.setButtonsEnabled(false);
         battlePanel.hideBattleButtons();
         battlePanel.hideTargetButtons();
@@ -173,29 +142,27 @@ public class Battle {
             move.execute(player);
             Move.currentTarget = null;
 
-            String message = player.getName() + " uses " + move.getName() + "!";
-
+            String message = player.getName() + " used " + move.getName();
 
             // Handle class-specific buff messages
             if (move.getName().equals("Iron Stance") && player instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) player;
-                message = player.getName() + " uses " + move.getName() + "! Defense increased to " +
+                message = player.getName() + " used " + move.getName() + "! Defense increased to " +
                         String.format("%.0f", swordsman.getDefense());
             } else if (move.getName().equals("Windstep") && player instanceof Ranger) {
                 Ranger ranger = (Ranger) player;
-                message = player.getName() + " uses " + move.getName() + "! Speed increased to " +
+                message = player.getName() + " used " + move.getName() + "! Speed increased to " +
                         String.format("%.0f", ranger.getSpeed());
             } else if (move.getName().equals("Empower") && player instanceof Mage) {
                 Mage mage = (Mage) player;
-                message = player.getName() + " uses " + move.getName() + "! Attack increased to " +
+                message = player.getName() + " used " + move.getName() + "! Attack increased to " +
                         String.format("%.0f", mage.getAttack());
+            } else {
+                message = player.getName() + " used " + move.getName();
             }
 
             battlePanel.setBattleMessage(message);
             battlePanel.repaint();
-
-            // After player's move, check battle status and switch turns
-            checkBattleStatusAfterPlayerMove();
 
         } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
             // Multi-target move
@@ -207,26 +174,19 @@ public class Battle {
                     Move.currentTarget = enemy;
                     move.execute(player);
                     double afterHp = enemy.getHp();
-                    double damageDealt = beforeHp - afterHp;
-
-                    if (damageDealt > 0) {
-                        damageMessage.append(enemy.getName()).append(": ").append(String.format("%.1f", damageDealt)).append(" dmg; ");
-                    }
                 }
             }
             Move.currentTarget = null;
 
-            String message = player.getName() + " used " + move.getName() + "! " + damageMessage.toString();
+            String message = player.getName() + " used " + move.getName() + " to all enemy(ies)!";
+
 
             battlePanel.setBattleMessage(message);
             battlePanel.repaint();
-
-            // Check battle status after move
-            checkBattleStatusAfterPlayerMove();
+            battlePanel.updateTargetButtonStates();
 
         } else {
             // Single target move
-
             if (target == null || target.getHp() <= 0) {
                 // Target is already defeated, find a valid target
                 for (Enemy enemy : enemies) {
@@ -239,13 +199,11 @@ public class Battle {
 
             if (target != null && target.getHp() > 0) {
                 double beforeHp = target.getHp();
-
                 Move.currentTarget = target;
                 move.execute(player);
                 Move.currentTarget = null;
                 double afterHp = target.getHp();
                 double damageDealt = beforeHp - afterHp;
-
 
                 String message;
                 if (damageDealt > 0) {
@@ -256,23 +214,22 @@ public class Battle {
                             target.getName() + " but it had no effect!";
                 }
 
-
                 battlePanel.setBattleMessage(message);
                 battlePanel.repaint();
-
-                // Check battle status after move
-                checkBattleStatusAfterPlayerMove();
+                battlePanel.updateTargetButtonStates();
             }
         }
-        battlePanel.updateTargetButtonStates();
+        // After player's move, check battle status and determine next turn
+        checkBattleStatusAfterAction();
     }
 
     /** Handle player running away */
     public void handleRunAway() {
-        if (isExecutingAction || !isPlayerTurn || !isBattleActive) return;
+        if (isExecutingAction || !isBattleActive) return;
 
         isExecutingAction = true;
         battlePanel.setButtonsEnabled(false);
+        battlePanel.hideMainMenu();
 
         // Random chance to escape (80% success rate)
         boolean escapeSuccess = random.nextDouble() < 0.8;
@@ -292,7 +249,6 @@ public class Battle {
 
             Timer failTimer = new Timer(1500, e -> {
                 // Enemy gets a free turn
-                isPlayerTurn = false;
                 startEnemyTurn();
             });
             failTimer.setRepeats(false);
@@ -302,17 +258,18 @@ public class Battle {
 
     /** Handle player using an item (potion, etc.) */
     public void handleUseItem(Runnable itemAction) {
-        if (isExecutingAction || !isPlayerTurn || !isBattleActive) return;
+        if (isExecutingAction || !isBattleActive) return;
 
         playerUsedItem = true;
         isExecutingAction = true;
         battlePanel.setButtonsEnabled(false);
+        battlePanel.hideMainMenu();
 
         // Execute item action
         itemAction.run();
 
         // After using item, check battle status
-        checkBattleStatusAfterPlayerMove();
+        checkBattleStatusAfterAction();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -323,46 +280,74 @@ public class Battle {
     private void executeEnemyTurn() {
         if (!isBattleActive) return;
 
-        // Execute turn for each alive enemy
-        for (Enemy enemy : enemies) {
-            if (enemy.getHp() <= 0) continue;
+        executeNextEnemyAction(0);
+    }
 
-            Move enemyMove = enemy.selectMove();
-
-            if (enemyMove != null) {
-                double beforeHp = player.getHp();
-                Move.currentTarget = player;
-                enemyMove.execute(enemy);
-                Move.currentTarget = null;
-                double afterHp = player.getHp();
-                double damageDealt = beforeHp - afterHp;
-
-                String message;
-                if (damageDealt > 0) {
-                    message = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
-                            String.format("%.1f", damageDealt) + " damage!";
-                } else {
-                    message = enemy.getName() + " used " + enemyMove.getName();
-                }
-
-                battlePanel.setBattleMessage(message);
-                battlePanel.repaint();
-
-                // Check if player is defeated
-                if (player.getHp() <= 0) {
-                    endBattle(false); // False indicates player lost
-                    return;
-                }
-
-                // Small delay between enemy moves
-                try {
-                    Thread.sleep(800);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
+    private void executeNextEnemyAction(int enemyIndex) {
+        if (!isBattleActive || enemyIndex >= enemies.size()) {
+            checkAllEnemiesActed();
+            return;
         }
 
+        Enemy enemy = enemies.get(enemyIndex);
+
+        if (enemy.getHp() <= 0) {
+            executeNextEnemyAction(enemyIndex + 1);
+            return;
+        }
+
+        Move enemyMove = enemy.selectMove();
+
+        if (enemyMove == null) {
+            executeNextEnemyAction(enemyIndex + 1);
+            return;
+        }
+
+        // Display the message that enemy is about to use a move
+        String prepMessage = enemy.getName() + " used " + enemyMove.getName();
+        battlePanel.setBattleMessage(prepMessage);
+        battlePanel.repaint();
+
+        // Timer to show message before executing
+        Timer messageTimer = new Timer(2000, e -> {
+            // Execute the move
+            double beforeHp = player.getHp();
+            Move.currentTarget = player;
+            enemyMove.execute(enemy);
+            Move.currentTarget = null;
+            double afterHp = player.getHp();
+            double damageDealt = beforeHp - afterHp;
+
+            String message;
+            if (damageDealt > 0) {
+                message = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
+                        String.format("%.0f", damageDealt) + " damage!";
+            } else {
+                message = enemy.getName() + " used " + enemyMove.getName();
+            }
+
+            battlePanel.setBattleMessage(message);
+            battlePanel.repaint();
+
+            // Check if player is defeated
+            if (player.getHp() <= 0) {
+                if(player.getHp() < 0) player.setHp(0);
+                endBattle(false);
+                return;
+            }
+
+            // Timer to delay before next enemy
+            Timer nextEnemyTimer = new Timer(2000, ev -> {
+                executeNextEnemyAction(enemyIndex + 1);
+            });
+            nextEnemyTimer.setRepeats(false);
+            nextEnemyTimer.start();
+        });
+        messageTimer.setRepeats(false);
+        messageTimer.start();
+    }
+
+    private void checkAllEnemiesActed() {
         // Check if all enemies are defeated
         boolean allDefeated = true;
         for (Enemy enemy : enemies) {
@@ -373,10 +358,9 @@ public class Battle {
         }
 
         if (allDefeated) {
-            endBattle(true); // True indicates player won
+            endBattle(true);
         } else {
-            // After enemy turn, switch back to player
-            switchTurn();
+            switchToPlayerTurn();
         }
     }
 
@@ -384,9 +368,8 @@ public class Battle {
     // Battle Flow Control
     // ─────────────────────────────────────────────────────────────
 
-    /** Check battle status after player's move */
-    private void checkBattleStatusAfterPlayerMove() {
-
+    /** Check battle status after any action and determine next turn */
+    private void checkBattleStatusAfterAction() {
         // Check if all enemies are defeated
         boolean allDefeated = true;
         for (Enemy enemy : enemies) {
@@ -398,32 +381,42 @@ public class Battle {
 
         if (allDefeated) {
             endBattle(true); // Player won
+            return;
+        }
+
+        // Check if player is defeated
+        if (player.getHp() <= 0) {
+            endBattle(false); // Player lost
+            return;
+        }
+
+        isExecutingAction = false;
+
+        // Determine who goes next based on speed
+        if (isPlayerTurn) {
+            // Player just acted, now it's enemy's turn
+            switchToEnemyTurn();
         } else {
-            // After player's move, add a delay before switching to enemy turn
-            Timer turnDelay = new Timer(1500, e -> {
-                switchTurn();
-            });
-            turnDelay.setRepeats(false);
-            turnDelay.start();
+            // Enemy just acted, now it's player's turn
+            switchToPlayerTurn();
         }
     }
 
-    /** Switch turns between player and enemies */
-    private void switchTurn() {
+    /** Switch to player's turn */
+    private void switchToPlayerTurn() {
         if (!isBattleActive) return;
 
-        // Reset flags
         isExecutingAction = false;
-        playerUsedItem = false;
+        isPlayerTurn = true;
+        startPlayerTurn();
+    }
 
-        // Determine next turn based on current turn
-        if (isPlayerTurn) {
-            isPlayerTurn = false;
-            startEnemyTurn();
-        } else {
-            isPlayerTurn = true;
-            startPlayerTurn();
-        }
+    /** Switch to enemy's turn */
+    private void switchToEnemyTurn() {
+        if (!isBattleActive) return;
+
+        isPlayerTurn = false;
+        startEnemyTurn();
     }
 
     /** End the battle */

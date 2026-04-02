@@ -30,7 +30,6 @@ public class Masklet extends Enemy{
     public Move selectMove() {
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
-
         // 60% chance for Move1, 40% chance for Move2
         if (randomValue < 60) {
             return moveset.get(0); // Move1

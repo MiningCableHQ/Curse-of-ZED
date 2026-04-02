@@ -24,12 +24,9 @@ public class BattleMain {
             KeyHandler keyH = new KeyHandler();
 
             Player testPlayer = new Mage(gp, keyH);
-            Enemy  testEnemy1  = new ZED();
-            //Enemy  testEnemy2  = new ZED();
-            //Enemy  testEnemy3  = new Frankenstein();
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, testEnemy1); //, testEnemy2, testEnemy3);
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Sanjveil(), new Zenzilla(), new Reyven());
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

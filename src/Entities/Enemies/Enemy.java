@@ -23,13 +23,7 @@ public abstract class Enemy extends Entity {
     public abstract void loadMoves();
 
     //Move selection logic
-    public Move selectMove() {
-        if (!moveset.isEmpty()) {
-            return moveset.get(0);
-        }
-
-        return null;
-    }
+    public abstract Move selectMove();
 
     //Getters and Setters
     public int getExpYield(){
