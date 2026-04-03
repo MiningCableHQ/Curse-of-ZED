@@ -25,6 +25,13 @@ public abstract class Player extends Entity {
     protected ArrayList<Move> moveset;
     protected Weapon weapon;
 
+    // Idle animation arrays
+    protected BufferedImage[] idleLeft = new BufferedImage[5];
+    protected BufferedImage[] idleRight = new BufferedImage[5];
+    protected int idleSpriteNum = 0;
+    protected int idleSpriteCounter = 0;
+    protected static final int IDLE_ANIMATION_SPEED = 8; // Frames per sprite change
+
     public Player(GamePanel gp, KeyHandler keyH){
         screenX = gp.screenWidth/2 - (gp.tileSize/2);
         screenY = gp.screenHeight/2 - (gp.tileSize/2);
@@ -60,6 +67,12 @@ public abstract class Player extends Entity {
         entitySpeed = keyH.shiftPressed ? sprintSpeed : normalSpeed;
 
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+            // Reset idle animation when starting to move
+            if (!isMoving) {
+                idleSpriteNum = 0;
+                idleSpriteCounter = 0;
+            }
+
             if (keyH.upPressed) direction = "up";
             else if (keyH.downPressed) direction = "down";
             else if (keyH.leftPressed) direction = "left";
@@ -79,7 +92,7 @@ public abstract class Player extends Entity {
                 }
             }
 
-            // Animation
+            // Walking animation
             spriteCounter++;
             if (spriteCounter > 5) {
                 spriteNum++;
@@ -89,6 +102,16 @@ public abstract class Player extends Entity {
             isMoving = true;
         } else {
             isMoving = false;
+
+            // Idle animation when not moving
+            idleSpriteCounter++;
+            if (idleSpriteCounter > IDLE_ANIMATION_SPEED) {
+                idleSpriteNum++;
+                if (idleSpriteNum >= 5) idleSpriteNum = 0;
+                idleSpriteCounter = 0;
+            }
+
+            // Reset walking sprite to first frame
             spriteNum = 1;
         }
     }
@@ -96,19 +119,34 @@ public abstract class Player extends Entity {
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
 
-        switch (direction) {
-            case "up":
-                image = getWalkingImage("left");
-                break;
-            case "down":
-                image = getWalkingImage("left");
-                break;
-            case "left":
-                image = getWalkingImage("left");
-                break;
-            case "right":
-                image = getWalkingImage("right");
-                break;
+        if (isMoving) {
+            // Walking animation
+            switch (direction) {
+                case "up":
+                    image = getWalkingImage("left");
+                    break;
+                case "down":
+                    image = getWalkingImage("left");
+                    break;
+                case "left":
+                    image = getWalkingImage("left");
+                    break;
+                case "right":
+                    image = getWalkingImage("right");
+                    break;
+            }
+        } else {
+            // Idle animation
+            switch (direction) {
+                case "up":
+                case "down":
+                case "left":
+                    image = getIdleImage("left");
+                    break;
+                case "right":
+                    image = getIdleImage("right");
+                    break;
+            }
         }
 
         if (image != null) {
@@ -118,11 +156,6 @@ public abstract class Player extends Entity {
 
     // Helper method to get the correct walking frame
     private BufferedImage getWalkingImage(String dir) {
-        if (!isMoving) {
-            // Return idle frame when not moving
-            return dir.equals("right") ? right1 : left1;
-        }
-
         switch (spriteNum) {
             case 1:
                 return dir.equals("right") ? right1 : left1;
@@ -135,6 +168,21 @@ public abstract class Player extends Entity {
             default:
                 return dir.equals("right") ? right1 : left1;
         }
+    }
+
+    // Helper method to get the correct idle frame
+    private BufferedImage getIdleImage(String dir) {
+        if (dir.equals("right")) {
+            if (idleRight[idleSpriteNum] != null) {
+                return idleRight[idleSpriteNum];
+            }
+        } else {
+            if (idleLeft[idleSpriteNum] != null) {
+                return idleLeft[idleSpriteNum];
+            }
+        }
+        // Fallback to first walking frame if idle frames not available
+        return dir.equals("right") ? right1 : left1;
     }
 
     public abstract void loadMoves();

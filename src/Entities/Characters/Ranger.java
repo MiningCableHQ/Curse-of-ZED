@@ -4,6 +4,8 @@ import Main.*;
 import Moves.Ranger.*;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Ranger extends Player {
@@ -28,6 +30,7 @@ public class Ranger extends Player {
 
     @Override
     public void getPlayerImage(){
+        // Load walking animations
         try{
             left1 = ImageIO.read(getClass().getResourceAsStream("/archer/archer_walking/walking_left1.png"));
             left2 = ImageIO.read(getClass().getResourceAsStream("/archer/archer_walking/walking_left2.png"));
@@ -39,7 +42,77 @@ public class Ranger extends Player {
             right4 = ImageIO.read(getClass().getResourceAsStream("/archer/archer_walking/walking_right4.png"));
         }catch(IOException e){
             e.printStackTrace();
+            createWalkingFallback();
         }
+
+        // Load idle animations
+        boolean idleLoaded = false;
+        for (int i = 0; i < 5; i++) {
+            try {
+                idleLeft[i] = ImageIO.read(getClass().getResourceAsStream("/archer/archer_idle/idlle_left" + (i + 1) + ".png"));
+                idleRight[i] = ImageIO.read(getClass().getResourceAsStream("/archer/archer_idle/idle_right" + (i + 1) + ".png"));
+                idleLoaded = true;
+            } catch (IOException e) {
+                idleLeft[i] = null;
+                idleRight[i] = null;
+            }
+        }
+
+        // Create placeholder idle frames if images don't exist
+        if (!idleLoaded) {
+            createIdlePlaceholders();
+        }
+    }
+
+    private void createWalkingFallback() {
+        // Create colored rectangles as fallback for walking animations
+        Color rangerColor = new Color(80, 180, 100); // Green for Ranger
+        for (int i = 1; i <= 4; i++) {
+            left1 = createPlaceholderImage(rangerColor);
+            left2 = createPlaceholderImage(rangerColor);
+            left3 = createPlaceholderImage(rangerColor);
+            left4 = createPlaceholderImage(rangerColor);
+            right1 = createPlaceholderImage(rangerColor);
+            right2 = createPlaceholderImage(rangerColor);
+            right3 = createPlaceholderImage(rangerColor);
+            right4 = createPlaceholderImage(rangerColor);
+        }
+    }
+
+    private void createIdlePlaceholders() {
+        Color rangerColor = new Color(80, 180, 100); // Green for Ranger
+        for (int i = 0; i < 5; i++) {
+            idleLeft[i] = createIdlePlaceholderImage(rangerColor, false);
+            idleRight[i] = createIdlePlaceholderImage(rangerColor, true);
+        }
+    }
+
+    private BufferedImage createPlaceholderImage(Color color) {
+        BufferedImage img = new BufferedImage(48, 48, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        g2.setColor(color);
+        g2.fillRect(0, 0, 48, 48);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.drawString("R", 18, 30);
+        g2.dispose();
+        return img;
+    }
+
+    private BufferedImage createIdlePlaceholderImage(Color color, boolean facingRight) {
+        BufferedImage img = new BufferedImage(48, 48, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        g2.setColor(color);
+        g2.fillRect(0, 0, 48, 48);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        if (facingRight) {
+            g2.drawString("R→", 18, 30);
+        } else {
+            g2.drawString("←R", 18, 30);
+        }
+        g2.dispose();
+        return img;
     }
 
     @Override
