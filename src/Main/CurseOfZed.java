@@ -1,5 +1,7 @@
 package Main;
 
+import Entities.Characters.Player;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -23,37 +25,26 @@ import java.util.Random;
  */
 public class CurseOfZed extends JFrame {
 
+    private Runnable onStartCallback;
+    private Player selectedPlayer;
 
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            // 1. Initialize the window
+            CurseOfZed window = new CurseOfZed();
 
-                SwingUtilities.invokeLater(() -> {
-                    // 1. Initialize the window
-                    CurseOfZed window = new CurseOfZed();
+            // 2. Set the callback to show character selection
+            window.setOnStartCallback(() -> {
+                window.showCharacterSelection();
+            });
 
-                    // 2. Initialize the GamePanel (your map/player logic)
-                    GamePanel gamePanel = new GamePanel();
-
-                    // 3. TELL THE BUTTON WHAT TO DO
-                    window.setOnStartCallback(() -> {
-                        window.getContentPane().removeAll(); // Clear the Title Screen
-                        window.add(gamePanel);               // Add your Game World
-                        window.revalidate();                 // Refresh the UI
-                        window.pack();                       // Resize to fit the 16x12 tiles
-
-                        gamePanel.setupGame();
-                        gamePanel.requestFocusInWindow();    // Allow keyboard control
-                        gamePanel.startGameThread();         // Start the 60 FPS loop
-                    });
-
-                    window.setVisible(true);
-                });
-            }
-
+            window.setVisible(true);
+        });
+    }
 
     public void setOnStartCallback(Runnable callback) {
         this.onStartCallback = callback;
     }
-    private Runnable onStartCallback;
 
     public CurseOfZed() {
         setTitle("Curse of Zed");
@@ -69,6 +60,62 @@ public class CurseOfZed extends JFrame {
         add(p);
         pack();
         setLocationRelativeTo(null);
+    }
+
+    /**
+     * Shows the character selection panel by replacing the TitlePanel
+     * in the same JFrame window.
+     */
+    private void showCharacterSelection() {
+        // Create the character selection panel with reference to this frame
+        CharacterSelectionPanel selectionPanel = new CharacterSelectionPanel(this);
+
+        // Set callback for when character is selected
+        selectionPanel.setOnCharacterSelected(player -> {
+            this.selectedPlayer = player;
+            startGameWithPlayer(selectedPlayer);
+        });
+
+        // Replace TitlePanel with CharacterSelectionPanel
+        getContentPane().removeAll();
+        add(selectionPanel);
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Starts the game with the selected player character.
+     *
+     * @param player The player character to use in the game
+     */
+    private void startGameWithPlayer(Player player) {
+        // Create KeyHandler (shared between player and game panel)
+        KeyHandler keyH = new KeyHandler();
+
+        // Update the player's KeyHandler if needed
+        try {
+            java.lang.reflect.Field keyHField = player.getClass().getSuperclass().getDeclaredField("keyH");
+            keyHField.setAccessible(true);
+            keyHField.set(player, keyH);
+        } catch (Exception e) {
+            System.err.println("Warning: Could not set KeyHandler in player: " + e.getMessage());
+        }
+
+        // Create GamePanel with the selected player
+        GamePanel gamePanel = new GamePanel(player, keyH);
+
+        // Replace CharacterSelectionPanel with GamePanel
+        getContentPane().removeAll();
+        add(gamePanel);
+        revalidate();
+        repaint();
+        pack();
+        setLocationRelativeTo(null);
+
+        // Start the game thread and request focus for keyboard input
+        gamePanel.setupGame();
+        gamePanel.requestFocusInWindow();
+        gamePanel.startGameThread();
     }
 }
 
@@ -127,8 +174,8 @@ class TitlePanel extends JPanel {
             @Override public void mouseMoved(MouseEvent e) {
                 hover = btnRect.contains(e.getPoint());
                 setCursor(hover
-                    ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                    : Cursor.getDefaultCursor());
+                        ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                        : Cursor.getDefaultCursor());
             }
         });
 
@@ -155,7 +202,7 @@ class TitlePanel extends JPanel {
         }
         if (base == null) {
             System.err.println("RingbearerMedium.ttf not found — using fallback.\n"
-                + "Download: https://www.dafont.com/ringbearer.font");
+                    + "Download: https://www.dafont.com/ringbearer.font");
             base = new Font("Palatino Linotype", Font.PLAIN, 12);
         }
         rbTitle = base.deriveFont(Font.PLAIN, 72f);
@@ -269,13 +316,13 @@ class TitlePanel extends JPanel {
     // ── Vignette ─────────────────────────────────────────────
     private void paintVignette(Graphics2D g2) {
         g2.setPaint(new RadialGradientPaint(
-            new Point2D.Float(W/2f, H/2f), W*0.70f,
-            new float[]{0.22f, 1f},
-            new Color[]{new Color(0,0,0,0), new Color(0,0,0,150)}));
+                new Point2D.Float(W/2f, H/2f), W*0.70f,
+                new float[]{0.22f, 1f},
+                new Color[]{new Color(0,0,0,0), new Color(0,0,0,150)}));
         g2.fillRect(0, 0, W, H);
         g2.setPaint(new LinearGradientPaint(0, H*0.48f, 0, H,
-            new float[]{0f, 1f},
-            new Color[]{new Color(0,0,0,0), new Color(0,0,0,210)}));
+                new float[]{0f, 1f},
+                new Color[]{new Color(0,0,0,0), new Color(0,0,0,210)}));
         g2.fillRect(0, (int)(H*0.48f), W, H);
     }
 
@@ -299,16 +346,16 @@ class TitlePanel extends JPanel {
         // ── 2. Main parchment body ──
         // Multi-stop gradient: darker worn edges, warm creamy centre
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + sh,
-            new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
-            new Color[]{
-                new Color(148, 108,  44),   // very dark top edge
-                new Color(192, 152,  78),   // worn tan
-                new Color(220, 186, 118),   // warm parchment
-                new Color(238, 212, 152),   // bright creamy centre
-                new Color(220, 186, 118),   // back to warm
-                new Color(192, 152,  78),   // worn tan
-                new Color(148, 108,  44)    // very dark bottom edge
-            }));
+                new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
+                new Color[]{
+                        new Color(148, 108,  44),   // very dark top edge
+                        new Color(192, 152,  78),   // worn tan
+                        new Color(220, 186, 118),   // warm parchment
+                        new Color(238, 212, 152),   // bright creamy centre
+                        new Color(220, 186, 118),   // back to warm
+                        new Color(192, 152,  78),   // worn tan
+                        new Color(148, 108,  44)    // very dark bottom edge
+                }));
         Shape body = new RoundRectangle2D.Float(sx, sy, sw, sh, 18, 18);
         g2.fill(body);
 
@@ -344,31 +391,31 @@ class TitlePanel extends JPanel {
 
         // ── 6. Warm inner glow (parchment glows from within) ──
         g2.setPaint(new RadialGradientPaint(
-            new Point2D.Float(W / 2f, cy),
-            sw * 0.46f,
-            new float[]{0f, 1f},
-            new Color[]{new Color(255, 230, 140, 38), new Color(255, 200, 80, 0)}));
+                new Point2D.Float(W / 2f, cy),
+                sw * 0.46f,
+                new float[]{0f, 1f},
+                new Color[]{new Color(255, 230, 140, 38), new Color(255, 200, 80, 0)}));
         g2.fill(body);
 
         // ── 7. Rolled-edge curl: top ──
         // The top edge curves away — painted as a darker strip with gradient
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + 28,
-            new float[]{0f, 0.4f, 1f},
-            new Color[]{
-                new Color(110, 72, 18, 175),
-                new Color(148, 108, 44, 90),
-                new Color(148, 108, 44, 0)
-            }));
+                new float[]{0f, 0.4f, 1f},
+                new Color[]{
+                        new Color(110, 72, 18, 175),
+                        new Color(148, 108, 44, 90),
+                        new Color(148, 108, 44, 0)
+                }));
         g2.fill(new RoundRectangle2D.Float(sx, sy, sw, 28, 18, 18));
 
         // ── 8. Rolled-edge curl: bottom ──
         g2.setPaint(new LinearGradientPaint(sx, sy+sh-28, sx, sy+sh,
-            new float[]{0f, 0.6f, 1f},
-            new Color[]{
-                new Color(148, 108, 44, 0),
-                new Color(148, 108, 44, 90),
-                new Color(110, 72, 18, 175)
-            }));
+                new float[]{0f, 0.6f, 1f},
+                new Color[]{
+                        new Color(148, 108, 44, 0),
+                        new Color(148, 108, 44, 90),
+                        new Color(110, 72, 18, 175)
+                }));
         g2.fill(new RoundRectangle2D.Float(sx, sy+sh-28, sw, 28, 18, 18));
 
         // ── 9. Inner shadow rings (depth from rolled edges) ──
@@ -405,14 +452,14 @@ class TitlePanel extends JPanel {
     private void paintRod(Graphics2D g2, int rx, int ry, int rh) {
         // Rod body — radial left→right gold sheen
         g2.setPaint(new LinearGradientPaint(rx, ry, rx + 18, ry,
-            new float[]{0f, 0.25f, 0.5f, 0.75f, 1f},
-            new Color[]{
-                new Color(100, 66, 8),
-                new Color(238, 195, 58),
-                new Color(255, 222, 88),
-                new Color(200, 148, 28),
-                new Color(95, 58, 6)
-            }));
+                new float[]{0f, 0.25f, 0.5f, 0.75f, 1f},
+                new Color[]{
+                        new Color(100, 66, 8),
+                        new Color(238, 195, 58),
+                        new Color(255, 222, 88),
+                        new Color(200, 148, 28),
+                        new Color(95, 58, 6)
+                }));
         RoundRectangle2D rod = new RoundRectangle2D.Float(rx, ry, 18, rh, 9, 9);
         g2.fill(rod);
 
@@ -434,8 +481,8 @@ class TitlePanel extends JPanel {
         // Top & bottom finials
         for (int fy : new int[]{ry - 4, ry + rh - 18}) {
             g2.setPaint(new RadialGradientPaint(rx + 7, fy + 9, 13,
-                new float[]{0f, 0.5f, 1f},
-                new Color[]{new Color(255, 245, 160), new Color(238, 188, 50), new Color(120, 72, 4)}));
+                    new float[]{0f, 0.5f, 1f},
+                    new Color[]{new Color(255, 245, 160), new Color(238, 188, 50), new Color(120, 72, 4)}));
             g2.fillOval(rx - 4, fy, 26, 22);
             g2.setStroke(new BasicStroke(1.3f));
             g2.setColor(new Color(72, 36, 0, 215));
@@ -491,18 +538,18 @@ class TitlePanel extends JPanel {
         // Molten gold gradient
         g2.setFont(rbTitle);
         g2.setPaint(new LinearGradientPaint(
-            tx, ty - (int)vis.getHeight(),
-            tx, ty + 10,
-            new float[]{0f, 0.12f, 0.32f, 0.52f, 0.72f, 0.88f, 1f},
-            new Color[]{
-                new Color(255, 252, 210),
-                new Color(252, 218,  72),
-                new Color(218, 138,  18),
-                new Color(108,  48,   0),
-                new Color(198, 112,   4),
-                new Color(245, 198,  48),
-                new Color(228, 168,  28)
-            }));
+                tx, ty - (int)vis.getHeight(),
+                tx, ty + 10,
+                new float[]{0f, 0.12f, 0.32f, 0.52f, 0.72f, 0.88f, 1f},
+                new Color[]{
+                        new Color(255, 252, 210),
+                        new Color(252, 218,  72),
+                        new Color(218, 138,  18),
+                        new Color(108,  48,   0),
+                        new Color(198, 112,   4),
+                        new Color(245, 198,  48),
+                        new Color(228, 168,  28)
+                }));
         g2.drawString(text, tx, ty);
 
         // Shimmer RIGHT → LEFT
@@ -511,14 +558,14 @@ class TitlePanel extends JPanel {
         Shape savedClip = g2.getClip();
         g2.clip(gv.getOutline(tx, ty));
         g2.setPaint(new LinearGradientPaint(bandX, 0, bandX + bandW, 0,
-            new float[]{0f, 0.35f, 0.5f, 0.65f, 1f},
-            new Color[]{
-                new Color(255, 248, 200,   0),
-                new Color(255, 248, 200,  85),
-                new Color(255, 255, 255, 215),
-                new Color(255, 248, 200,  85),
-                new Color(255, 248, 200,   0)
-            }));
+                new float[]{0f, 0.35f, 0.5f, 0.65f, 1f},
+                new Color[]{
+                        new Color(255, 248, 200,   0),
+                        new Color(255, 248, 200,  85),
+                        new Color(255, 255, 255, 215),
+                        new Color(255, 248, 200,  85),
+                        new Color(255, 248, 200,   0)
+                }));
         g2.fill(new Rectangle2D.Float(bandX, ty-(int)vis.getHeight()-6, bandW, (int)vis.getHeight()+18));
         g2.setClip(savedClip);
     }
@@ -550,8 +597,8 @@ class TitlePanel extends JPanel {
         Color mc = hover ? new Color(250,222, 62) : new Color(238,190, 28);
         Color bc = hover ? new Color(212,148, 12) : new Color(178,108,  0);
         g2.setPaint(new LinearGradientPaint(bx, by, bx, by+bh,
-            new float[]{0f, .22f, .55f, 1f},
-            new Color[]{tc, mc, bc, new Color(208, 155, 12)}));
+                new float[]{0f, .22f, .55f, 1f},
+                new Color[]{tc, mc, bc, new Color(208, 155, 12)}));
         g2.fill(oct);
 
         // Top sheen
@@ -596,8 +643,8 @@ class TitlePanel extends JPanel {
     private void spawnParticle() {
         boolean left = rng.nextFloat() < 0.52f;
         float x = left
-            ? rng.nextFloat() * W * 0.30f              // left third
-            : W * 0.70f + rng.nextFloat() * W * 0.30f; // right third
+                ? rng.nextFloat() * W * 0.30f              // left third
+                : W * 0.70f + rng.nextFloat() * W * 0.30f; // right third
         float y = H * 0.55f + rng.nextFloat() * H * 0.40f;
         float dx = (rng.nextFloat() - 0.5f) * 1.0f;
         float dy = -(0.4f + rng.nextFloat() * 1.6f);
@@ -627,9 +674,9 @@ class TitlePanel extends JPanel {
     // ── Octagon helper ───────────────────────────────────────
     private Polygon oct(int x, int y, int w, int h, int c) {
         return new Polygon(
-            new int[]{x+c, x+w-c, x+w, x+w,   x+w-c, x+c, x,   x},
-            new int[]{y,   y,     y+c, y+h-c,  y+h,   y+h, y+h-c, y+c},
-            8);
+                new int[]{x+c, x+w-c, x+w, x+w,   x+w-c, x+c, x,   x},
+                new int[]{y,   y,     y+c, y+h-c,  y+h,   y+h, y+h-c, y+c},
+                8);
     }
 }
 
