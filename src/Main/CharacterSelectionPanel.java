@@ -153,8 +153,12 @@ public class CharacterSelectionPanel extends JPanel {
         for (int i = 0; i < 3; i++) {
             try {
                 charImages[i] = ImageIO.read(getClass().getResourceAsStream(paths[i]));
+                if (charImages[i] == null) {
+                    System.err.println("Image not found: " + paths[i]);
+                }
             } catch (Exception e) {
                 charImages[i] = null;
+                System.err.println("Failed to load image for " + NAMES[i] + ": " + e.getMessage());
             }
         }
         try {
@@ -288,9 +292,12 @@ public class CharacterSelectionPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
+
+        // Apply nearest-neighbor interpolation for pixel-perfect scaling
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         paintBackground(g2);
         paintVignette(g2);
@@ -559,6 +566,9 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void paintCharacterImage(Graphics2D g2, int ix, int iy, int idx) {
+        // Apply nearest-neighbor interpolation for pixel-perfect scaling
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
         // Image frame background
         g2.setColor(new Color(40, 20, 5, 60));
         g2.fillRoundRect(ix - 4, iy - 4, IMG_W + 8, IMG_H + 8, 10, 10);
@@ -568,9 +578,10 @@ public class CharacterSelectionPanel extends JPanel {
         g2.drawRoundRect(ix - 4, iy - 4, IMG_W + 8, IMG_H + 8, 10, 10);
 
         if (charImages[idx] != null) {
+            // Draw with nearest-neighbor interpolation for sharp pixels
             g2.drawImage(charImages[idx], ix, iy, IMG_W, IMG_H, null);
         } else {
-            // Colored placeholder
+            // Colored placeholder (also drawn with sharp edges)
             g2.setPaint(new LinearGradientPaint(ix, iy, ix, iy + IMG_H,
                     new float[]{0f, 1f},
                     new Color[]{
