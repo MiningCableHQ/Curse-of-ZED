@@ -32,14 +32,14 @@ public class Swordsman extends Player {
     public void getPlayerImage(){
         // Load walking animations
         try{
-            left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left2.png"));
-            left3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left3.png"));
-            left4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/left4.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right2.png"));
-            right3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right3.png"));
-            right4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/walking/right4.png"));
+            left1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_left1.png"));
+            left2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_left2.png"));
+            left3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_left3.png"));
+            left4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_left4.png"));
+            right1 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_right1.png"));
+            right2 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_right2.png"));
+            right3 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_right3.png"));
+            right4 = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_walking/walking_right4.png"));
         }catch(IOException e){
             e.printStackTrace();
             createWalkingFallback();
@@ -49,8 +49,8 @@ public class Swordsman extends Player {
         boolean idleLoaded = false;
         for (int i = 0; i < 5; i++) {
             try {
-                idleLeft[i] = ImageIO.read(getClass().getResourceAsStream("/swordsman/warrior_idle/idle_leftt" + (i + 1) + ".png"));
-                idleRight[i] = ImageIO.read(getClass().getResourceAsStream("/swordsman/warrior_idle/idle_right" + (i + 1) + ".png"));
+                idleLeft[i] = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_idle/idle_leftt" + (i + 1) + ".png"));
+                idleRight[i] = ImageIO.read(getClass().getResourceAsStream("/swordsman/swordsman_idle/idle_right" + (i + 1) + ".png"));
                 idleLoaded = true;
             } catch (IOException e) {
                 idleLeft[i] = null;

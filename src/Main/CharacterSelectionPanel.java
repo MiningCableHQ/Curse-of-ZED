@@ -51,7 +51,7 @@ public class CharacterSelectionPanel extends JPanel {
     private BackButton     backBtn;
 
     // ── Character data ────────────────────────────────────────────
-    private static final String[] NAMES  = {"Swordsman", "Ranger", "Mage"};
+    private static final String[] NAMES  = {"swordsman", "archer", "mage"};
     private static final Color[]  COLORS = {
             new Color(200,  80,  80),   // Swordsman — red
             new Color( 80, 180, 100),   // Ranger — green
@@ -67,7 +67,137 @@ public class CharacterSelectionPanel extends JPanel {
             "Swift and precise, striking from\nafar with unmatched accuracy.",
             "Wielder of arcane forces, bending\nthe elements to their will."
     };
-    private BufferedImage[] charImages = new BufferedImage[3];
+
+    // ── Animation data for each character ─────────────────────────
+    private static class CharacterAnimation {
+        BufferedImage[] idleFrames = new BufferedImage[5];
+        BufferedImage[] walkingFrames = new BufferedImage[5];
+        int currentFrame = 0;
+        boolean isWalking = false;
+        boolean framesLoaded = false;
+
+        CharacterAnimation(int index) {
+            loadFrames(index);
+        }
+
+        private void loadFrames(int idx) {
+            String className = NAMES[idx].toLowerCase();
+            boolean anyFrameLoaded = false;
+
+            // Load idle frames (idle_left_1-5.png)
+            for (int i = 0; i < 5; i++) {
+                try {
+                    idleFrames[i] = ImageIO.read(getClass().getResourceAsStream("/" + className + "/"+className+"_idle/idle_right" + (i + 1) + ".png"));
+                    if (idleFrames[i] != null) anyFrameLoaded = true;
+                } catch (Exception e) {
+                    idleFrames[i] = null;
+                }
+            }
+
+            // Load walking frames (left1-4.png, duplicate frame 4 for frame 5)
+            String[] walkingPaths = {"right1.png", "right2.png", "right3.png", "right4.png"};
+            for (int i = 0; i < 4; i++) {
+                try {
+                    walkingFrames[i] = ImageIO.read(getClass().getResourceAsStream("/" + className + "/"+className+"_walking/walking_"+walkingPaths[i]));
+                    if (walkingFrames[i] != null) anyFrameLoaded = true;
+                } catch (Exception e) {
+                    walkingFrames[i] = null;
+                }
+            }
+            // Duplicate frame 4 for frame 5 (index 4)
+            if (walkingFrames[3] != null) {
+                walkingFrames[4] = walkingFrames[3];
+            } else {
+                walkingFrames[4] = null;
+            }
+
+            framesLoaded = anyFrameLoaded;
+
+            // Create fallback placeholders if images not found
+            if (!framesLoaded) {
+                createPlaceholderFrames(idx);
+            }
+        }
+
+        private void createPlaceholderFrames(int idx) {
+            Color baseColor = COLORS[idx];
+            // Idle frames: softer/darker color
+            Color idleColor = new Color(baseColor.getRed() / 2, baseColor.getGreen() / 2, baseColor.getBlue() / 2);
+            // Walking frames: brighter color
+            Color walkingColor = new Color(
+                    Math.min(255, baseColor.getRed() + 50),
+                    Math.min(255, baseColor.getGreen() + 50),
+                    Math.min(255, baseColor.getBlue() + 50)
+            );
+
+            String initial = String.valueOf(NAMES[idx].charAt(0));
+
+            for (int i = 0; i < 5; i++) {
+                // Idle frames (static position)
+                idleFrames[i] = createPlaceholderImage(idleColor, initial, false, i);
+                // Walking frames (with slight offset to simulate movement)
+                walkingFrames[i] = createPlaceholderImage(walkingColor, initial, true, i);
+            }
+        }
+
+        private BufferedImage createPlaceholderImage(Color color, String initial, boolean isWalking, int frame) {
+            BufferedImage img = new BufferedImage(IMG_W, IMG_H, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+
+            // Background
+            g2.setColor(color);
+            g2.fillRect(0, 0, IMG_W, IMG_H);
+
+            // Add movement effect for walking frames
+            if (isWalking) {
+                int offset = (frame % 2 == 0) ? 5 : -5;
+                g2.setColor(new Color(255, 255, 255, 80));
+                g2.fillOval(IMG_W/2 - 20 + offset, IMG_H - 30, 40, 10);
+            }
+
+            // Large initial letter
+            Font bigFont = new Font("Serif", Font.BOLD, 80);
+            g2.setFont(bigFont);
+            FontMetrics fm = g2.getFontMetrics();
+            int lx = (IMG_W - fm.stringWidth(initial)) / 2;
+            int ly = (IMG_H + fm.getAscent() - fm.getDescent()) / 2;
+
+            g2.setColor(new Color(0, 0, 0, 80));
+            g2.drawString(initial, lx + 3, ly + 3);
+
+            g2.setPaint(new LinearGradientPaint(lx, ly - fm.getAscent(), lx, ly + 6,
+                    new float[]{0f, 0.5f, 1f},
+                    new Color[]{new Color(255, 245, 180), GOLD_TEXT, GOLD_DARK}));
+            g2.drawString(initial, lx, ly);
+
+            // Silhouette border
+            g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 120));
+            g2.setStroke(new BasicStroke(2f));
+            g2.drawOval(IMG_W/2 - 30, IMG_H/2 - 40, 60, 80);
+
+            g2.dispose();
+            return img;
+        }
+
+        public BufferedImage getCurrentFrame() {
+            if (isWalking) {
+                return walkingFrames[currentFrame];
+            } else {
+                return idleFrames[currentFrame];
+            }
+        }
+
+        public void nextFrame() {
+            currentFrame = (currentFrame + 1) % 5;
+        }
+
+        public void setWalking(boolean walking) {
+            this.isWalking = walking;
+        }
+    }
+
+    private CharacterAnimation[] animations = new CharacterAnimation[3];
+    private Timer animationTimer;
 
     // ── Fonts ─────────────────────────────────────────────────────
     private Font fontTitle;
@@ -85,7 +215,7 @@ public class CharacterSelectionPanel extends JPanel {
     // ── Animation ─────────────────────────────────────────────────
     private float shimmer   = 1.4f;
     private float floatY    = 0f, floatDir = 1f;
-    private Timer animTimer;
+    private Timer titleAnimTimer;
 
     // ── Background ────────────────────────────────────────────────
     private BufferedImage bgImage;
@@ -105,8 +235,10 @@ public class CharacterSelectionPanel extends JPanel {
 
         loadFonts();
         loadImages();
+        initAnimations();
         buildButtons();
         startAnimation();
+        startCharacterAnimation();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -145,27 +277,27 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void loadImages() {
-        String[] paths = {
-                "/swordsman/walking/right1.png",
-                "/archer/archer_walking/walking_right1.png",
-                "/mage/mage_walking/walking_right1.png"
-        };
-        for (int i = 0; i < 3; i++) {
-            try {
-                charImages[i] = ImageIO.read(getClass().getResourceAsStream(paths[i]));
-                if (charImages[i] == null) {
-                    System.err.println("Image not found: " + paths[i]);
-                }
-            } catch (Exception e) {
-                charImages[i] = null;
-                System.err.println("Failed to load image for " + NAMES[i] + ": " + e.getMessage());
-            }
-        }
         try {
             bgImage = ImageIO.read(new java.io.File("background.jpg"));
         } catch (Exception e) {
             bgImage = null;
         }
+    }
+
+    private void initAnimations() {
+        for (int i = 0; i < 3; i++) {
+            animations[i] = new CharacterAnimation(i);
+        }
+    }
+
+    private void startCharacterAnimation() {
+        animationTimer = new Timer(120, e -> {
+            for (int i = 0; i < 3; i++) {
+                animations[i].nextFrame();
+            }
+            repaint();
+        });
+        animationTimer.start();
     }
 
     private void buildButtons() {
@@ -201,7 +333,7 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void startAnimation() {
-        animTimer = new Timer(16, e -> {
+        titleAnimTimer = new Timer(16, e -> {
             // Title float
             floatY += 0.038f * floatDir;
             if (floatY >  5f) floatDir = -1f;
@@ -223,7 +355,7 @@ public class CharacterSelectionPanel extends JPanel {
             }
             repaint();
         });
-        animTimer.start();
+        titleAnimTimer.start();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -233,12 +365,24 @@ public class CharacterSelectionPanel extends JPanel {
         selectedIndex = idx;
         glowDir[idx]  = 1f;
         confirmBtn.setVisible(true);
+
+        // Set walking animation for selected character, idle for others
+        for (int i = 0; i < 3; i++) {
+            animations[i].setWalking(i == idx);
+        }
+
         repaint();
     }
 
     private void confirmSelection() {
         if (selectedIndex < 0 || onCharacterSelected == null) return;
-        animTimer.stop();
+
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        if (titleAnimTimer != null) {
+            titleAnimTimer.stop();
+        }
 
         // Create the selected player
         GamePanel  gp   = new GamePanel();
@@ -254,7 +398,12 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void goBack() {
-        animTimer.stop();
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        if (titleAnimTimer != null) {
+            titleAnimTimer.stop();
+        }
 
         if (onBackPressed != null) {
             onBackPressed.run();
@@ -499,7 +648,7 @@ public class CharacterSelectionPanel extends JPanel {
         g2.setStroke(new BasicStroke(barH));
         g2.drawLine(cx + 18, cy + 22, cx + CARD_W - 18, cy + 22);
 
-        // ── Image / Placeholder ──
+        // ── Animated Character Image ──
         int imgX = cx + (CARD_W - IMG_W) / 2;
         int imgY = cy + 32;
         paintCharacterImage(g2, imgX, imgY, idx);
@@ -577,44 +726,23 @@ public class CharacterSelectionPanel extends JPanel {
         g2.setStroke(new BasicStroke(1.5f));
         g2.drawRoundRect(ix - 4, iy - 4, IMG_W + 8, IMG_H + 8, 10, 10);
 
-        if (charImages[idx] != null) {
-            // Draw with nearest-neighbor interpolation for sharp pixels
-            g2.drawImage(charImages[idx], ix, iy, IMG_W, IMG_H, null);
+        // Draw current animation frame
+        BufferedImage currentFrame = animations[idx].getCurrentFrame();
+        if (currentFrame != null) {
+            // Scale the frame to fit the display area while maintaining aspect ratio
+            g2.drawImage(currentFrame, ix, iy, IMG_W, IMG_H, null);
         } else {
-            // Colored placeholder (also drawn with sharp edges)
-            g2.setPaint(new LinearGradientPaint(ix, iy, ix, iy + IMG_H,
-                    new float[]{0f, 1f},
-                    new Color[]{
-                            new Color(COLORS[idx].getRed(), COLORS[idx].getGreen(), COLORS[idx].getBlue(), 80),
-                            new Color(COLORS[idx].getRed(), COLORS[idx].getGreen(), COLORS[idx].getBlue(), 40)
-                    }));
+            // Fallback - should not happen as placeholders are created
+            g2.setColor(COLORS[idx]);
             g2.fillRect(ix, iy, IMG_W, IMG_H);
-
-            // Large initial letter
-            String initial = String.valueOf(NAMES[idx].charAt(0));
-            Font bigFont = new Font("Serif", Font.BOLD, 80);
-            g2.setFont(bigFont);
-            FontMetrics fm = g2.getFontMetrics();
-            int lx = ix + (IMG_W - fm.stringWidth(initial)) / 2;
-            int ly = iy + (IMG_H + fm.getAscent() - fm.getDescent()) / 2;
-
-            g2.setColor(new Color(0, 0, 0, 80));
-            g2.drawString(initial, lx + 3, ly + 3);
-
-            g2.setPaint(new LinearGradientPaint(lx, ly - fm.getAscent(), lx, ly + 6,
-                    new float[]{0f, 0.5f, 1f},
-                    new Color[]{new Color(255, 245, 180), GOLD_TEXT, GOLD_DARK}));
-            g2.drawString(initial, lx, ly);
-
-            // Silhouette border
-            g2.setColor(new Color(COLORS[idx].getRed(), COLORS[idx].getGreen(), COLORS[idx].getBlue(), 120));
-            g2.setStroke(new BasicStroke(2f));
-            g2.drawOval(ix + 30, iy + 15, IMG_W - 60, IMG_H - 30);
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Serif", Font.BOLD, 40));
+            g2.drawString(NAMES[idx].substring(0, 1), ix + IMG_W/2 - 15, iy + IMG_H/2 + 15);
         }
     }
 
     private void paintWaxSeal(Graphics2D g2, int rx, int ry) {
-        int cx2 = rx + 9, cy2 = ry + 9;
+        int cx = rx + 9, cy = ry + 9;
         g2.setStroke(new BasicStroke(1.3f));
         g2.setColor(new Color(80, 40, 8, 115));
         g2.drawOval(rx, ry, 18, 18);
@@ -622,13 +750,13 @@ public class CharacterSelectionPanel extends JPanel {
         g2.drawOval(rx + 3, ry + 3, 12, 12);
         g2.setStroke(new BasicStroke(1.1f));
         g2.setColor(new Color(80, 40, 8, 105));
-        g2.drawLine(cx2, ry + 2, cx2, ry + 16);
-        g2.drawLine(rx + 2, cy2, rx + 16, cy2);
+        g2.drawLine(cx, ry + 2, cx, ry + 16);
+        g2.drawLine(rx + 2, cy, rx + 16, cy);
         g2.setColor(new Color(80, 40, 8, 60));
         g2.drawLine(rx + 4, ry + 4, rx + 14, ry + 14);
         g2.drawLine(rx + 14, ry + 4, rx + 4, ry + 14);
         g2.setColor(new Color(90, 50, 10, 110));
-        g2.fillOval(cx2 - 2, cy2 - 2, 5, 5);
+        g2.fillOval(cx - 2, cy - 2, 5, 5);
     }
 
     // ─────────────────────────────────────────────────────────────
