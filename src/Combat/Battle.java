@@ -167,7 +167,7 @@ public class Battle {
             chosenTarget = null;
             executeRound();
         } else if (getAliveEnemies().size() > 1 && move.getTargetType() == Move.TargetType.ENEMY) {
-            // Need target selection
+            // Need target selection - stay in waiting state but show target selection
             battlePanel.showTargetSelection(move);
         } else {
             // Single enemy
@@ -179,31 +179,61 @@ public class Battle {
 
     /** Handle player selecting a target for a move */
     public void handleTargetSelected(int enemyIndex) {
-        if (!isBattleActive || !isWaitingForPlayerInput) return;
+        System.out.println("handleTargetSelected called for index: " + enemyIndex);
 
-        isWaitingForPlayerInput = false;
+        if (!isBattleActive) return;
 
-        if (pendingMove != null && enemyIndex < enemies.size()) {
-            chosenMove = pendingMove;
-            chosenTarget = enemies.get(enemyIndex);
-            pendingMove = null;
-            executeRound();
+        // Check if we have a pending move
+        if (pendingMove == null) {
+            System.out.println("ERROR: No pending move!");
+            battlePanel.showFightMenu();
+            return;
         }
+
+        // Check if enemy index is valid
+        if (enemyIndex >= enemies.size()) {
+            System.out.println("ERROR: Invalid enemy index: " + enemyIndex);
+            battlePanel.showFightMenu();
+            return;
+        }
+
+        Enemy targetEnemy = enemies.get(enemyIndex);
+
+        // Check if target enemy is alive
+        if (targetEnemy.getHp() <= 0) {
+            System.out.println("ERROR: Target enemy is already defeated!");
+            battlePanel.setBattleMessage("That enemy is already defeated! Choose another target.");
+            // Re-show target selection
+            battlePanel.showTargetSelection(pendingMove);
+            return;
+        }
+
+        // Valid target selected
+        chosenMove = pendingMove;
+        chosenTarget = targetEnemy;
+        pendingMove = null;
+
+        System.out.println("Target selected: " + chosenTarget.getName() + " (HP: " + chosenTarget.getHp() + ")");
+
+        executeRound();
     }
 
-    /** Cancels target selection */
+    /** Cancels target selection - resets state and returns to fight menu */
     public void cancelTargetSelection() {
         if (!isBattleActive) return;
 
-        isWaitingForPlayerInput = false;
+        System.out.println("Target selection cancelled - resetting state");
+
+        // Clear pending selections
         pendingMove = null;
         chosenMove = null;
         chosenTarget = null;
 
-        // Return to decision phase
-        Timer delay = new Timer(100, e -> startPlayerDecisionPhase());
-        delay.setRepeats(false);
-        delay.start();
+        // Reset waiting flag - player can now make new choices
+        isWaitingForPlayerInput = true;
+
+        // Show fight menu directly - no Timer
+        battlePanel.showFightMenu();
     }
 
     /** Execute player's move during the round */
@@ -212,6 +242,22 @@ public class Battle {
             // Should not happen, but just in case
             processRoundTurn(turnOrder, currentIndex + 1);
             return;
+        }
+
+        // Validate target for single-target moves
+        if (chosenMove.getTargetType() == Move.TargetType.ENEMY) {
+            if (chosenTarget == null || chosenTarget.getHp() <= 0) {
+                // Find first alive enemy as fallback
+                List<Enemy> aliveEnemies = getAliveEnemies();
+                if (!aliveEnemies.isEmpty()) {
+                    chosenTarget = aliveEnemies.get(0);
+                    System.out.println("Fallback target selected: " + chosenTarget.getName());
+                } else {
+                    // No alive enemies - battle should have ended
+                    processRoundTurn(turnOrder, currentIndex + 1);
+                    return;
+                }
+            }
         }
 
         final Move move = chosenMove;
@@ -274,7 +320,18 @@ public class Battle {
                 Enemy currentTarget = target;
 
                 if (currentTarget == null || currentTarget.getHp() <= 0) {
-                    currentTarget = getAliveEnemies().get(0);
+                    List<Enemy> aliveEnemies = getAliveEnemies();
+                    if (!aliveEnemies.isEmpty()) {
+                        currentTarget = aliveEnemies.get(0);
+                    } else {
+                        // No alive enemies
+                        Timer nextTimer = new Timer(TURN_DELAY, ev -> {
+                            processRoundTurn(turnOrder, currentIndex + 1);
+                        });
+                        nextTimer.setRepeats(false);
+                        nextTimer.start();
+                        return;
+                    }
                 }
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
