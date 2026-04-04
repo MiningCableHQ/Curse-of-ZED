@@ -4,12 +4,15 @@ import Entities.Characters.Ranger;
 import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
+import java.util.*;
 
-public class PreciseShot extends Move {
-    public PreciseShot() {
-        super("Precise Shot", 20);
+public class BounceShot extends Move {
+    Random rand = new Random();
+
+    public BounceShot() {
+        super("Bounce Shot", 30, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
-        description = "Deal 150% of ATK to a single target";
+        description = "Deal 20% of ATK to all enemies 1-5x";
     }
 
     @Override
@@ -29,7 +32,7 @@ public class PreciseShot extends Move {
             totalATK += this.attack; //this move's atk
 
             //multiply sum to dmg multiplier
-            double damage = totalATK * 1.50;
+            double damage = totalATK * 0.20 * rand.nextDouble(1, 6);
             double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }

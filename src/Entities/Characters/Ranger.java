@@ -120,7 +120,7 @@ public class Ranger extends Player {
         moveset.add(new PreciseShot());
         moveset.add(new Scattershot());
         moveset.add(new Windstep());
-        moveset.add(new SnipersMark());
+        moveset.add(new BounceShot());
         moveset.add(new FlurryShot());
         moveset.add(new ShadowStep());
         moveset.add(new SnipersGamble());
@@ -128,7 +128,7 @@ public class Ranger extends Player {
         moves.add(new PreciseShot());
         moves.add(new Scattershot());
         moves.add(new Windstep());
-        moves.add(new SnipersMark());
+        moves.add(new BounceShot());
     }
 
     // --- For move: Windstep ------------------------------------------------------------------------------------------
@@ -141,8 +141,8 @@ public class Ranger extends Player {
     public void addWindstepStack() {
         if (windstepStacks < 3) {
             windstepStacks++;
-            // Increase SPD by 4%
-            speed = originalSpeed + (originalSpeed * 0.04 * windstepStacks);
+            // Increase SPD by 8%
+            speed = originalSpeed + (originalSpeed * 0.08 * windstepStacks);
         }
     }
     public void resetBattleBuffs() {

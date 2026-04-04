@@ -118,7 +118,7 @@ public class Swordsman extends Player {
     @Override
     public void loadMoves(){
         moveset.add(new CounterStance());
-        moveset.add(new GuidedStrike());
+        moveset.add(new MultiStrike());
         moveset.add(new HeroicSlash());
         moveset.add(new IronStance());
         moveset.add(new PurifyingStance());
@@ -141,8 +141,8 @@ public class Swordsman extends Player {
     public void addIronStanceStack() {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
-            //Increase DEF by 8%
-            defense = originalDefense + (originalDefense * 0.08 * ironStanceStacks);
+            //Increase DEF by 10%
+            defense = originalDefense + (originalDefense * 0.10 * ironStanceStacks);
         }
     }
     public void resetBattleBuffs() {

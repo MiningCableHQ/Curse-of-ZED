@@ -7,6 +7,7 @@ public class Empower extends Move {
     public Empower() {
         super("Empower", 0, TargetType.SELF);
         hasUnlocked = true;
+        description = "Increase ATK by 6% (max 3 stacks)";
     }
 
     @Override

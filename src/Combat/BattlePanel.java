@@ -490,7 +490,7 @@ public class BattlePanel extends JPanel {
             Enemy enemy = enemies.get(i);
             BattleButton targetBtn = targetButtons.get(i);
 
-            if (enemy.getHp() <= 0) {
+            if (enemy.getHp() < 1) {
                 // Enemy is defeated - disable button and change appearance
                 targetBtn.setEnabled(false);
                 targetBtn.setText("(DEFEATED)");

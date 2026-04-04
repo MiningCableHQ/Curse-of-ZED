@@ -96,7 +96,7 @@ public abstract class Entity {
         this.attack = Math.min(attack, maxAttack * 2); // Ensure attack doesn't exceed maxAttack x 2
     }
 
-    //Unique enemy methods
+    //Unique entity methods
     public void heal(double amount) {
         double newHp = this.hp + amount;
         this.hp = Math.min(newHp, maxHp);
@@ -104,5 +104,9 @@ public abstract class Entity {
     public void buffAttack(double amount) {
         double newAttack = this.attack + amount;
         this.attack = Math.min(newAttack, maxAttack * 2);
+    }
+    public void sacrifice(double amount) { //For entities who consume their hp
+        double newHp = this.hp - amount;
+        this.hp = Math.max(0, newHp); //makes sure HP won't go below 0
     }
 }

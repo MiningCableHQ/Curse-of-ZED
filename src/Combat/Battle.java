@@ -113,7 +113,7 @@ public class Battle {
             // Check if battle should continue
             if (getAliveEnemies().isEmpty()) {
                 endBattle(true);
-            } else if (player.getHp() <= 0) {
+            } else if (player.getHp() < 1) {
                 endBattle(false);
             } else {
                 Timer roundDelay = new Timer(TURN_DELAY, e -> startPlayerDecisionPhase());
@@ -126,7 +126,7 @@ public class Battle {
         Entity currentEntity = turnOrder.get(currentIndex);
 
         // Skip if entity is defeated
-        if (currentEntity.getHp() <= 0) {
+        if (currentEntity.getHp() < 1) {
             processRoundTurn(turnOrder, currentIndex + 1);
             return;
         }
@@ -200,7 +200,7 @@ public class Battle {
         Enemy targetEnemy = enemies.get(enemyIndex);
 
         // Check if target enemy is alive
-        if (targetEnemy.getHp() <= 0) {
+        if (targetEnemy.getHp() < 1) {
             System.out.println("ERROR: Target enemy is already defeated!");
             battlePanel.setBattleMessage("That enemy is already defeated! Choose another target.");
             // Re-show target selection
@@ -276,6 +276,8 @@ public class Battle {
 
             // Execute the move based on target type
             if (move.getTargetType() == Move.TargetType.SELF) {
+                //Variable for mage revitalize move
+                double beforeHp = player.getHp();
                 // Self-targeting move
                 Move.currentTarget = player;
                 move.execute(player);
@@ -295,6 +297,16 @@ public class Battle {
                     Mage mage = (Mage) player;
                     message = player.getName() + " used " + move.getName() + "! Attack increased to " +
                             String.format("%.0f", mage.getAttack());
+                } else if (move.getName().equals("Revitalize") && player instanceof Mage) {
+                    double afterHp = player.getHp();
+                    double healAmount = afterHp - beforeHp;
+
+                    if (healAmount > 0) {
+                        message = player.getName() + " used " + move.getName() + " and healed " +
+                                String.format("%.1f", healAmount) + " HP!";
+                    } else {
+                        message = player.getName() + " used " + move.getName() + " but was already at full health!";
+                    }
                 }
 
                 battlePanel.setBattleMessage(message);
@@ -335,20 +347,39 @@ public class Battle {
                 }
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
-                    double beforeHp = currentTarget.getHp();
+                    // Track HP before move for both target and player
+                    double beforeTargetHp = currentTarget.getHp();
+                    double beforePlayerHp = player.getHp();
+
                     Move.currentTarget = currentTarget;
                     move.execute(player);
                     Move.currentTarget = null;
-                    double afterHp = currentTarget.getHp();
-                    double damageDealt = beforeHp - afterHp;
+
+                    double afterTargetHp = currentTarget.getHp();
+                    double afterPlayerHp = player.getHp();
+                    double damageDealt = beforeTargetHp - afterTargetHp;
+                    double playerHpLost = beforePlayerHp - afterPlayerHp;
 
                     String message;
                     if (damageDealt > 0) {
-                        message = player.getName() + " used " + move.getName() + " on " +
-                                currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
+                        // Check if it's Sacrificial Blade move
+                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) +
+                                    " damage, sacrificing " + String.format("%.1f", playerHpLost) + " HP!";
+                        } else {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
+                        }
                     } else {
-                        message = player.getName() + " used " + move.getName() + " on " +
-                                currentTarget.getName() + " but it had no effect!";
+                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " but it had no effect, sacrificing " +
+                                    String.format("%.1f", playerHpLost) + " HP in vain!";
+                        } else {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " but it had no effect!";
+                        }
                     }
 
                     battlePanel.setBattleMessage(message);
@@ -363,6 +394,12 @@ public class Battle {
                 return;
             }
 
+            // Check if player died from sacrifice
+            if (player.getHp() < 1) {
+                endBattle(false);
+                return;
+            }
+
             // Move to next entity in turn order
             Timer nextTimer = new Timer(TURN_DELAY, ev -> {
                 processRoundTurn(turnOrder, currentIndex + 1);
@@ -373,7 +410,6 @@ public class Battle {
         executeTimer.setRepeats(false);
         executeTimer.start();
     }
-
     // ─────────────────────────────────────────────────────────────
     // Enemy Actions
     // ─────────────────────────────────────────────────────────────
@@ -418,7 +454,7 @@ public class Battle {
             battlePanel.repaint();
 
             // Check if player is defeated
-            if (player.getHp() <= 0) {
+            if (player.getHp() < 1) {
                 if (player.getHp() < 0) player.setHp(0);
                 endBattle(false);
                 return;
