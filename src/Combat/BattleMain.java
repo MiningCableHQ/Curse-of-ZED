@@ -26,7 +26,7 @@ public class BattleMain {
             Player testPlayer = new Mage(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new Sanjveil(), new Zenzilla());
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Sanjveil(), new Zenzilla(), new Reyven());
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

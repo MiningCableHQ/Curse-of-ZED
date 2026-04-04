@@ -11,6 +11,7 @@ public class ArcaneBolt extends Move {
     public ArcaneBolt() {
         super("Arcane Bolt", 20, TargetType.ENEMY);
         hasUnlocked = true;
+        description = "Deal 145% of ATK to a single target";
     }
 
     @Override
@@ -30,9 +31,8 @@ public class ArcaneBolt extends Move {
             totalATK += this.attack; //this move's atk
 
             //multiply sum to dmg multiplier
-            double dmgMultiplier = 1.45;
-            double damage = totalATK * dmgMultiplier;
-            double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
+            double damage = totalATK * 1.45;
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

@@ -578,7 +578,7 @@ public class BattlePanel extends JPanel {
             Enemy enemy = enemies.get(i);
             BattleButton targetBtn = targetButtons.get(i);
 
-            if (enemy.getHp() <= 0) {
+            if (enemy.getHp() < 1) {
                 targetBtn.setEnabled(false);
                 targetBtn.setText(enemy.getName() + " (DEFEATED)");
             } else {
@@ -826,6 +826,7 @@ public class BattlePanel extends JPanel {
                     Enemy enemy = enemies.get(i);
                     int tyOffset = 0;
 
+                    //DEF buffs for Final Boss
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();

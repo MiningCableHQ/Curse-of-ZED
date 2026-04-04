@@ -4,12 +4,15 @@ import Entities.Characters.Swordsman;
 import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
+import java.util.Random;
 
-public class HeroicSlash extends Move {
-    public HeroicSlash(){
-        super("Heroic Slash", 20);
-        hasUnlocked = true;
-        description = "Deal 160% of ATK to a single target";
+public class MultiStrike extends Move {
+    Random rand = new Random();
+
+    public MultiStrike() {
+        super("Multi Strike", 40, TargetType.ALL_ENEMIES);
+        hasUnlocked = false;
+        description = "Deals 20% of ATK to all enemies 5-10x";
     }
 
     @Override
@@ -19,17 +22,19 @@ public class HeroicSlash extends Move {
             Entity enemy = Move.currentTarget;
 
             //all 3 needed ATK stats
-            double totalATK = swordsman.getAttack();
+            double totalATK = swordsman.getAttack(); //swordsman atk
             if (swordsman.getWeapon() != null) {
                 if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = swordsman.getWeapon();
                     totalATK += equippedWeapon.getAttack();
                 }
             }
-            totalATK += this.attack;
 
-            double dmgMultiplier = 1.60;
-            double damage = totalATK * dmgMultiplier;
+            totalATK += this.attack; //this move's atk
+
+            //multiply sum to dmg multiplier
+            double damage = totalATK * 0.20 * rand.nextDouble(5,11);
+
             double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }

@@ -6,6 +6,7 @@ public class PurifyingStance extends Move {
     public PurifyingStance() {
         super("Purifying Stance", 0, TargetType.SELF);
         hasUnlocked = false;
+        description = "Cures a status effect";
     }
 
     @Override

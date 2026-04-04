@@ -9,6 +9,7 @@ public class SweepingStrike extends Move {
     public SweepingStrike(){
         super("Sweeping Strike", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
+        description = "Deal 60% of ATK to all enemies";
     }
 
     @Override
@@ -29,10 +30,9 @@ public class SweepingStrike extends Move {
             totalATK += this.attack; //this move's atk
 
             //multiply sum to dmg multiplier
-            double dmgMultiplier = 0.60;
-            double damage = totalATK * dmgMultiplier;
+            double damage = totalATK * 0.60;
 
-            double actualDamage = enemy.takeDamage(damage, (int)enemy.getDefense(), enemy.getDmgResistance());
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

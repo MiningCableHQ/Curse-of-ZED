@@ -122,7 +122,7 @@ public class Mage extends Player {
         moveset.add(new Empower());
         moveset.add(new Revitalize());
         moveset.add(new LifeLeech());
-        moveset.add(new Refraction());
+        moveset.add(new Roulette());
         moveset.add(new ChillingGamble());
 
         moves.add(new ArcaneBolt());

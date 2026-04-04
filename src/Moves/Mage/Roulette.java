@@ -4,12 +4,15 @@ import Entities.Characters.Mage;
 import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
+import java.util.*;
 
-public class ArcaneExplosion extends Move {
-    public ArcaneExplosion(){
-        super("Arcane Explosion", 20, TargetType.ALL_ENEMIES);
-        hasUnlocked = true;
-        description = "Deal 48% of ATK to all enemies";
+public class Roulette extends Move {
+    Random rand = new Random();
+
+    public Roulette() {
+        super("Roulette", 35, TargetType.ALL_ENEMIES);
+        hasUnlocked = false;
+        description = "Deal 15% damage to all enemies 3-10x";
     }
 
     @Override
@@ -29,7 +32,7 @@ public class ArcaneExplosion extends Move {
             totalATK += this.attack; //this move's atk
 
             //multiply sum to dmg multiplier
-            double damage = totalATK * 0.48;
+            double damage = totalATK * 0.15 * rand.nextDouble(3, 11);
             double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
