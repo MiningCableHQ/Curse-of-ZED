@@ -34,6 +34,7 @@ public abstract class Entity {
     protected double maxDefense;
     protected double dmgResistance;
     protected double speed;
+    protected double originalSpeed;  // Store original speed for reset
     protected double accuracy;
 
     Random rand = new Random();
@@ -51,6 +52,15 @@ public abstract class Entity {
         hp -= actualDamage;
 
         return actualDamage;
+    }
+
+    // Speed management methods
+    public void resetSpeed() {
+        this.speed = originalSpeed;
+    }
+
+    public void setOriginalSpeed(double newSpeed) {
+        this.originalSpeed = newSpeed;
     }
 
     //Getters
@@ -90,10 +100,13 @@ public abstract class Entity {
 
     //Setters
     public void setHp(double hp) {
-        this.hp = Math.max(0, Math.min(hp, maxHp)); //Makes sure HP stays between 0 and maxHp
+        this.hp = Math.max(0, Math.min(hp, maxHp));
     }
     public void setAttack(double attack) {
-        this.attack = Math.min(attack, maxAttack * 2); // Ensure attack doesn't exceed maxAttack x 2
+        this.attack = Math.min(attack, maxAttack * 2);
+    }
+    public void setSpeed(double speed) {
+        this.speed = Math.max(0, speed);
     }
 
     //Unique entity methods
@@ -107,6 +120,6 @@ public abstract class Entity {
     }
     public void sacrifice(double amount) { //For entities who consume their hp
         double newHp = this.hp - amount;
-        this.hp = Math.max(0, newHp); //makes sure HP won't go below 0
+        this.hp = Math.max(0, newHp);
     }
 }

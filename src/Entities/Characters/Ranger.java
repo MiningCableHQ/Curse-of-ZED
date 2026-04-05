@@ -22,10 +22,11 @@ public class Ranger extends Player {
         defense = 20;
         maxDefense = defense;
         speed = 50;
+        originalSpeed = speed;
         dmgResistance = 0.10;
         loadMoves();
 
-        originalSpeed = speed;
+        this.originalSpeed = speed;
     }
 
     @Override
@@ -143,11 +144,14 @@ public class Ranger extends Player {
             windstepStacks++;
             // Increase SPD by 8%
             speed = originalSpeed + (originalSpeed * 0.08 * windstepStacks);
+            // Update originalSpeed so the increased speed persists across cycles
+            setOriginalSpeed(speed);
         }
     }
     public void resetBattleBuffs() {
         windstepStacks = 0;
         speed = originalSpeed;
+        setOriginalSpeed(speed);
     }
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
