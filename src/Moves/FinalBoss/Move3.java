@@ -12,11 +12,11 @@ public class Move3 extends Move {
     @Override
     public <T> void execute(T Entity){
         if(Entity instanceof ZED && Move.currentTarget != null){
-            ZED ZED = (ZED) Entity;
+            ZED zed = (ZED) Entity;
             Entity target = Move.currentTarget;
 
             //Add total atk from enemy and this move
-            double totalATK = ZED.getAttack();
+            double totalATK = zed.getAttack();
             totalATK += this.attack;
 
             //multiply sum to multiplier

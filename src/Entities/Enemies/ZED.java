@@ -38,10 +38,10 @@ public class ZED extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 50% chance for Move1, 30% chance for Move2, 20% for ult
-        if (randomValue < 50) {
+        // 40% chance for Move1, 35% chance for Move2, 25% for ult
+        if (randomValue < 40) {
             return moveset.get(0); // Move1
-        } else if(randomValue < 80) {
+        } else if(randomValue < 75) {
             return moveset.get(1); // Move2
         } else {
             return moveset.get(2); // Move3 (Ult)
@@ -56,8 +56,8 @@ public class ZED extends Boss{
     //Unique methods for final boss
     public void addDefBuff() {
         defBuffStacks++;
-        // Increase defense by 5 per stack
-        defense = originalDefense + (defBuffStacks * 5);
+        // Increase defense by 8 per stack
+        defense = originalDefense + (defBuffStacks * 8);
     }
     public void resetBattleBuffs() {
         defBuffStacks = 0;
