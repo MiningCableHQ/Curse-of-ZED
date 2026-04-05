@@ -33,7 +33,7 @@ public class Roulette extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 0.15 * rand.nextDouble(3, 11);
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

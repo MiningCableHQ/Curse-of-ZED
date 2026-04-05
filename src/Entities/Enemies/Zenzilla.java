@@ -32,8 +32,8 @@ public class Zenzilla extends Enemy{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 80% chance for Move1, 20% chance for Move2
-        if (randomValue < 80) {
+        // 70% chance for Move1, 30% chance for Move2
+        if (randomValue < 70) {
             return moveset.get(0); // Move1
         } else {
             return moveset.get(1); // Move2

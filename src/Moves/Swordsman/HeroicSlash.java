@@ -30,7 +30,7 @@ public class HeroicSlash extends Move {
 
             double dmgMultiplier = 1.60;
             double damage = totalATK * dmgMultiplier;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

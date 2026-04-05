@@ -22,7 +22,7 @@ public class Move1 extends Move {
             //multiply sum to multiplier
             double damage = totalATK * 1.40;
 
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
         }
     }
 }

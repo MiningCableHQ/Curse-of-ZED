@@ -22,7 +22,7 @@ public class Move1 extends Move {
             //multiply sum to multiplier
             double damage = totalATK * 0.50;
 
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
             //TODO FRANK 15% chance to inflict burn
         }
     }

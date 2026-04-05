@@ -26,15 +26,7 @@ public class Move2 extends Move {
             target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
             // --- DEF Buff Part ---------------------------------------------------------------------------------------
-            // Store current defense before buffing
-            double beforeDefense = zed.getDefense();
-
-            // Add a DEF buff stack
             zed.addDefBuff();
-
-            // Get the new defense after buff
-            double afterDefense = zed.getDefense();
-            double buffAmount = afterDefense - beforeDefense; //TODO FRANK display this in UI during enemy turn
         }
     }
 }

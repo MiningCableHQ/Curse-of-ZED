@@ -25,7 +25,7 @@ public class Move2 extends Move {
             //multiply sum to multiplier and multiply by 2-5x
             double damage = totalATK * 0.50 * rand.nextDouble(2, 6);
 
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
         }
     }
 }

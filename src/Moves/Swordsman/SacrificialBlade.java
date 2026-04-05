@@ -39,7 +39,7 @@ public class SacrificialBlade extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 5;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

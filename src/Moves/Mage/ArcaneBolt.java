@@ -32,7 +32,7 @@ public class ArcaneBolt extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 1.45;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

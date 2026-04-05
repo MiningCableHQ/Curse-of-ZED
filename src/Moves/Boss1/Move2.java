@@ -13,15 +13,8 @@ public class Move2 extends Move {
         if (Entity instanceof Thorncrusher) {
             Thorncrusher thorncrusher = (Thorncrusher) Entity;
 
-            // Store current HP to calculate actual heal amount
-            double beforeHp = thorncrusher.getHp();
-
             // Heal by 100 HP
-            thorncrusher.heal(100);
-
-            // Calculate actual heal amount
-            double afterHp = thorncrusher.getHp();
-            double healAmount = afterHp - beforeHp; //TODO FRANK display message in UI
+            thorncrusher.heal(100); //TODO Display in UI
         }
     }
 }

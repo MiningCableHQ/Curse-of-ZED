@@ -32,8 +32,8 @@ public class Frankenstein extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 67% chance for Move1, 23% chance for Move2, 10% for ult
-        if (randomValue < 67) {
+        // 60% chance for Move1, 30% chance for Move2, 10% for ult
+        if (randomValue < 60) {
             return moveset.get(0); // Move1
         } else if(randomValue < 90) {
             return moveset.get(1); // Move2

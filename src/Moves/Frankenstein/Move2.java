@@ -13,15 +13,8 @@ public class Move2 extends Move {
         if (Entity instanceof Frankenstein) {
             Frankenstein frankenstein = (Frankenstein) Entity;
 
-            // Store current HP to calculate actual heal amount
-            double beforeHp = frankenstein.getHp();
-
             // Heal by 150 HP
-            frankenstein.heal(150);
-
-            // Calculate actual heal amount
-            double afterHp = frankenstein.getHp();
-            double healAmount = afterHp - beforeHp; //TODO FRANK display message in UI
+            frankenstein.heal(150); //TODO Display in UI
         }
     }
 }

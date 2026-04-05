@@ -27,7 +27,7 @@ public class FlurryShot extends Move {
             //multiply sum to multiplier and multiply by 2-5x
             double damage = totalATK * 0.45 * rand.nextDouble(2, 6);
 
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

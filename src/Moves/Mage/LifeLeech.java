@@ -31,15 +31,14 @@ public class LifeLeech extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 1.10;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
             // --- Self Heal Part --------------------------------------------------------------------------------------
             double maxHp = mage.getMaxHp();
 
             double healAmount = maxHp * 0.15; // 15% of MaxHP type shi heal
 
-            mage.heal(healAmount);
-            //TODO FRANK display heal amount sa UI when using this skill
+            mage.heal(healAmount); //TODO Display in UI
         }
     }
 }

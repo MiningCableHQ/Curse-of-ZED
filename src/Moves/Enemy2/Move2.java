@@ -13,13 +13,8 @@ public class Move2 extends Move {
         if (Entity instanceof Zenzilla) {
             Zenzilla zenzilla = (Zenzilla) Entity;
 
-            double beforeAttack = zenzilla.getAttack();
-
             // Increase attack by 10
             zenzilla.buffAttack(10);
-
-            double afterAttack = zenzilla.getAttack();
-            double buffAmount = afterAttack - beforeAttack; //TODO FRANK Display on UI during enemy turn
         }
     }
 }

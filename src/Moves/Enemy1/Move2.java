@@ -13,15 +13,8 @@ public class Move2 extends Move {
         if (Entity instanceof Masklet) {
             Masklet masklet = (Masklet) Entity;
 
-            // Store current HP to calculate actual heal amount
-            double beforeHp = masklet.getHp();
-
             // Heal by 70 HP
             masklet.heal(70);
-
-            // Calculate actual heal amount
-            double afterHp = masklet.getHp();
-            double healAmount = afterHp - beforeHp; //TODO FRANK display message in UI
         }
     }
 }

@@ -5,6 +5,7 @@ import Entities.Characters.Ranger;
 import Entities.Characters.Swordsman;
 import Entities.Characters.Mage;
 import Entities.Enemies.Enemy;
+import Entities.Enemies.*;
 import Entities.Entity;
 import Moves.Move;
 
@@ -118,14 +119,6 @@ public class Battle {
             for (Map.Entry<Entity, Double> entry : originalSpeeds.entrySet()) {
                 System.out.println("  " + entry.getKey().getName() + ": " + entry.getValue());
             }
-        }
-    }
-
-    /** Update original speed for an entity (for permanent buffs like Windstep) */
-    public void updateOriginalSpeed(Entity entity, double newSpeed) {
-        if (originalSpeeds.containsKey(entity)) {
-            originalSpeeds.put(entity, newSpeed);
-            System.out.println("Updated original speed for " + entity.getName() + " to: " + newSpeed);
         }
     }
 
@@ -309,7 +302,105 @@ public class Battle {
         // Execute move after delay
         Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
             if (!isBattleActive) return;
+            String resultMessage = "";
 
+            // Self target moves
+            boolean isSelfBuffMove = true;
+
+            switch (enemyMove.getName()) {
+                case "Inner Focus":
+                    if (enemy instanceof Zenzilla) {
+                        double beforeAttack = enemy.getAttack();
+                        Move.currentTarget = enemy;
+                        enemyMove.execute(enemy);
+                        Move.currentTarget = null;
+                        double attackIncreased = enemy.getAttack() - beforeAttack;
+
+                        if (attackIncreased > 0) {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and increased attack by " +
+                                    String.format("%d", (int)attackIncreased);
+                        } else {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but attack was already at maximum!";
+                        }
+                    } else {
+                        isSelfBuffMove = false;
+                    }
+                    break;
+
+                case "Glimmerweave":
+                    if (enemy instanceof Masklet) {
+                        double beforeHp = enemy.getHp();
+                        Move.currentTarget = enemy;
+                        enemyMove.execute(enemy);
+                        Move.currentTarget = null;
+                        double healAmount = enemy.getHp() - beforeHp;
+
+                        if (healAmount > 0) {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
+                                    String.format("%d", (int)healAmount) + " HP!";
+                        } else {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
+                        }
+                    } else {
+                        isSelfBuffMove = false;
+                    }
+                    break;
+
+                case "Root Recovery":
+                    if(enemy instanceof Thorncrusher) {
+                        double beforeHp = enemy.getHp();
+                        Move.currentTarget = enemy;
+                        enemyMove.execute(enemy);
+                        Move.currentTarget = null;
+                        double healAmount = enemy.getHp() - beforeHp;
+
+                        if (healAmount > 0) {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
+                                    String.format("%d", (int)healAmount) + " HP!";
+                        } else {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
+                        }
+                    } else {
+                        isSelfBuffMove = false;
+                    }
+                    break;
+
+                case "NAOLNAOLNAOL":
+                    if(enemy instanceof Frankenstein) {
+                        double beforeHp = enemy.getHp();
+                        Move.currentTarget = enemy;
+                        enemyMove.execute(enemy);
+                        Move.currentTarget = null;
+                        double healAmount = enemy.getHp() - beforeHp;
+
+                        if (healAmount > 0) {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
+                                    String.format("%d", (int)healAmount) + " HP!";
+                        } else {
+                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
+                        }
+                    } else {
+                        isSelfBuffMove = false;
+                    }
+                    break;
+
+                default:
+                    isSelfBuffMove = false;
+                    break;
+            }
+
+            if (isSelfBuffMove) {
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+
+                // Move to next turn
+                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+                nextTimer.setRepeats(false);
+                nextTimer.start();
+                return;
+            }
+
+            // For attack moves
             double beforeHp = player.getHp();
             Move.currentTarget = player;
             enemyMove.execute(enemy);
@@ -317,10 +408,9 @@ public class Battle {
             double afterHp = player.getHp();
             double damageDealt = beforeHp - afterHp;
 
-            String resultMessage;
             if (damageDealt > 0) {
                 resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
-                        String.format("%.0f", damageDealt) + " damage!";
+                        String.format("%d", (int)damageDealt) + " damage!";
             } else {
                 resultMessage = enemy.getName() + " used " + enemyMove.getName();
             }
@@ -521,30 +611,20 @@ public class Battle {
                 if (move.getName().equals("Iron Stance") && player instanceof Swordsman) {
                     Swordsman swordsman = (Swordsman) player;
                     message = player.getName() + " used " + move.getName() + "! Defense increased to " +
-                            String.format("%.0f", swordsman.getDefense());
-                } else if (move.getName().equals("Windstep") && player instanceof Ranger) {
-                    Ranger ranger = (Ranger) player;
-                    message = player.getName() + " used " + move.getName() + "! Speed increased to " +
-                            String.format("%.0f", ranger.getSpeed());
+                            String.format("%d", (int)swordsman.getDefense());
                 } else if (move.getName().equals("Empower") && player instanceof Mage) {
                     Mage mage = (Mage) player;
                     message = player.getName() + " used " + move.getName() + "! Attack increased to " +
-                            String.format("%.0f", mage.getAttack());
+                            String.format("%d", (int)mage.getAttack());
                 } else if (move.getName().equals("Revitalize") && player instanceof Mage) {
                     double afterHp = player.getHp();
                     double healAmount = afterHp - beforeHp;
                     if (healAmount > 0) {
                         message = player.getName() + " used " + move.getName() + " and healed " +
-                                String.format("%.1f", healAmount) + " HP!";
+                                String.format("%d", (int)healAmount) + " HP!";
                     } else {
                         message = player.getName() + " used " + move.getName() + " but was already at full health!";
                     }
-                } else if (move.getName().equals("Windstep") && player instanceof Ranger) {
-                    Ranger ranger = (Ranger) player;
-                    message = player.getName() + " used " + move.getName() + "! Speed increased to " +
-                            String.format("%d", ranger.getSpeed());
-                    // Update original speed to include the permanent buff
-                    updateOriginalSpeed(player, ranger.getSpeed());
                 }
 
                 battlePanel.setBattleMessage(message);
@@ -594,17 +674,17 @@ public class Battle {
                     if (damageDealt > 0) {
                         if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
                             message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) +
-                                    " damage, sacrificing " + String.format("%.1f", playerHpLost) + " HP!";
+                                    currentTarget.getName() + " and dealt " + String.format("%d", (int)damageDealt) +
+                                    " damage, sacrificing " + String.format("%d", (int)playerHpLost) + " HP!";
                         } else {
                             message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
+                                    currentTarget.getName() + " and dealt " + String.format("%d", (int)damageDealt) + " damage!";
                         }
                     } else {
                         if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
                             message = player.getName() + " used " + move.getName() + " on " +
                                     currentTarget.getName() + " but it had no effect, sacrificing " +
-                                    String.format("%.1f", playerHpLost) + " HP in vain!";
+                                    String.format("%d", (int)playerHpLost) + " HP in vain!";
                         } else {
                             message = player.getName() + " used " + move.getName() + " on " +
                                     currentTarget.getName() + " but it had no effect!";

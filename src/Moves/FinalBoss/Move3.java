@@ -22,7 +22,7 @@ public class Move3 extends Move {
             //multiply sum to multiplier
             double damage = totalATK * 1.50;
 
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
             //TODO FRANK 30% chance to inflict frozen
         }
     }

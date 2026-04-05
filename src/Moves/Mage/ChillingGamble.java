@@ -30,7 +30,7 @@ public class ChillingGamble extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 3;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
         //TODO FRANK gains Frozen status after using this skill
     }

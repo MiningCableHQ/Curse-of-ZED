@@ -30,7 +30,7 @@ public class SnipersGamble extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 2.50;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
         //TODO accuracy is lowered by 25% for this move
     }

@@ -30,7 +30,7 @@ public class Scattershot extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 0.55;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
         }
     }
 }

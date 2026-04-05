@@ -10,7 +10,6 @@ import java.io.IOException;
 
 public class Ranger extends Player {
     private int windstepStacks = 0;
-    private double originalSpeed;
 
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
@@ -22,11 +21,8 @@ public class Ranger extends Player {
         defense = 20;
         maxDefense = defense;
         speed = 50;
-        originalSpeed = speed;
         dmgResistance = 0.10;
         loadMoves();
-
-        this.originalSpeed = speed;
     }
 
     @Override
@@ -136,22 +132,8 @@ public class Ranger extends Player {
     public int getWindstepStacks() {
         return windstepStacks;
     }
-    public boolean canUseWindstep() {
-        return windstepStacks < 3;
-    }
-    public void addWindstepStack() {
-        if (windstepStacks < 3) {
-            windstepStacks++;
-            // Increase SPD by 8%
-            speed = originalSpeed + (originalSpeed * 0.08 * windstepStacks);
-            // Update originalSpeed so the increased speed persists across cycles
-            setOriginalSpeed(speed);
-        }
-    }
     public void resetBattleBuffs() {
         windstepStacks = 0;
-        speed = originalSpeed;
-        setOriginalSpeed(speed);
     }
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
