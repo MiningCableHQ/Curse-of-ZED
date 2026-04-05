@@ -15,7 +15,7 @@ public class Swordsman extends Player {
     public Swordsman(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
         name = "Swordsman";
-        hp = 800;
+        hp = 1000;
         maxHp = hp;
         attack = 205;
         maxAttack = attack;

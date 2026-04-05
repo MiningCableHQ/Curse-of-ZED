@@ -15,7 +15,7 @@ public class Mage extends Player {
     public Mage(GamePanel gp, KeyHandler keyH){
         super(gp, keyH);
         name = "Mage";
-        hp = 650;
+        hp = 800;
         maxHp = hp;
         attack = 335;
         maxAttack = attack;
