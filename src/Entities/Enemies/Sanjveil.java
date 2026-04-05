@@ -9,7 +9,8 @@ import java.util.Random;
 public class Sanjveil extends Enemy{
     public Sanjveil(){
         name = "Sanjveil";
-        hp = 800;
+        level = 7;
+        hp = 1600;
         maxHp = hp;
         attack = 180;
         maxAttack = attack;

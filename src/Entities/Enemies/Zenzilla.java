@@ -8,7 +8,8 @@ import java.util.*;
 public class Zenzilla extends Enemy{
     public Zenzilla(){
         name = "Zenzilla";
-        hp = 200;
+        level = 4;
+        hp = 1000;
         maxHp = hp;
         attack = 150;
         maxAttack = attack;

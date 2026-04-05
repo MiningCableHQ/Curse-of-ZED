@@ -8,7 +8,8 @@ import java.util.Random;
 public class Frankenstein extends Boss{
     public Frankenstein(){
         name = "Frankenstein";
-        hp = 1500;
+        level = 67;
+        hp = 2000;
         maxHp = hp;
         attack = 100;
         maxAttack = attack;

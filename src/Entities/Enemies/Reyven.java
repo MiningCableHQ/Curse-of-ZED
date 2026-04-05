@@ -9,7 +9,8 @@ import java.util.Random;
 public class Reyven extends Enemy{
     public Reyven(){
         name = "Reyven";
-        hp = 900;
+        level = 10;
+        hp = 2000;
         maxHp = hp;
         attack = 250;
         maxAttack = attack;

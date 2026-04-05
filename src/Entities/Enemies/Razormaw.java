@@ -9,7 +9,8 @@ import java.util.Random;
 public class Razormaw extends Enemy{
     public Razormaw(){
         name = "Razormaw";
-        hp = 600;
+        level = 7;
+        hp = 1400;
         maxHp = hp;
         attack = 180;
         maxAttack = attack;

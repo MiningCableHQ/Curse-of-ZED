@@ -9,7 +9,8 @@ import java.util.Random;
 public class Thorncrusher extends Boss{
     public Thorncrusher(){
         name = "Thorncrusher";
-        hp = 800;
+        level = 10;
+        hp = 2000;
         maxHp = hp;
         attack = 120;
         maxAttack = attack;

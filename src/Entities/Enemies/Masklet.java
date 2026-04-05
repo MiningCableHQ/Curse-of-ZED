@@ -8,7 +8,8 @@ import java.util.*;
 public class Masklet extends Enemy{
     public Masklet(){
         name = "Masklet";
-        hp = 400;
+        level = 4;
+        hp = 1200;
         maxHp = hp;
         attack = 100;
         maxAttack = attack;
