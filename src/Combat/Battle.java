@@ -11,7 +11,9 @@ import Moves.Move;
 import javax.swing.*;
 import java.awt.Window;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class Battle {
@@ -28,6 +30,10 @@ public class Battle {
     private Enemy selectedTarget;
     private boolean isExecutingRound = false;
 
+    // Store chosen move for player's turn
+    private Move chosenMove;
+    private Enemy chosenTarget;
+
     // Random for enemy AI
     private final Random random = new Random();
 
@@ -37,10 +43,12 @@ public class Battle {
     // Delay constants
     private static final int MESSAGE_DELAY = 1500;
     private static final int TURN_DELAY = 1000;
+    private static final int SPEED_DEDUCTION = 20;
 
-    // Store the chosen move for the round
-    private Move chosenMove;
-    private Enemy chosenTarget;
+    // Track which entity is currently acting in the turn queue
+    private int currentTurnIndex = 0;
+    private List<Entity> currentTurnOrder = new ArrayList<>();
+    private Map<Entity, Double> tempSpeeds = new HashMap<>();
 
     // ─────────────────────────────────────────────────────────────
     // Constructor
@@ -71,355 +79,151 @@ public class Battle {
         battlePanel.setButtonsEnabled(true);
     }
 
-    /** Execute a full round after player has chosen their move */
+    /** Execute a full round with speed-based turn order within the round */
     private void executeRound() {
         if (!isBattleActive) return;
 
         isExecutingRound = true;
+        currentTurnIndex = 0;
+
+        // Reset temporary speeds for this round
+        tempSpeeds.clear();
 
         // Get all alive entities
         List<Entity> allEntities = new ArrayList<>();
         if (player.getHp() > 0) {
             allEntities.add(player);
+            tempSpeeds.put(player, player.getSpeed());
         }
         for (Enemy enemy : enemies) {
             if (enemy.getHp() > 0) {
                 allEntities.add(enemy);
+                tempSpeeds.put(enemy, enemy.getSpeed());
             }
         }
 
-        // Sort by speed (fastest to slowest)
-        allEntities.sort((e1, e2) -> Double.compare(e2.getSpeed(), e1.getSpeed()));
-
-        System.out.println("DEBUG: Round Turn Order (Speed-based):");
-        for (Entity e : allEntities) {
-            System.out.println("DEBUG: " + e.getName() + " (Speed: " + e.getSpeed() + ")");
+        System.out.println("DEBUG: Round starting - Temporary speeds:");
+        for (Map.Entry<Entity, Double> entry : tempSpeeds.entrySet()) {
+            System.out.println("DEBUG: " + entry.getKey().getName() + " temp speed: " + entry.getValue());
         }
 
-        // Process each entity's turn
-        processRoundTurn(allEntities, 0);
+        // Build initial turn order based on temporary speeds
+        buildTurnOrder();
+
+        // Start processing turns
+        processNextTurn();
     }
 
-    /** Process each turn in the round */
-    private void processRoundTurn(List<Entity> turnOrder, int currentIndex) {
+    /** Build the turn order based on current temporary speeds */
+    private void buildTurnOrder() {
+        currentTurnOrder.clear();
+
+        // Add all entities that still have speed > 0
+        for (Map.Entry<Entity, Double> entry : tempSpeeds.entrySet()) {
+            if (entry.getValue() > 0) {
+                currentTurnOrder.add(entry.getKey());
+            }
+        }
+
+        // Sort by temporary speed (highest first)
+        currentTurnOrder.sort((a, b) -> {
+            double speedA = tempSpeeds.getOrDefault(a, 0.0);
+            double speedB = tempSpeeds.getOrDefault(b, 0.0);
+
+            if (speedA != speedB) {
+                return Double.compare(speedB, speedA);
+            }
+            // Tie-breaking: Player always goes first
+            if (a instanceof Player && !(b instanceof Player)) return -1;
+            if (!(a instanceof Player) && b instanceof Player) return 1;
+            return 0;
+        });
+
+        System.out.println("DEBUG: Turn order built:");
+        for (int i = 0; i < currentTurnOrder.size(); i++) {
+            Entity e = currentTurnOrder.get(i);
+            System.out.println("DEBUG: " + i + ": " + e.getName() + " (temp speed: " + tempSpeeds.get(e) + ")");
+        }
+    }
+
+    /** Process the next turn in the queue */
+    private void processNextTurn() {
         if (!isBattleActive) return;
 
-        if (currentIndex >= turnOrder.size()) {
-            // Round complete, start next player decision phase
-            isExecutingRound = false;
-            chosenMove = null;
-            chosenTarget = null;
-
-            // Check if battle should continue
-            if (getAliveEnemies().isEmpty()) {
-                endBattle(true);
-            } else if (player.getHp() < 1) {
-                endBattle(false);
-            } else {
-                Timer roundDelay = new Timer(TURN_DELAY, e -> startPlayerDecisionPhase());
-                roundDelay.setRepeats(false);
-                roundDelay.start();
-            }
+        // Check if battle should end
+        if (getAliveEnemies().isEmpty()) {
+            endBattle(true);
+            return;
+        }
+        if (player.getHp() < 1) {
+            endBattle(false);
             return;
         }
 
-        Entity currentEntity = turnOrder.get(currentIndex);
+        // Rebuild turn order if needed (in case speeds changed)
+        buildTurnOrder();
+
+        // Check if we've processed all turns in this round
+        if (currentTurnIndex >= currentTurnOrder.size()) {
+            // Round complete, start next player decision phase
+            finishRound();
+            return;
+        }
+
+        Entity currentEntity = currentTurnOrder.get(currentTurnIndex);
 
         // Skip if entity is defeated
         if (currentEntity.getHp() < 1) {
-            processRoundTurn(turnOrder, currentIndex + 1);
+            currentTurnIndex++;
+            processNextTurn();
             return;
         }
 
-        System.out.println("DEBUG: " + currentEntity.getName() + "'s turn");
+        System.out.println("DEBUG: " + currentEntity.getName() + "'s turn (Index: " + currentTurnIndex + ")");
 
         if (currentEntity instanceof Player) {
-            // Player executes their chosen move
-            executePlayerRoundMove((Player) currentEntity, turnOrder, currentIndex);
+            // Player's turn - need to wait for move selection
+            isWaitingForPlayerTurn = true;
+            battlePanel.showMainMenu();
+            battlePanel.setBattleMessage(player.getName() + "'s turn! Choose a move.");
+            battlePanel.setButtonsEnabled(true);
+            // The move will be handled via handlePlayerMove, which will call continueAfterPlayerTurn
         } else if (currentEntity instanceof Enemy) {
-            // Enemy executes their move
-            executeEnemyRoundMove((Enemy) currentEntity, turnOrder, currentIndex);
+            // Enemy's turn - execute move immediately
+            executeEnemyRoundMove((Enemy) currentEntity);
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Player Actions
-    // ─────────────────────────────────────────────────────────────
+    // Flag to track if we're waiting for player turn during round
+    private boolean isWaitingForPlayerTurn = false;
 
-    /** Handle player selecting a move during decision phase */
-    public void handlePlayerMove(Move move) {
-        if (!isBattleActive || !isWaitingForPlayerInput) return;
-
-        isWaitingForPlayerInput = false;
-        pendingMove = move;
-        battlePanel.hideMainMenu();
-        battlePanel.setButtonsEnabled(false);
-
-        // Check if move requires target selection
-        if (move.getTargetType() == Move.TargetType.SELF) {
-            // Self-targeting move - no target needed
-            chosenMove = move;
-            chosenTarget = null;
-            executeRound();
-        } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
-            // AoE move - no specific target needed
-            chosenMove = move;
-            chosenTarget = null;
-            executeRound();
-        } else if (getAliveEnemies().size() > 1 && move.getTargetType() == Move.TargetType.ENEMY) {
-            // Need target selection - stay in waiting state but show target selection
-            battlePanel.showTargetSelection(move);
-        } else {
-            // Single enemy
-            chosenMove = move;
-            chosenTarget = getAliveEnemies().get(0);
-            executeRound();
-        }
-    }
-
-    /** Handle player selecting a target for a move */
-    public void handleTargetSelected(int enemyIndex) {
-        System.out.println("handleTargetSelected called for index: " + enemyIndex);
-
+    /** Continue after player has selected their move */
+    private void continueAfterPlayerTurn() {
         if (!isBattleActive) return;
 
-        // Check if we have a pending move
-        if (pendingMove == null) {
-            System.out.println("ERROR: No pending move!");
-            battlePanel.showFightMenu();
-            return;
-        }
+        // Deduct speed from player
+        Entity playerEntity = player;
+        double currentSpeed = tempSpeeds.getOrDefault(playerEntity, playerEntity.getSpeed());
+        double newSpeed = Math.max(0, currentSpeed - SPEED_DEDUCTION);
+        tempSpeeds.put(playerEntity, newSpeed);
+        System.out.println("DEBUG: " + playerEntity.getName() + " speed reduced: " + currentSpeed + " -> " + newSpeed);
 
-        // Check if enemy index is valid
-        if (enemyIndex >= enemies.size()) {
-            System.out.println("ERROR: Invalid enemy index: " + enemyIndex);
-            battlePanel.showFightMenu();
-            return;
-        }
+        // Move to next turn
+        currentTurnIndex++;
 
-        Enemy targetEnemy = enemies.get(enemyIndex);
-
-        // Check if target enemy is alive
-        if (targetEnemy.getHp() < 1) {
-            System.out.println("ERROR: Target enemy is already defeated!");
-            battlePanel.setBattleMessage("That enemy is already defeated! Choose another target.");
-            // Re-show target selection
-            battlePanel.showTargetSelection(pendingMove);
-            return;
-        }
-
-        // Valid target selected
-        chosenMove = pendingMove;
-        chosenTarget = targetEnemy;
-        pendingMove = null;
-
-        System.out.println("Target selected: " + chosenTarget.getName() + " (HP: " + chosenTarget.getHp() + ")");
-
-        executeRound();
+        // Process next turn after delay
+        Timer nextTimer = new Timer(TURN_DELAY, e -> processNextTurn());
+        nextTimer.setRepeats(false);
+        nextTimer.start();
     }
-
-    /** Cancels target selection - resets state and returns to fight menu */
-    public void cancelTargetSelection() {
-        if (!isBattleActive) return;
-
-        System.out.println("Target selection cancelled - resetting state");
-
-        // Clear pending selections
-        pendingMove = null;
-        chosenMove = null;
-        chosenTarget = null;
-
-        // Reset waiting flag - player can now make new choices
-        isWaitingForPlayerInput = true;
-
-        // Show fight menu directly - no Timer
-        battlePanel.showFightMenu();
-    }
-
-    /** Execute player's move during the round */
-    private void executePlayerRoundMove(Player player, List<Entity> turnOrder, int currentIndex) {
-        if (chosenMove == null) {
-            // Should not happen, but just in case
-            processRoundTurn(turnOrder, currentIndex + 1);
-            return;
-        }
-
-        // Validate target for single-target moves
-        if (chosenMove.getTargetType() == Move.TargetType.ENEMY) {
-            if (chosenTarget == null || chosenTarget.getHp() <= 0) {
-                // Find first alive enemy as fallback
-                List<Enemy> aliveEnemies = getAliveEnemies();
-                if (!aliveEnemies.isEmpty()) {
-                    chosenTarget = aliveEnemies.get(0);
-                    System.out.println("Fallback target selected: " + chosenTarget.getName());
-                } else {
-                    // No alive enemies - battle should have ended
-                    processRoundTurn(turnOrder, currentIndex + 1);
-                    return;
-                }
-            }
-        }
-
-        final Move move = chosenMove;
-        final Enemy target = chosenTarget;  // Make a final copy for the lambda
-
-        battlePanel.hideBattleButtons();
-        battlePanel.hideTargetButtons();
-
-        // Display message that player is about to act
-        String startMessage = player.getName() + " is about to use " + move.getName() + "!";
-        battlePanel.setBattleMessage(startMessage);
-        battlePanel.repaint();
-
-        Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
-            if (!isBattleActive) return;
-
-            // Execute the move based on target type
-            if (move.getTargetType() == Move.TargetType.SELF) {
-                //Variable for mage revitalize move
-                double beforeHp = player.getHp();
-                // Self-targeting move
-                Move.currentTarget = player;
-                move.execute(player);
-                Move.currentTarget = null;
-
-                String message = player.getName() + " used " + move.getName();
-
-                if (move.getName().equals("Iron Stance") && player instanceof Swordsman) {
-                    Swordsman swordsman = (Swordsman) player;
-                    message = player.getName() + " used " + move.getName() + "! Defense increased to " +
-                            String.format("%.0f", swordsman.getDefense());
-                } else if (move.getName().equals("Windstep") && player instanceof Ranger) {
-                    Ranger ranger = (Ranger) player;
-                    message = player.getName() + " used " + move.getName() + "! Speed increased to " +
-                            String.format("%.0f", ranger.getSpeed());
-                } else if (move.getName().equals("Empower") && player instanceof Mage) {
-                    Mage mage = (Mage) player;
-                    message = player.getName() + " used " + move.getName() + "! Attack increased to " +
-                            String.format("%.0f", mage.getAttack());
-                } else if (move.getName().equals("Revitalize") && player instanceof Mage) {
-                    double afterHp = player.getHp();
-                    double healAmount = afterHp - beforeHp;
-
-                    if (healAmount > 0) {
-                        message = player.getName() + " used " + move.getName() + " and healed " +
-                                String.format("%.1f", healAmount) + " HP!";
-                    } else {
-                        message = player.getName() + " used " + move.getName() + " but was already at full health!";
-                    }
-                }
-
-                battlePanel.setBattleMessage(message);
-                battlePanel.repaint();
-
-            } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
-                // Multi-target move
-                for (Enemy enemy : enemies) {
-                    if (enemy.getHp() > 0) {
-                        Move.currentTarget = enemy;
-                        move.execute(player);
-                    }
-                }
-                Move.currentTarget = null;
-
-                String message = player.getName() + " used " + move.getName() + " on all enemies!";
-                battlePanel.setBattleMessage(message);
-                battlePanel.repaint();
-                battlePanel.updateTargetButtonStates();
-
-            } else {
-                // Single target move - use the final target variable
-                Enemy currentTarget = target;
-
-                if (currentTarget == null || currentTarget.getHp() <= 0) {
-                    List<Enemy> aliveEnemies = getAliveEnemies();
-                    if (!aliveEnemies.isEmpty()) {
-                        currentTarget = aliveEnemies.get(0);
-                    } else {
-                        // No alive enemies
-                        Timer nextTimer = new Timer(TURN_DELAY, ev -> {
-                            processRoundTurn(turnOrder, currentIndex + 1);
-                        });
-                        nextTimer.setRepeats(false);
-                        nextTimer.start();
-                        return;
-                    }
-                }
-
-                if (currentTarget != null && currentTarget.getHp() > 0) {
-                    // Track HP before move for both target and player
-                    double beforeTargetHp = currentTarget.getHp();
-                    double beforePlayerHp = player.getHp();
-
-                    Move.currentTarget = currentTarget;
-                    move.execute(player);
-                    Move.currentTarget = null;
-
-                    double afterTargetHp = currentTarget.getHp();
-                    double afterPlayerHp = player.getHp();
-                    double damageDealt = beforeTargetHp - afterTargetHp;
-                    double playerHpLost = beforePlayerHp - afterPlayerHp;
-
-                    String message;
-                    if (damageDealt > 0) {
-                        // Check if it's Sacrificial Blade move
-                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) +
-                                    " damage, sacrificing " + String.format("%.1f", playerHpLost) + " HP!";
-                        } else {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
-                        }
-                    } else {
-                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " but it had no effect, sacrificing " +
-                                    String.format("%.1f", playerHpLost) + " HP in vain!";
-                        } else {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " but it had no effect!";
-                        }
-                    }
-
-                    battlePanel.setBattleMessage(message);
-                    battlePanel.repaint();
-                    battlePanel.updateTargetButtonStates();
-                }
-            }
-
-            // Check if battle should end
-            if (getAliveEnemies().isEmpty()) {
-                endBattle(true);
-                return;
-            }
-
-            // Check if player died from sacrifice
-            if (player.getHp() < 1) {
-                endBattle(false);
-                return;
-            }
-
-            // Move to next entity in turn order
-            Timer nextTimer = new Timer(TURN_DELAY, ev -> {
-                processRoundTurn(turnOrder, currentIndex + 1);
-            });
-            nextTimer.setRepeats(false);
-            nextTimer.start();
-        });
-        executeTimer.setRepeats(false);
-        executeTimer.start();
-    }
-    // ─────────────────────────────────────────────────────────────
-    // Enemy Actions
-    // ─────────────────────────────────────────────────────────────
 
     /** Execute enemy's move during the round */
-    private void executeEnemyRoundMove(Enemy enemy, List<Entity> turnOrder, int currentIndex) {
+    private void executeEnemyRoundMove(Enemy enemy) {
         Move enemyMove = enemy.selectMove();
 
         if (enemyMove == null) {
-            processRoundTurn(turnOrder, currentIndex + 1);
+            // No move selected, just continue
+            continueAfterEnemyTurn(enemy);
             return;
         }
 
@@ -460,20 +264,338 @@ public class Battle {
                 return;
             }
 
-            // Move to next turn
-            Timer nextTimer = new Timer(TURN_DELAY, ev -> {
-                processRoundTurn(turnOrder, currentIndex + 1);
-            });
-            nextTimer.setRepeats(false);
-            nextTimer.start();
+            continueAfterEnemyTurn(enemy);
         });
         executeTimer.setRepeats(false);
         executeTimer.start();
     }
 
+    /** Continue after enemy has taken their turn */
+    private void continueAfterEnemyTurn(Enemy enemy) {
+        if (!isBattleActive) return;
+
+        // Deduct speed from enemy
+        double currentSpeed = tempSpeeds.getOrDefault(enemy, enemy.getSpeed());
+        double newSpeed = Math.max(0, currentSpeed - SPEED_DEDUCTION);
+        tempSpeeds.put(enemy, newSpeed);
+        System.out.println("DEBUG: " + enemy.getName() + " speed reduced: " + currentSpeed + " -> " + newSpeed);
+
+        // Move to next turn
+        currentTurnIndex++;
+
+        // Process next turn after delay
+        Timer nextTimer = new Timer(TURN_DELAY, e -> processNextTurn());
+        nextTimer.setRepeats(false);
+        nextTimer.start();
+    }
+
+    /** Finish the round and start player decision phase */
+    private void finishRound() {
+        if (!isBattleActive) return;
+
+        isExecutingRound = false;
+        isWaitingForPlayerTurn = false;
+        chosenMove = null;
+        chosenTarget = null;
+        pendingMove = null;
+        currentTurnOrder.clear();
+        tempSpeeds.clear();
+
+        System.out.println("DEBUG: Round complete - Starting player decision phase");
+
+        // Check if battle should continue
+        if (getAliveEnemies().isEmpty()) {
+            endBattle(true);
+        } else if (player.getHp() < 1) {
+            endBattle(false);
+        } else {
+            Timer roundDelay = new Timer(TURN_DELAY, e -> startPlayerDecisionPhase());
+            roundDelay.setRepeats(false);
+            roundDelay.start();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Player Actions
+    // ─────────────────────────────────────────────────────────────
+
+    /** Handle player selecting a move during decision phase */
+    public void handlePlayerMove(Move move) {
+        if (!isBattleActive) return;
+
+        // If waiting for player turn during round execution
+        if (isWaitingForPlayerTurn) {
+            pendingMove = move;
+            battlePanel.hideMainMenu();
+            battlePanel.setButtonsEnabled(false);
+
+            // Check if move requires target selection
+            if (move.getTargetType() == Move.TargetType.SELF) {
+                chosenMove = move;
+                chosenTarget = null;
+                isWaitingForPlayerTurn = false;
+                executePlayerRoundMove();
+            } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
+                chosenMove = move;
+                chosenTarget = null;
+                isWaitingForPlayerTurn = false;
+                executePlayerRoundMove();
+            } else if (getAliveEnemies().size() > 1 && move.getTargetType() == Move.TargetType.ENEMY) {
+                battlePanel.showTargetSelection(move);
+            } else {
+                chosenMove = move;
+                chosenTarget = getAliveEnemies().get(0);
+                isWaitingForPlayerTurn = false;
+                executePlayerRoundMove();
+            }
+            return;
+        }
+
+        // Original decision phase handling (start of round)
+        if (!isWaitingForPlayerInput) return;
+
+        isWaitingForPlayerInput = false;
+        pendingMove = move;
+        battlePanel.hideMainMenu();
+        battlePanel.setButtonsEnabled(false);
+
+        // Check if move requires target selection
+        if (move.getTargetType() == Move.TargetType.SELF) {
+            chosenMove = move;
+            chosenTarget = null;
+            executeRound();
+        } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
+            chosenMove = move;
+            chosenTarget = null;
+            executeRound();
+        } else if (getAliveEnemies().size() > 1 && move.getTargetType() == Move.TargetType.ENEMY) {
+            battlePanel.showTargetSelection(move);
+        } else {
+            chosenMove = move;
+            chosenTarget = getAliveEnemies().get(0);
+            executeRound();
+        }
+    }
+
+    /** Handle player selecting a target for a move */
+    public void handleTargetSelected(int enemyIndex) {
+        System.out.println("handleTargetSelected called for index: " + enemyIndex);
+
+        if (!isBattleActive) return;
+
+        // Check if we have a pending move
+        if (pendingMove == null) {
+            System.out.println("ERROR: No pending move!");
+            battlePanel.showFightMenu();
+            return;
+        }
+
+        // Check if enemy index is valid
+        if (enemyIndex >= enemies.size()) {
+            System.out.println("ERROR: Invalid enemy index: " + enemyIndex);
+            battlePanel.showFightMenu();
+            return;
+        }
+
+        Enemy targetEnemy = enemies.get(enemyIndex);
+
+        // Check if target enemy is alive
+        if (targetEnemy.getHp() < 1) {
+            System.out.println("ERROR: Target enemy is already defeated!");
+            battlePanel.setBattleMessage("That enemy is already defeated! Choose another target.");
+            battlePanel.showTargetSelection(pendingMove);
+            return;
+        }
+
+        // Valid target selected
+        chosenMove = pendingMove;
+        chosenTarget = targetEnemy;
+        pendingMove = null;
+
+        System.out.println("Target selected: " + chosenTarget.getName() + " (HP: " + chosenTarget.getHp() + ")");
+
+        if (isWaitingForPlayerTurn) {
+            isWaitingForPlayerTurn = false;
+            executePlayerRoundMove();
+        } else {
+            executeRound();
+        }
+    }
+
+    /** Execute player's move during the round */
+    private void executePlayerRoundMove() {
+        if (chosenMove == null) {
+            continueAfterPlayerTurn();
+            return;
+        }
+
+        final Move move = chosenMove;
+        final Enemy target = chosenTarget;
+
+        battlePanel.hideBattleButtons();
+        battlePanel.hideTargetButtons();
+
+        // Display message that player is about to act
+        String startMessage = player.getName() + " is about to use " + move.getName() + "!";
+        battlePanel.setBattleMessage(startMessage);
+        battlePanel.repaint();
+
+        Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
+            if (!isBattleActive) return;
+
+            // Execute the move based on target type
+            if (move.getTargetType() == Move.TargetType.SELF) {
+                double beforeHp = player.getHp();
+                Move.currentTarget = player;
+                move.execute(player);
+                Move.currentTarget = null;
+
+                String message = player.getName() + " used " + move.getName();
+
+                if (move.getName().equals("Iron Stance") && player instanceof Swordsman) {
+                    Swordsman swordsman = (Swordsman) player;
+                    message = player.getName() + " used " + move.getName() + "! Defense increased to " +
+                            String.format("%.0f", swordsman.getDefense());
+                } else if (move.getName().equals("Windstep") && player instanceof Ranger) {
+                    Ranger ranger = (Ranger) player;
+                    message = player.getName() + " used " + move.getName() + "! Speed increased to " +
+                            String.format("%.0f", ranger.getSpeed());
+                } else if (move.getName().equals("Empower") && player instanceof Mage) {
+                    Mage mage = (Mage) player;
+                    message = player.getName() + " used " + move.getName() + "! Attack increased to " +
+                            String.format("%.0f", mage.getAttack());
+                } else if (move.getName().equals("Revitalize") && player instanceof Mage) {
+                    double afterHp = player.getHp();
+                    double healAmount = afterHp - beforeHp;
+                    if (healAmount > 0) {
+                        message = player.getName() + " used " + move.getName() + " and healed " +
+                                String.format("%.1f", healAmount) + " HP!";
+                    } else {
+                        message = player.getName() + " used " + move.getName() + " but was already at full health!";
+                    }
+                }
+
+                battlePanel.setBattleMessage(message);
+                battlePanel.repaint();
+
+            } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
+                for (Enemy enemy : enemies) {
+                    if (enemy.getHp() > 0) {
+                        Move.currentTarget = enemy;
+                        move.execute(player);
+                    }
+                }
+                Move.currentTarget = null;
+
+                String message = player.getName() + " used " + move.getName() + " on all enemies!";
+                battlePanel.setBattleMessage(message);
+                battlePanel.repaint();
+                battlePanel.updateTargetButtonStates();
+
+            } else {
+                Enemy currentTarget = target;
+
+                if (currentTarget == null || currentTarget.getHp() <= 0) {
+                    List<Enemy> aliveEnemies = getAliveEnemies();
+                    if (!aliveEnemies.isEmpty()) {
+                        currentTarget = aliveEnemies.get(0);
+                    } else {
+                        continueAfterPlayerTurn();
+                        return;
+                    }
+                }
+
+                if (currentTarget != null && currentTarget.getHp() > 0) {
+                    double beforeTargetHp = currentTarget.getHp();
+                    double beforePlayerHp = player.getHp();
+
+                    Move.currentTarget = currentTarget;
+                    move.execute(player);
+                    Move.currentTarget = null;
+
+                    double afterTargetHp = currentTarget.getHp();
+                    double afterPlayerHp = player.getHp();
+                    double damageDealt = beforeTargetHp - afterTargetHp;
+                    double playerHpLost = beforePlayerHp - afterPlayerHp;
+
+                    String message;
+                    if (damageDealt > 0) {
+                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) +
+                                    " damage, sacrificing " + String.format("%.1f", playerHpLost) + " HP!";
+                        } else {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " and dealt " + String.format("%.1f", damageDealt) + " damage!";
+                        }
+                    } else {
+                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " but it had no effect, sacrificing " +
+                                    String.format("%.1f", playerHpLost) + " HP in vain!";
+                        } else {
+                            message = player.getName() + " used " + move.getName() + " on " +
+                                    currentTarget.getName() + " but it had no effect!";
+                        }
+                    }
+
+                    battlePanel.setBattleMessage(message);
+                    battlePanel.repaint();
+                    battlePanel.updateTargetButtonStates();
+                }
+            }
+
+            // Check if battle should end
+            if (getAliveEnemies().isEmpty()) {
+                endBattle(true);
+                return;
+            }
+
+            if (player.getHp() < 1) {
+                endBattle(false);
+                return;
+            }
+
+            // Continue to next turn
+            continueAfterPlayerTurn();
+        });
+        executeTimer.setRepeats(false);
+        executeTimer.start();
+    }
+
+    /** Cancel target selection */
+    public void cancelTargetSelection() {
+        if (!isBattleActive) return;
+
+        System.out.println("Target selection cancelled - resetting state");
+
+        pendingMove = null;
+        chosenMove = null;
+        chosenTarget = null;
+
+        if (isWaitingForPlayerTurn) {
+            isWaitingForPlayerTurn = false;
+            // Return to player decision within the round
+            battlePanel.showFightMenu();
+            battlePanel.setBattleMessage(player.getName() + "'s turn! Choose a move.");
+            battlePanel.setButtonsEnabled(true);
+        } else {
+            isWaitingForPlayerInput = true;
+            battlePanel.showFightMenu();
+        }
+    }
+
     /** Handle player running away */
     public void handleRunAway() {
-        if (!isBattleActive || !isWaitingForPlayerInput) return;
+        if (!isBattleActive) return;
+
+        if (isWaitingForPlayerTurn) {
+            battlePanel.setBattleMessage("You cannot run away during battle!");
+            battlePanel.repaint();
+            return;
+        }
+
+        if (!isWaitingForPlayerInput) return;
 
         isWaitingForPlayerInput = false;
         battlePanel.setButtonsEnabled(false);
@@ -493,16 +615,13 @@ public class Battle {
 
             Timer failTimer = new Timer(1500, e -> {
                 if (isBattleActive) {
-                    // Enemy gets a free turn
-                    List<Entity> enemiesOnly = new ArrayList<>();
-                    for (Enemy enemy : enemies) {
-                        if (enemy.getHp() > 0) {
-                            enemiesOnly.add(enemy);
-                        }
+                    // Enemy gets a free turn - just let one enemy act
+                    List<Enemy> aliveEnemies = getAliveEnemies();
+                    if (!aliveEnemies.isEmpty()) {
+                        executeEnemyRoundMove(aliveEnemies.get(0));
+                    } else {
+                        startPlayerDecisionPhase();
                     }
-
-                    enemiesOnly.sort((e1, e2) -> Double.compare(e2.getSpeed(), e1.getSpeed()));
-                    processRoundTurn(enemiesOnly, 0);
                 }
             });
             failTimer.setRepeats(false);
@@ -531,7 +650,10 @@ public class Battle {
 
         isBattleActive = false;
         isWaitingForPlayerInput = false;
+        isWaitingForPlayerTurn = false;
         isExecutingRound = false;
+        currentTurnOrder.clear();
+        tempSpeeds.clear();
 
         String endMessage = playerWon ? "All enemies have been defeated! You win!" :
                 player.getName() + " has been defeated! Game Over!";
