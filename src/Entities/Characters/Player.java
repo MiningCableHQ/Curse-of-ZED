@@ -191,9 +191,33 @@ public abstract class Player extends Entity {
         level++;
         experience -= expNeeded;
 
-        if(level <= 4){
+        // Base stat increases (flat amounts)
+        double hpIncrease = 110;
+        double attackIncrease = 5;
+        double defenseIncrease = 3;
+        double speedIncrease = 3;
+
+        //For unique class level up
+        if (this instanceof Swordsman){
+            hpIncrease = 300;
+        } else if (this instanceof Ranger) {
+            speedIncrease = 6;
+        } else if (this instanceof Mage){
+            attackIncrease = 10;
+        }
+
+        // Apply stat increases
+        maxHp += hpIncrease;
+        hp = maxHp; // Heal to full on level up
+        maxAttack += attackIncrease;
+        attack = maxAttack;
+        maxDefense += defenseIncrease;
+        defense = maxDefense;
+        speed += speedIncrease;
+
+        if(level < 4){
             expNeeded = 100;
-        }else if(level <= 7){
+        }else if(level < 7){
             expNeeded = 125;
         }else{
             expNeeded = 150;

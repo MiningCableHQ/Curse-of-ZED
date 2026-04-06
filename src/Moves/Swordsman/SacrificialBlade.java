@@ -18,7 +18,6 @@ public class SacrificialBlade extends Move {
             Swordsman swordsman = (Swordsman) Entity;
             Entity enemy = Move.currentTarget;
 
-            // Calculate sacrifice amount (50% of current HP)
             double currentHp = swordsman.getHp();
             double sacrificeAmount = currentHp * 0.50; //50% sacrifice amount
 

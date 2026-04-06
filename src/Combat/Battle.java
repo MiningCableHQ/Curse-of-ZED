@@ -625,6 +625,11 @@ public class Battle {
                     } else {
                         message = player.getName() + " used " + move.getName() + " but was already at full health!";
                     }
+                } else if (move.getName().equals("Harmony") && player instanceof Ranger) {
+                    Ranger ranger = (Ranger) player;
+                    message = player.getName() + " used " + move.getName() + "! " +
+                            "ATK increased to " + String.format("%d", (int)ranger.getAttack()) +
+                            ", DEF increased to " + String.format("%d", (int)ranger.getDefense());
                 }
 
                 battlePanel.setBattleMessage(message);

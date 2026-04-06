@@ -23,10 +23,10 @@ public class BattleMain {
             GamePanel  gp   = new GamePanel();
             KeyHandler keyH = new KeyHandler();
 
-            Player testPlayer = new Mage(gp, keyH);
+            Player testPlayer = new Swordsman(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new Frankenstein());
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Masklet(), new Masklet(), new Masklet());
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

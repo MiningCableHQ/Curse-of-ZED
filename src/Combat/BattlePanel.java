@@ -800,12 +800,12 @@ public class BattlePanel extends JPanel {
             }
             if (playerEntity instanceof Ranger) {
                 Ranger ranger = (Ranger) playerEntity;
-                int stacks = ranger.getWindstepStacks();
-                if (stacks > 0) {
+                int harmonyStacks = ranger.getHarmonyStacks();
+                if (harmonyStacks > 0) {
                     tyOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(100, 200, 100));
-                    g2.drawString("Windstep: " + stacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Harmony: " + harmonyStacks + "/3", tx, ty + tyOffset);
                 }
             }
             if (playerEntity instanceof Mage) {

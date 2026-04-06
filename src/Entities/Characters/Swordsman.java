@@ -117,18 +117,18 @@ public class Swordsman extends Player {
 
     @Override
     public void loadMoves(){
-        moveset.add(new CounterStance());
-        moveset.add(new MultiStrike());
         moveset.add(new HeroicSlash());
-        moveset.add(new IronStance());
-        moveset.add(new PurifyingStance());
-        moveset.add(new SacrificialBlade());
         moveset.add(new SweepingStrike());
+        moveset.add(new IronStance());
+        moveset.add(new GuideToAfterlife());
+        moveset.add(new MultiStrike());
+        moveset.add(new Preservation());
+        moveset.add(new SacrificialBlade());
 
         moves.add(new HeroicSlash());
         moves.add(new SweepingStrike());
         moves.add(new IronStance());
-        moves.add(new CounterStance());
+        moves.add(new GuideToAfterlife());
     }
 
     // --- For move: Iron stance ---------------------------------------------------------------------------------------

@@ -9,7 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class Ranger extends Player {
-    private int windstepStacks = 0;
+    private int harmonyStacks = 0;
+    private double originalAttack;
+    private double originalDefense;
 
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
@@ -23,6 +25,9 @@ public class Ranger extends Player {
         speed = 50;
         dmgResistance = 0.10;
         loadMoves();
+
+        originalAttack = attack;
+        originalDefense = defense;
     }
 
     @Override
@@ -116,32 +121,60 @@ public class Ranger extends Player {
     public void loadMoves(){
         moveset.add(new PreciseShot());
         moveset.add(new Scattershot());
-        moveset.add(new Windstep());
+        moveset.add(new Harmony());
         moveset.add(new BounceShot());
         moveset.add(new FlurryShot());
-        moveset.add(new ShadowStep());
+        moveset.add(new LifedrainArrow());
         moveset.add(new SnipersGamble());
 
         moves.add(new PreciseShot());
         moves.add(new Scattershot());
-        moves.add(new Windstep());
+        moves.add(new Harmony());
         moves.add(new BounceShot());
     }
 
-    // --- For move: Windstep ------------------------------------------------------------------------------------------
-    public int getWindstepStacks() {
-        return windstepStacks;
+    // --- For move: Harmony ------------------------------------------------------------------------------------------
+    public int getHarmonyStacks() {
+        return harmonyStacks;
     }
     public void resetBattleBuffs() {
-        windstepStacks = 0;
+        harmonyStacks = 0;
+        attack = originalAttack;
+        defense = originalDefense;
     }
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
             resetBattleBuffs();
         }
     }
+    public boolean canUseHarmony() {
+        return harmonyStacks < 3;
+    }
+    public void addHarmonyStack() {
+        if (harmonyStacks < 3) {
+            harmonyStacks++;
+
+            // Increase attack by 12 per stack
+            attack = originalAttack + (12 * harmonyStacks);
+            if (attack > maxAttack * 2) {
+                attack = maxAttack * 2;
+            }
+
+            // Increase defense by 12 per stack
+            defense = originalDefense + (12 * harmonyStacks);
+            if (defense > maxDefense * 4) {
+                defense = maxDefense * 4;
+            }
+        }
+    }
+
+    //Getters
     @Override
-    public double getSpeed() {
-        return speed;
+    public double getAttack() {
+        return attack;
+    }
+    @Override
+    public double getDefense() {
+        return defense;
     }
 }

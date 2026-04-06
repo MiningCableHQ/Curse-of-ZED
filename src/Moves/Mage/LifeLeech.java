@@ -15,10 +15,10 @@ public class LifeLeech extends Move {
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Mage && Move.currentTarget != null){
-            // --- Damage Part -----------------------------------------------------------------------------------------
             Mage mage = (Mage) Entity;
             Entity enemy = Move.currentTarget;
 
+            // --- Damage Part -----------------------------------------------------------------------------------------
             //all 3 needed ATK stats
             double totalATK = mage.getAttack(); //mage atk
             if (mage.getWeapon() != null) {
@@ -35,10 +35,8 @@ public class LifeLeech extends Move {
 
             // --- Self Heal Part --------------------------------------------------------------------------------------
             double maxHp = mage.getMaxHp();
-
             double healAmount = maxHp * 0.15; // 15% of MaxHP type shi heal
-
-            mage.heal(healAmount); //TODO Display in UI
+            mage.heal(healAmount);
         }
     }
 }
