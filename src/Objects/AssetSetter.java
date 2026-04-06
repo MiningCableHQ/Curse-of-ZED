@@ -617,8 +617,1630 @@ public class AssetSetter {
             gp.obj[147].worldX = 16 * gp.tileSize; // Column 10
             gp.obj[147].worldY = 13 * gp.tileSize; // Row 10
 
+            gp.obj[148] = new OBJ_Water();
+            gp.obj[148].worldX = 0 * gp.tileSize; // Col 13
+            gp.obj[148].worldY = 38 * gp.tileSize; // Row 36
 
-        }
+        gp.obj[149] = new OBJ_Water();
+        gp.obj[149].worldX = 1 * gp.tileSize; // Col 13
+        gp.obj[149].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[150] = new OBJ_Water();
+        gp.obj[150].worldX = 2 * gp.tileSize; // Col 13
+        gp.obj[150].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[151] = new OBJ_Water();
+        gp.obj[151].worldX = 3 * gp.tileSize; // Col 13
+        gp.obj[151].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[152] = new OBJ_Water();
+        gp.obj[152].worldX = 4 * gp.tileSize; // Col 13
+        gp.obj[152].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[153] = new OBJ_Water();
+        gp.obj[153].worldX = 5 * gp.tileSize; // Col 13
+        gp.obj[153].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[154] = new OBJ_Water();
+        gp.obj[154].worldX = 6 * gp.tileSize; // Col 13
+        gp.obj[154].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[155] = new OBJ_Water();
+        gp.obj[155].worldX = 7 * gp.tileSize; // Col 13
+        gp.obj[155].worldY = 39 * gp.tileSize; // Row 36
+
+        gp.obj[156] = new OBJ_Water();
+        gp.obj[156].worldX = 8 * gp.tileSize; // Col 13
+        gp.obj[156].worldY = 40 * gp.tileSize; // Row 36
+
+        gp.obj[157] = new OBJ_Water();
+        gp.obj[157].worldX = 9 * gp.tileSize; // Col 13
+        gp.obj[157].worldY = 41 * gp.tileSize; // Row 36
+
+        gp.obj[158] = new OBJ_Water();
+        gp.obj[158].worldX = 10 * gp.tileSize; // Col 13
+        gp.obj[158].worldY = 42 * gp.tileSize; // Row 36
+
+        gp.obj[159] = new OBJ_Water();
+        gp.obj[159].worldX = 11 * gp.tileSize; // Col 13
+        gp.obj[159].worldY = 43 * gp.tileSize; // Row 36
+
+        gp.obj[160] = new OBJ_Water();
+        gp.obj[160].worldX = 12 * gp.tileSize; // Col 13
+        gp.obj[160].worldY = 44 * gp.tileSize; // Row 36
+
+        gp.obj[161] = new OBJ_Water();
+        gp.obj[161].worldX = 13 * gp.tileSize; // Col 13
+        gp.obj[161].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[162] = new OBJ_Water();
+        gp.obj[162].worldX = 14 * gp.tileSize; // Col 13
+        gp.obj[162].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[163] = new OBJ_Water();
+        gp.obj[163].worldX = 15 * gp.tileSize; // Col 13
+        gp.obj[163].worldY = 45 * gp.tileSize; // Row 36
+
+         gp.obj[164] = new OBJ_Water();
+        gp.obj[164].worldX = 16 * gp.tileSize; // Col 13
+        gp.obj[164].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[165] = new OBJ_Water();
+        gp.obj[165].worldX = 17 * gp.tileSize; // Col 13
+        gp.obj[165].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[166] = new OBJ_Water();
+        gp.obj[166].worldX = 18 * gp.tileSize; // Col 13
+        gp.obj[166].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[167] = new OBJ_Water();
+        gp.obj[167].worldX = 19 * gp.tileSize; // Col 13
+        gp.obj[167].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[168] = new OBJ_Water();
+        gp.obj[168].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[168].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[169] = new OBJ_Water();
+        gp.obj[169].worldX = 21 * gp.tileSize; // Col 13
+        gp.obj[169].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[170] = new OBJ_Water();
+        gp.obj[170].worldX = 22 * gp.tileSize; // Col 13
+        gp.obj[170].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[171] = new OBJ_Water();
+        gp.obj[171].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[171].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[172] = new OBJ_Water();
+        gp.obj[172].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[172].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[173] = new OBJ_Water();
+        gp.obj[173].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[173].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[174] = new OBJ_Water();
+        gp.obj[174].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[174].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[175] = new OBJ_Water();
+        gp.obj[175].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[175].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[176] = new OBJ_Water();
+        gp.obj[176].worldX = 28 * gp.tileSize; // Col 13
+        gp.obj[176].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[177] = new OBJ_Water();
+        gp.obj[177].worldX = 29 * gp.tileSize; // Col 13
+        gp.obj[177].worldY = 45* gp.tileSize; // Row 36
+
+        gp.obj[178] = new OBJ_Water();
+        gp.obj[178].worldX = 30 * gp.tileSize; // Col 13
+        gp.obj[178].worldY = 44* gp.tileSize; // Row 36
+
+        gp.obj[179] = new OBJ_Water();
+        gp.obj[179].worldX = 31 * gp.tileSize; // Col 13
+        gp.obj[179].worldY = 43* gp.tileSize; // Row 36
+
+        gp.obj[180] = new OBJ_Water();
+        gp.obj[180].worldX = 31 * gp.tileSize; // Col 13
+        gp.obj[180].worldY = 43* gp.tileSize; // Row 36
+
+        gp.obj[181] = new OBJ_Water();
+        gp.obj[181].worldX = 32 * gp.tileSize; // Col 13
+        gp.obj[181].worldY = 42* gp.tileSize; // Row 36
+
+        gp.obj[182] = new OBJ_Water();
+        gp.obj[182].worldX = 33 * gp.tileSize; // Col 13
+        gp.obj[182].worldY = 41* gp.tileSize; // Row 36
+
+        gp.obj[183] = new OBJ_Water();
+        gp.obj[183].worldX = 34 * gp.tileSize; // Col 13
+        gp.obj[183].worldY = 40* gp.tileSize; // Row 36
+
+        gp.obj[184] = new OBJ_Water();
+        gp.obj[184].worldX = 35 * gp.tileSize; // Col 13
+        gp.obj[184].worldY = 39* gp.tileSize; // Row 36
+
+        gp.obj[185] = new OBJ_Water();
+        gp.obj[185].worldX = 36 * gp.tileSize; // Col 13
+        gp.obj[185].worldY = 39* gp.tileSize; // Row 36
+
+        gp.obj[186] = new OBJ_Fences();
+        gp.obj[186].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[186].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[187] = new OBJ_Fences();
+        gp.obj[187].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[187].worldY = 36 * gp.tileSize; // Row 36
+
+        gp.obj[188] = new OBJ_Fences();
+        gp.obj[188].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[188].worldY = 35 * gp.tileSize; // Row 36
+
+        gp.obj[189] = new OBJ_Fences();
+        gp.obj[189].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[189].worldY = 34 * gp.tileSize; // Row 36
+
+        gp.obj[190] = new OBJ_Fences();
+        gp.obj[190].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[190].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[191] = new OBJ_Fences();
+        gp.obj[191].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[191].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[192] = new OBJ_Fences();
+        gp.obj[192].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[192].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[193] = new OBJ_Fences();
+        gp.obj[193].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[193].worldY = 30 * gp.tileSize; // Row 36
+
+        gp.obj[194] = new OBJ_Fences();
+        gp.obj[194].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[194].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[195] = new OBJ_Fences();
+        gp.obj[195].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[195].worldY = 28 * gp.tileSize; // Row 36
+
+        gp.obj[196] = new OBJ_Fences();
+        gp.obj[196].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[196].worldY = 27 * gp.tileSize; // Row 36
+
+        gp.obj[197] = new OBJ_Fences();
+        gp.obj[197].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[197].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[198] = new OBJ_Fences();
+        gp.obj[198].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[198].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[199] = new OBJ_Fences();
+        gp.obj[199].worldX = 1 * gp.tileSize; // Col 13
+        gp.obj[199].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[200] = new OBJ_Fences();
+        gp.obj[200].worldX = 2 * gp.tileSize; // Col 13
+        gp.obj[200].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[201] = new OBJ_Fences();
+        gp.obj[201].worldX = 3 * gp.tileSize; // Col 13
+        gp.obj[201].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[202] = new OBJ_Fences();
+        gp.obj[202].worldX = 4 * gp.tileSize; // Col 13
+        gp.obj[202].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[203] = new OBJ_Fences();
+        gp.obj[203].worldX = 5 * gp.tileSize; // Col 13
+        gp.obj[203].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[204] = new OBJ_Fences();
+        gp.obj[204].worldX = 6 * gp.tileSize; // Col 13
+        gp.obj[204].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[205] = new OBJ_Fences();
+        gp.obj[205].worldX = 7 * gp.tileSize; // Col 13
+        gp.obj[205].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[206] = new OBJ_Fences();
+        gp.obj[206].worldX = 8 * gp.tileSize; // Col 13
+        gp.obj[206].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[207] = new OBJ_Fences();
+        gp.obj[207].worldX = 9 * gp.tileSize; // Col 13
+        gp.obj[207].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[208] = new OBJ_Fences();
+        gp.obj[208].worldX = 10 * gp.tileSize; // Col 13
+        gp.obj[208].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[209] = new OBJ_Fences();
+        gp.obj[209].worldX = 13 * gp.tileSize; // Col 13
+        gp.obj[209].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[210] = new OBJ_Fences();
+        gp.obj[210].worldX = 14 * gp.tileSize; // Col 13
+        gp.obj[210].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[211] = new OBJ_Fences();
+        gp.obj[211].worldX = 15 * gp.tileSize; // Col 13
+        gp.obj[211].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[212] = new OBJ_Fences();
+        gp.obj[212].worldX = 16 * gp.tileSize; // Col 13
+        gp.obj[212].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[213] = new OBJ_Fences();
+        gp.obj[213].worldX = 17 * gp.tileSize; // Col 13
+        gp.obj[213].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[214] = new OBJ_Fences();
+        gp.obj[214].worldX = 18 * gp.tileSize; // Col 13
+        gp.obj[214].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[215] = new OBJ_Fences();
+        gp.obj[215].worldX = 19 * gp.tileSize; // Col 13
+        gp.obj[215].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[216] = new OBJ_Fences();
+        gp.obj[216].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[216].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[217] = new OBJ_Fences();
+        gp.obj[217].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[217].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[218] = new OBJ_Fences();
+        gp.obj[218].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[218].worldY = 27 * gp.tileSize; // Row 36
+
+        gp.obj[219] = new OBJ_Fences();
+        gp.obj[219].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[219].worldY = 28 * gp.tileSize; // Row 36
+
+        gp.obj[220] = new OBJ_Fences();
+        gp.obj[220].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[220].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[221] = new OBJ_Fences();
+        gp.obj[221].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[221].worldY = 30 * gp.tileSize; // Row 36
+
+        gp.obj[222] = new OBJ_Fences();
+        gp.obj[222].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[222].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[223] = new OBJ_Fences();
+        gp.obj[223].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[223].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[224] = new OBJ_Fences();
+        gp.obj[224].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[224].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[225] = new OBJ_Fences();
+        gp.obj[225].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[225].worldY = 34 * gp.tileSize; // Row 36
+
+        gp.obj[226] = new OBJ_Fences();
+        gp.obj[226].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[226].worldY = 35 * gp.tileSize; // Row 36
+
+        gp.obj[227] = new OBJ_Fences();
+        gp.obj[227].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[227].worldY = 36 * gp.tileSize; // Row 36
+
+        gp.obj[228] = new OBJ_Fences();
+        gp.obj[228].worldX = 20 * gp.tileSize; // Col 13
+        gp.obj[228].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[229] = new OBJ_Fences();
+        gp.obj[229].worldX = 1 * gp.tileSize; // Col 13
+        gp.obj[229].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[230] = new OBJ_Fences();
+        gp.obj[230].worldX = 2 * gp.tileSize; // Col 13
+        gp.obj[230].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[231] = new OBJ_Fences();
+        gp.obj[231].worldX = 3 * gp.tileSize; // Col 13
+        gp.obj[231].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[232] = new OBJ_Fences();
+        gp.obj[232].worldX = 4 * gp.tileSize; // Col 13
+        gp.obj[232].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[233] = new OBJ_Fences();
+        gp.obj[233].worldX = 5 * gp.tileSize; // Col 13
+        gp.obj[233].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[234] = new OBJ_Fences();
+        gp.obj[234].worldX = 6 * gp.tileSize; // Col 13
+        gp.obj[234].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[235] = new OBJ_Fences();
+        gp.obj[235].worldX = 7 * gp.tileSize; // Col 13
+        gp.obj[235].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[236] = new OBJ_Fences();
+        gp.obj[236].worldX = 8 * gp.tileSize; // Col 13
+        gp.obj[236].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[237] = new OBJ_Fences();
+        gp.obj[237].worldX = 9 * gp.tileSize; // Col 13
+        gp.obj[237].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[238] = new OBJ_Fences();
+        gp.obj[238].worldX = 10 * gp.tileSize; // Col 13
+        gp.obj[238].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[239] = new OBJ_Fences();
+        gp.obj[239].worldX = 11 * gp.tileSize; // Col 13
+        gp.obj[239].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[240] = new OBJ_Fences();
+        gp.obj[240].worldX = 12 * gp.tileSize; // Col 13
+        gp.obj[240].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[241] = new OBJ_Fences();
+        gp.obj[241].worldX = 13 * gp.tileSize; // Col 13
+        gp.obj[241].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[242] = new OBJ_Fences();
+        gp.obj[242].worldX = 14 * gp.tileSize; // Col 13
+        gp.obj[242].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[243] = new OBJ_Fences();
+        gp.obj[243].worldX = 15 * gp.tileSize; // Col 13
+        gp.obj[243].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[244] = new OBJ_Fences();
+        gp.obj[244].worldX = 16 * gp.tileSize; // Col 13
+        gp.obj[244].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[245] = new OBJ_Fences();
+        gp.obj[245].worldX = 17 * gp.tileSize; // Col 13
+        gp.obj[245].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[246] = new OBJ_Fences();
+        gp.obj[246].worldX = 18 * gp.tileSize; // Col 13
+        gp.obj[246].worldY = 37 * gp.tileSize; // Row 36
+
+        gp.obj[247] = new OBJ_Fences();
+        gp.obj[247].worldX = 37 * gp.tileSize; // Col 13
+        gp.obj[247].worldY = 38 * gp.tileSize; // Row 36
+
+        gp.obj[248] = new OBJ_Water();
+        gp.obj[248].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[248].worldY = 36 * gp.tileSize; // Row 36
+
+        gp.obj[249] = new OBJ_Water();
+        gp.obj[249].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[249].worldY = 35 * gp.tileSize; // Row 36
+
+        gp.obj[250] = new OBJ_Water();
+        gp.obj[250].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[250].worldY = 34 * gp.tileSize; // Row 36
+
+        gp.obj[251] = new OBJ_Water();
+        gp.obj[251].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[251].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[252] = new OBJ_Water();
+        gp.obj[252].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[252].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[252] = new OBJ_Water();
+        gp.obj[252].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[252].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[253] = new OBJ_Water();
+        gp.obj[253].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[253].worldY = 30* gp.tileSize; // Row 36
+
+        gp.obj[254] = new OBJ_Water();
+        gp.obj[254].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[254].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[255] = new OBJ_Water();
+        gp.obj[255].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[255].worldY = 28 * gp.tileSize; // Row 36
+
+        gp.obj[256] = new OBJ_Water();
+        gp.obj[256].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[256].worldY = 27 * gp.tileSize; // Row 36
+
+        gp.obj[257] = new OBJ_Water();
+        gp.obj[257].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[257].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[258] = new OBJ_Water();
+        gp.obj[258].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[258].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[259] = new OBJ_Water();
+        gp.obj[259].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[259].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[260] = new OBJ_Water();
+        gp.obj[260].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[260].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[261] = new OBJ_Water();
+        gp.obj[261].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[261].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[262] = new OBJ_Water();
+        gp.obj[262].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[262].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[263] = new OBJ_Water();
+        gp.obj[263].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[263].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[264] = new OBJ_Water();
+        gp.obj[264].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[264].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[265] = new OBJ_Water();
+        gp.obj[265].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[265].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[266] = new OBJ_Water();
+        gp.obj[266].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[266].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[263] = new OBJ_Fences();
+        gp.obj[263].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[263].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[264] = new OBJ_Fences();
+        gp.obj[264].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[264].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[265] = new OBJ_Fences();
+        gp.obj[265].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[265].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[266] = new OBJ_Fences();
+        gp.obj[266].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[266].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[267] = new OBJ_Fences();
+        gp.obj[267].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[267].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[268] = new OBJ_Fences();
+        gp.obj[268].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[268].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[269] = new OBJ_Fences();
+        gp.obj[269].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[269].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[270] = new OBJ_Fences();
+        gp.obj[270].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[270].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[271] = new OBJ_Fences();
+        gp.obj[271].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[271].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[272] = new OBJ_Fences();
+        gp.obj[272].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[272].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[273] = new OBJ_Fences();
+        gp.obj[273].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[273].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[274] = new OBJ_Fences();
+        gp.obj[274].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[274].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[275] = new OBJ_Water();
+        gp.obj[275].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[275].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[276] = new OBJ_Water();
+        gp.obj[276].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[276].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[277] = new OBJ_Water();
+        gp.obj[277].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[277].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[278] = new OBJ_Fences();
+        gp.obj[278].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[278].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[279] = new OBJ_Fences();
+        gp.obj[279].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[279].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[280] = new OBJ_Fences();
+        gp.obj[280].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[280].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[281] = new OBJ_Fences();
+        gp.obj[281].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[281].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[282] = new OBJ_Fences();
+        gp.obj[282].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[282].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[283] = new OBJ_Fences();
+        gp.obj[283].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[283].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[284] = new OBJ_Fences();
+        gp.obj[284].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[284].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[285] = new OBJ_Fences();
+        gp.obj[285].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[285].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[286] = new OBJ_Fences();
+        gp.obj[286].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[286].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[287] = new OBJ_Fences();
+        gp.obj[287].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[287].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[288] = new OBJ_Fences();
+        gp.obj[288].worldX = 46 * gp.tileSize; // Col 13
+        gp.obj[288].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[289] = new OBJ_Fences();
+        gp.obj[289].worldX = 46 * gp.tileSize; // Col 13
+        gp.obj[289].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[290] = new OBJ_Fences();
+        gp.obj[290].worldX = 46 * gp.tileSize; // Col 13
+        gp.obj[290].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[291] = new OBJ_Fences();
+        gp.obj[291].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[291].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[292] = new OBJ_Fences();
+        gp.obj[292].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[292].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[293] = new OBJ_Fences();
+        gp.obj[293].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[293].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[294] = new OBJ_Fences();
+        gp.obj[294].worldX = 42 * gp.tileSize; // Col 13
+        gp.obj[294].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[295] = new OBJ_Fences();
+        gp.obj[295].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[295].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[296] = new OBJ_Fences();
+        gp.obj[296].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[296].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[297] = new OBJ_Fences();
+        gp.obj[297].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[297].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[298] = new OBJ_Fences();
+        gp.obj[298].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[298].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[299] = new OBJ_Fences();
+        gp.obj[299].worldX = 37 * gp.tileSize; // Col 13
+        gp.obj[299].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[300] = new OBJ_Fences();
+        gp.obj[300].worldX = 36 * gp.tileSize; // Col 13
+        gp.obj[300].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[301] = new OBJ_Fences();
+        gp.obj[301].worldX = 35 * gp.tileSize; // Col 13
+        gp.obj[301].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[302] = new OBJ_Fences();
+        gp.obj[302].worldX = 34 * gp.tileSize; // Col 13
+        gp.obj[302].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[303] = new OBJ_Fences();
+        gp.obj[303].worldX = 33 * gp.tileSize; // Col 13
+        gp.obj[303].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[304] = new OBJ_Fences();
+        gp.obj[304].worldX = 32 * gp.tileSize; // Col 13
+        gp.obj[304].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[305] = new OBJ_Fences();
+        gp.obj[305].worldX = 31 * gp.tileSize; // Col 13
+        gp.obj[305].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[306] = new OBJ_Fences();
+        gp.obj[306].worldX = 30 * gp.tileSize; // Col 13
+        gp.obj[306].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[307] = new OBJ_Fences();
+        gp.obj[307].worldX = 46 * gp.tileSize; // Col 13
+        gp.obj[307].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[308] = new OBJ_Fences();
+        gp.obj[308].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[308].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[309] = new OBJ_Fences();
+        gp.obj[309].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[309].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[310] = new OBJ_Fences();
+        gp.obj[310].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[310].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[311] = new OBJ_Fences();
+        gp.obj[311].worldX = 42 * gp.tileSize; // Col 13
+        gp.obj[311].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[312] = new OBJ_Fences();
+        gp.obj[312].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[312].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[313] = new OBJ_Fences();
+        gp.obj[313].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[313].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[314] = new OBJ_Fences();
+        gp.obj[314].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[314].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[315] = new OBJ_Fences();
+        gp.obj[315].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[315].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[316] = new OBJ_Fences();
+        gp.obj[316].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[316].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[317] = new OBJ_Fences();
+        gp.obj[317].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[317].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[318] = new OBJ_Fences();
+        gp.obj[318].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[318].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[319] = new OBJ_Fences();
+        gp.obj[319].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[319].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[320] = new OBJ_Fences();
+        gp.obj[320].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[320].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[321] = new OBJ_Fences();
+        gp.obj[321].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[321].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[322] = new OBJ_Fences();
+        gp.obj[322].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[322].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[323] = new OBJ_Fences();
+        gp.obj[323].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[323].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[324] = new OBJ_Fences();
+        gp.obj[324].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[324].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[325] = new OBJ_Fences();
+        gp.obj[325].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[325].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[326] = new OBJ_Fences();
+        gp.obj[326].worldX = 38 * gp.tileSize; // Col 13
+        gp.obj[326].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[327] = new OBJ_Fences();
+        gp.obj[327].worldX = 37 * gp.tileSize; // Col 13
+        gp.obj[327].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[328] = new OBJ_Fences();
+        gp.obj[328].worldX = 36 * gp.tileSize; // Col 13
+        gp.obj[328].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[329] = new OBJ_Fences();
+        gp.obj[329].worldX = 35 * gp.tileSize; // Col 13
+        gp.obj[329].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[330] = new OBJ_Fences();
+        gp.obj[330].worldX = 34 * gp.tileSize; // Col 13
+        gp.obj[330].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[331] = new OBJ_Fences();
+        gp.obj[331].worldX = 33 * gp.tileSize; // Col 13
+        gp.obj[331].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[332] = new OBJ_Fences();
+        gp.obj[332].worldX = 32 * gp.tileSize; // Col 13
+        gp.obj[332].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[333] = new OBJ_Fences();
+        gp.obj[333].worldX = 31 * gp.tileSize; // Col 13
+        gp.obj[333].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[334] = new OBJ_Fences();
+        gp.obj[334].worldX = 30 * gp.tileSize; // Col 13
+        gp.obj[334].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[335] = new OBJ_Fences();
+        gp.obj[335].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[335].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[336] = new OBJ_Fences();
+        gp.obj[336].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[336].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[337] = new OBJ_Fences();
+        gp.obj[337].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[337].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[338] = new OBJ_Fences();
+        gp.obj[338].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[338].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[339] = new OBJ_Fences();
+        gp.obj[339].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[339].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[340] = new OBJ_Fences();
+        gp.obj[340].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[340].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[341] = new OBJ_Crops();
+        gp.obj[341].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[341].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[342] = new OBJ_Crops();
+        gp.obj[342].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[342].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[343] = new OBJ_Crops();
+        gp.obj[343].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[343].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[344] = new OBJ_Crops();
+        gp.obj[344].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[344].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[345] = new OBJ_Crops();
+        gp.obj[345].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[345].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[346] = new OBJ_Crops();
+        gp.obj[346].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[346].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[347] = new OBJ_Crops();
+        gp.obj[347].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[347].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[348] = new OBJ_Crops();
+        gp.obj[348].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[348].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[349] = new OBJ_Crops();
+        gp.obj[349].worldX = 39 * gp.tileSize; // Col 13
+        gp.obj[349].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[350] = new OBJ_Crops();
+        gp.obj[350].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[350].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[351] = new OBJ_Crops();
+        gp.obj[351].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[351].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[352] = new OBJ_Crops();
+        gp.obj[352].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[352].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[353] = new OBJ_Crops();
+        gp.obj[353].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[353].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[354] = new OBJ_Crops();
+        gp.obj[354].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[354].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[355] = new OBJ_Crops();
+        gp.obj[355].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[355].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[356] = new OBJ_Crops();
+        gp.obj[356].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[356].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[357] = new OBJ_Crops();
+        gp.obj[357].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[357].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[358] = new OBJ_Crops();
+        gp.obj[358].worldX = 40 * gp.tileSize; // Col 13
+        gp.obj[358].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[359] = new OBJ_Crops();
+        gp.obj[359].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[359].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[360] = new OBJ_Crops();
+        gp.obj[360].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[360].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[361] = new OBJ_Crops();
+        gp.obj[361].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[361].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[362] = new OBJ_Crops();
+        gp.obj[362].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[362].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[363] = new OBJ_Crops();
+        gp.obj[363].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[363].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[364] = new OBJ_Crops();
+        gp.obj[364].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[364].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[365] = new OBJ_Crops();
+        gp.obj[365].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[365].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[366] = new OBJ_Crops();
+        gp.obj[366].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[366].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[367] = new OBJ_Crops();
+        gp.obj[367].worldX = 41 * gp.tileSize; // Col 13
+        gp.obj[367].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[368] = new OBJ_Crops();
+        gp.obj[368].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[368].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[369] = new OBJ_Crops();
+        gp.obj[369].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[369].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[370] = new OBJ_Crops();
+        gp.obj[370].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[370].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[371] = new OBJ_Crops();
+        gp.obj[371].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[371].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[372] = new OBJ_Crops();
+        gp.obj[372].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[372].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[373] = new OBJ_Crops();
+        gp.obj[373].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[373].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[374] = new OBJ_Crops();
+        gp.obj[374].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[374].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[375] = new OBJ_Crops();
+        gp.obj[375].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[375].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[376] = new OBJ_Crops();
+        gp.obj[376].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[376].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[377] = new OBJ_Crops();
+        gp.obj[377].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[377].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[378] = new OBJ_Crops();
+        gp.obj[378].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[378].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[379] = new OBJ_Crops();
+        gp.obj[379].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[379].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[380] = new OBJ_Crops();
+        gp.obj[380].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[380].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[381] = new OBJ_Crops();
+        gp.obj[381].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[381].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[382] = new OBJ_Crops();
+        gp.obj[382].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[382].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[383] = new OBJ_Crops();
+        gp.obj[383].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[383].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[384] = new OBJ_Crops();
+        gp.obj[384].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[384].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[385] = new OBJ_Crops();
+        gp.obj[385].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[385].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[386] = new OBJ_Crops();
+        gp.obj[386].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[386].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[387] = new OBJ_Crops();
+        gp.obj[387].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[387].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[388] = new OBJ_Crops();
+        gp.obj[388].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[388].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[389] = new OBJ_Crops();
+        gp.obj[389].worldX = 43 * gp.tileSize; // Col 13
+        gp.obj[389].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[390] = new OBJ_Crops();
+        gp.obj[390].worldX = 44 * gp.tileSize; // Col 13
+        gp.obj[390].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[391] = new OBJ_Crops();
+        gp.obj[391].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[391].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[392] = new OBJ_Water();
+        gp.obj[392].worldX = 48 * gp.tileSize; // Col 13
+        gp.obj[392].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[393] = new OBJ_Tlfall();
+        gp.obj[393].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[393].worldY = 0 * gp.tileSize; // Row 36
+
+        gp.obj[394] = new OBJ_Tlfall();
+        gp.obj[394].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[394].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[395] = new OBJ_Tlfall();
+        gp.obj[395].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[395].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[396] = new OBJ_Waterfall();
+        gp.obj[396].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[396].worldY = 0 * gp.tileSize; // Row 36
+
+        gp.obj[397] = new OBJ_Waterfall();
+        gp.obj[397].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[397].worldY = 0 * gp.tileSize; // Row 36
+
+        gp.obj[398] = new OBJ_Waterfall();
+        gp.obj[398].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[398].worldY = 0 * gp.tileSize; // Row 36
+
+
+        gp.obj[399] = new OBJ_Waterfall();
+        gp.obj[399].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[399].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[400] = new OBJ_Waterfall();
+        gp.obj[400].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[400].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[401] = new OBJ_Waterfall();
+        gp.obj[401].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[401].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[402] = new OBJ_Waterfall();
+        gp.obj[402].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[402].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[403] = new OBJ_Waterfall();
+        gp.obj[403].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[403].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[404] = new OBJ_Waterfall();
+        gp.obj[404].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[404].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[405] = new OBJ_Waterfall();
+        gp.obj[405].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[405].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[406] = new OBJ_Waterfall();
+        gp.obj[406].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[406].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[407] = new OBJ_Waterfall();
+        gp.obj[407].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[407].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[408] = new OBJ_Waterfall();
+        gp.obj[408].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[408].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[409] = new OBJ_Waterfall();
+        gp.obj[409].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[409].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[410] = new OBJ_Waterfall();
+        gp.obj[410].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[410].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[411] = new OBJ_Waterfall();
+        gp.obj[411].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[411].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[412] = new OBJ_Waterfall();
+        gp.obj[412].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[412].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[413] = new OBJ_Waterfall();
+        gp.obj[413].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[413].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[414] = new OBJ_Waterfall();
+        gp.obj[414].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[414].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[415] = new OBJ_Waterfall();
+        gp.obj[415].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[415].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[416] = new OBJ_Waterfall();
+        gp.obj[416].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[416].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[417] = new OBJ_Waterfall();
+        gp.obj[417].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[417].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[418] = new OBJ_Waterfall();
+        gp.obj[418].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[418].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[419] = new OBJ_Waterfall();
+        gp.obj[419].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[419].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[420] = new OBJ_Waterfall();
+        gp.obj[420].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[420].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[421] = new OBJ_Waterfall();
+        gp.obj[421].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[421].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[422] = new OBJ_Waterfall();
+        gp.obj[422].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[422].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[423] = new OBJ_Waterfall();
+        gp.obj[423].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[423].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[424] = new OBJ_Waterfall();
+        gp.obj[424].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[424].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[425] = new OBJ_Waterfall();
+        gp.obj[425].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[425].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[426] = new OBJ_Waterfall();
+        gp.obj[426].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[426].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[427] = new OBJ_Waterfall();
+        gp.obj[427].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[427].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[428] = new OBJ_Waterfall();
+        gp.obj[428].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[428].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[429] = new OBJ_Waterfall();
+        gp.obj[429].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[429].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[430] = new OBJ_Waterfall();
+        gp.obj[430].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[430].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[431] = new OBJ_Waterfall();
+        gp.obj[431].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[431].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[432] = new OBJ_Waterfall();
+        gp.obj[432].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[432].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[433] = new OBJ_Waterfall();
+        gp.obj[433].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[433].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[434] = new OBJ_Waterfall();
+        gp.obj[434].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[434].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[435] = new OBJ_Waterfall();
+        gp.obj[435].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[435].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[436] = new OBJ_Waterfall();
+        gp.obj[436].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[436].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[437] = new OBJ_Waterfall();
+        gp.obj[437].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[437].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[438] = new OBJ_Waterfall();
+        gp.obj[438].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[438].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[439] = new OBJ_Waterfall();
+        gp.obj[439].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[439].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[440] = new OBJ_Waterfall();
+        gp.obj[440].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[440].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[441] = new OBJ_Waterfall();
+        gp.obj[441].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[441].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[442] = new OBJ_Waterfall();
+        gp.obj[442].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[442].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[443] = new OBJ_Waterfall();
+        gp.obj[443].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[443].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[444] = new OBJ_Waterfall();
+        gp.obj[444].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[444].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[445] = new OBJ_Waterfall();
+        gp.obj[445].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[445].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[446] = new OBJ_Waterfall();
+        gp.obj[446].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[446].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[447] = new OBJ_Waterfall();
+        gp.obj[447].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[447].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[448] = new OBJ_Waterfall();
+        gp.obj[448].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[448].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[449] = new OBJ_Waterfall();
+        gp.obj[449].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[449].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[450] = new OBJ_Waterfall();
+        gp.obj[450].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[450].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[451] = new OBJ_Waterfall();
+        gp.obj[451].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[451].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[452] = new OBJ_Waterfall();
+        gp.obj[452].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[452].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[453] = new OBJ_Waterfall();
+        gp.obj[453].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[453].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[454] = new OBJ_Waterfall();
+        gp.obj[454].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[454].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[455] = new OBJ_Waterfall();
+        gp.obj[455].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[455].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[446] = new OBJ_Waterfall();
+        gp.obj[446].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[446].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[447] = new OBJ_Waterfall();
+        gp.obj[447].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[447].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[448] = new OBJ_Waterfall();
+        gp.obj[448].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[448].worldY = 20 * gp.tileSize; // Row 368
+
+        gp.obj[449] = new OBJ_Waterfall();
+        gp.obj[449].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[449].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[450] = new OBJ_Waterfall();
+        gp.obj[450].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[450].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[451] = new OBJ_Waterfall();
+        gp.obj[451].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[451].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[452] = new OBJ_Waterfall();
+        gp.obj[452].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[452].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[453] = new OBJ_Waterfall();
+        gp.obj[453].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[453].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[454] = new OBJ_Waterfall();
+        gp.obj[454].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[454].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[455] = new OBJ_Waterfall();
+        gp.obj[455].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[455].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[456] = new OBJ_Waterfall();
+        gp.obj[456].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[456].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[457] = new OBJ_Waterfall();
+        gp.obj[457].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[457].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[458] = new OBJ_Waterfall();
+        gp.obj[458].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[458].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[459] = new OBJ_Waterfall();
+        gp.obj[459].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[459].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[460] = new OBJ_Waterfall();
+        gp.obj[460].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[460].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[461] = new OBJ_Splash();
+        gp.obj[461].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[461].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[462] = new OBJ_Splash();
+        gp.obj[462].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[462].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[463] = new OBJ_Splash();
+        gp.obj[463].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[463].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[464] = new OBJ_Splash();
+        gp.obj[464].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[464].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[465] = new OBJ_Splash();
+        gp.obj[465].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[465].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[466] = new OBJ_Splash();
+        gp.obj[466].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[466].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[467] = new OBJ_Waterfall();
+        gp.obj[467].worldX = 24 * gp.tileSize; // Col 13
+        gp.obj[467].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[468] = new OBJ_Waterfall();
+        gp.obj[468].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[468].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[469] = new OBJ_Waterfall();
+        gp.obj[469].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[469].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[470] = new OBJ_Leftwaterfall();
+        gp.obj[470].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[470].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[471] = new OBJ_Leftwaterfall();
+        gp.obj[471].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[471].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[472] = new OBJ_Leftwaterfall();
+        gp.obj[472].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[472].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[473] = new OBJ_Leftwaterfall();
+        gp.obj[473].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[473].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[474] = new OBJ_Leftwaterfall();
+        gp.obj[474].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[474].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[475] = new OBJ_Leftwaterfall();
+        gp.obj[475].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[475].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[476] = new OBJ_Leftwaterfall();
+        gp.obj[476].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[476].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[477] = new OBJ_Leftwaterfall();
+        gp.obj[477].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[477].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[478] = new OBJ_Leftwaterfall();
+        gp.obj[478].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[478].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[479] = new OBJ_Leftwaterfall();
+        gp.obj[479].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[479].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[480] = new OBJ_Leftwaterfall();
+        gp.obj[480].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[480].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[481] = new OBJ_Leftwaterfall();
+        gp.obj[481].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[481].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[482] = new OBJ_Leftwaterfall();
+        gp.obj[482].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[482].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[483] = new OBJ_Leftwaterfall();
+        gp.obj[483].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[483].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[484] = new OBJ_Leftwaterfall();
+        gp.obj[484].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[484].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[485] = new OBJ_Leftwaterfall();
+        gp.obj[485].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[485].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[486] = new OBJ_Leftwaterfall();
+        gp.obj[486].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[486].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[487] = new OBJ_Leftwaterfall();
+        gp.obj[487].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[487].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[488] = new OBJ_Leftwaterfall();
+        gp.obj[488].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[488].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[489] = new OBJ_Leftwaterfall();
+        gp.obj[489].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[489].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[490] = new OBJ_Trfall();
+        gp.obj[490].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[490].worldY = 0 * gp.tileSize; // Row 36
+
+        gp.obj[491] = new OBJ_Trfall();
+        gp.obj[491].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[491].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[492] = new OBJ_Trfall();
+        gp.obj[492].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[492].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[493] = new OBJ_Rightwaterfall();
+        gp.obj[493].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[493].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[494] = new OBJ_Rightwaterfall();
+        gp.obj[494].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[494].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[495] = new OBJ_Rightwaterfall();
+        gp.obj[495].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[495].worldY = 5 * gp.tileSize; // Row 36
+
+        gp.obj[496] = new OBJ_Rightwaterfall();
+        gp.obj[496].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[496].worldY = 6 * gp.tileSize; // Row 36
+
+        gp.obj[497] = new OBJ_Rightwaterfall();
+        gp.obj[497].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[497].worldY = 7 * gp.tileSize; // Row 36
+
+        gp.obj[498] = new OBJ_Rightwaterfall();
+        gp.obj[498].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[498].worldY = 8 * gp.tileSize; // Row 36
+
+        gp.obj[499] = new OBJ_Rightwaterfall();
+        gp.obj[499].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[499].worldY = 9 * gp.tileSize; // Row 36
+
+        gp.obj[500] = new OBJ_Rightwaterfall();
+        gp.obj[500].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[500].worldY = 10 * gp.tileSize; // Row 36
+
+        gp.obj[501] = new OBJ_Rightwaterfall();
+        gp.obj[501].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[501].worldY = 11 * gp.tileSize; // Row 36
+
+        gp.obj[502] = new OBJ_Rightwaterfall();
+        gp.obj[502].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[502].worldY = 12 * gp.tileSize; // Row 36
+
+        gp.obj[503] = new OBJ_Rightwaterfall();
+        gp.obj[503].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[503].worldY = 13 * gp.tileSize; // Row 36
+
+        gp.obj[504] = new OBJ_Rightwaterfall();
+        gp.obj[504].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[504].worldY = 14 * gp.tileSize; // Row 36
+
+        gp.obj[505] = new OBJ_Rightwaterfall();
+        gp.obj[505].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[505].worldY = 15 * gp.tileSize; // Row 36
+
+        gp.obj[506] = new OBJ_Rightwaterfall();
+        gp.obj[506].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[506].worldY = 16 * gp.tileSize; // Row 36
+
+        gp.obj[507] = new OBJ_Rightwaterfall();
+        gp.obj[507].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[507].worldY = 17 * gp.tileSize; // Row 36
+
+        gp.obj[508] = new OBJ_Rightwaterfall();
+        gp.obj[508].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[508].worldY = 18 * gp.tileSize; // Row 36
+
+        gp.obj[509] = new OBJ_Rightwaterfall();
+        gp.obj[509].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[509].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[510] = new OBJ_Rightwaterfall();
+        gp.obj[510].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[510].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[511] = new OBJ_Rightwaterfall();
+        gp.obj[511].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[511].worldY = 21 * gp.tileSize; // Row 36
+
+        gp.obj[512] = new OBJ_Rightwaterfall();
+        gp.obj[512].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[512].worldY = 22 * gp.tileSize; // Row 36
+
+        gp.obj[513] = new OBJ_Leftwaterfall();
+        gp.obj[513].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[513].worldY = 25 * gp.tileSize; // Row 36
+
+        gp.obj[514] = new OBJ_Leftwaterfall();
+        gp.obj[514].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[514].worldY = 26 * gp.tileSize; // Row 36
+
+        gp.obj[515] = new OBJ_Leftwaterfall();
+        gp.obj[515].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[515].worldY = 29 * gp.tileSize; // Row 36
+
+        gp.obj[516] = new OBJ_Leftwaterfall();
+        gp.obj[516].worldX = 23 * gp.tileSize; // Col 13
+        gp.obj[516].worldY = 30 * gp.tileSize; // Row 36
+
+        gp.obj[517] = new OBJ_Splash();
+        gp.obj[517].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[517].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[518] = new OBJ_Splash();
+        gp.obj[518].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[518].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[519] = new OBJ_Splash();
+        gp.obj[519].worldX = 25 * gp.tileSize; // Col 13
+        gp.obj[519].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[520] = new OBJ_Splash();
+        gp.obj[520].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[520].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[521] = new OBJ_Splash();
+        gp.obj[521].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[521].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[522] = new OBJ_Splash();
+        gp.obj[522].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[522].worldY = 33 * gp.tileSize; // Row 36
+
+        gp.obj[523] = new OBJ_Splash();
+        gp.obj[523].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[523].worldY = 31 * gp.tileSize; // Row 36
+
+        gp.obj[518] = new OBJ_Splash();
+        gp.obj[518].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[518].worldY = 32 * gp.tileSize; // Row 36
+
+        gp.obj[519] = new OBJ_Splash();
+        gp.obj[519].worldX = 27 * gp.tileSize; // Col 13
+        gp.obj[519].worldY = 33 * gp.tileSize; // Row 36
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
 
 
 
@@ -3801,7 +5423,7 @@ public class AssetSetter {
             gp.obj[785] = new OBJ_BigRock();
             gp.obj[785].worldX = 35 * gp.tileSize; // Col 35
             gp.obj[785].worldY = 46 * gp.tileSize; // Row 46
-            
+
             //Rotten Tree
             gp.obj[786] = new OBJ_RottenTree();
             gp.obj[786].worldX = 7 * gp.tileSize; // Col 7
@@ -4060,6 +5682,12 @@ public class AssetSetter {
             gp.obj[851] = new OBJ_Yellow();
             gp.obj[851].worldX = 13 * gp.tileSize; // Col 13
             gp.obj[851].worldY = 36 * gp.tileSize; // Row 36
+
+            //Map 1 water & fences
+
+
+
+
 
 
 
