@@ -4,14 +4,14 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.awt.Rectangle;
 
-public class OBJ_Water extends SuperObject {
-    public OBJ_Water() {
-        name = "Water";
+public class OBJ_Sand extends SuperObject {
+    public OBJ_Sand() {
+        name = "Sand";
         try {
             // Path matches your sidebar: /map2assets/tree_64x96.png
-            image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/water32x32.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/sand_32x32.png"));
         } catch (IOException e) {
-            System.out.println("Could not find the water image!");
+            System.out.println("Could not find the sand image!");
             e.printStackTrace();
         }
 
@@ -25,5 +25,3 @@ public class OBJ_Water extends SuperObject {
 
     }
 }
-
-
