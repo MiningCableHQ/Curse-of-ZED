@@ -18,7 +18,7 @@ public class OBJ_BlueHouse extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(16 * scale, 16 * scale, 96 * scale, 96 * scale);
+        solidArea = new Rectangle(16 * scale, 16 * scale, 98 * scale, 100 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;

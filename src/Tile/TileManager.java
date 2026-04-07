@@ -109,6 +109,8 @@ public class TileManager {
             tile[37].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurpleedge.png"));
             tile[38] = new Tile();
             tile[38].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurpleedgel.png"));
+            tile[39] = new Tile();
+            tile[39].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/water32x32.png"));
 
             System.out.println("Image loaded finished");
         } catch (IOException e) {
