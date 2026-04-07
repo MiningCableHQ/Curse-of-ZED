@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class Stunblade extends Weapon {
     public Stunblade(){
         super("Stunblade", "Description pls", 15);
+
+        loadImage("/items/warrior_weapon/stunblade_sword.png");
     }
 
     @Override

@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class RazorEdge extends Weapon{
     public RazorEdge(){
         super("RazorEdge", "Description pls", 20);
+
+        loadImage("/items/warrior_weapon/razoredge_sword.png");
     }
 
     @Override

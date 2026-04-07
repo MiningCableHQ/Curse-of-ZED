@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class ElementalCodex extends Weapon {
     public ElementalCodex(){
         super("ElementalCodex", "Description pls", 15);
+
+        loadImage("/items/mage_weapon/elemental_codex.png");
     }
 
     @Override

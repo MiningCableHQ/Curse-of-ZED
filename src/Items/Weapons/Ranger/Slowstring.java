@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class Slowstring extends Weapon {
     public Slowstring() {
         super("Slowstring", "Description pls", 10);
+
+        loadImage("/items/archer_weapon/slowstring.png");
     }
 
     @Override

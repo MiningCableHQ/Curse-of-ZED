@@ -7,12 +7,12 @@ import Entities.Characters.Mage;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
 import Entities.Entity;
+import Items.Item;
 import Moves.Move;
 
 import javax.swing.*;
 import java.awt.Window;
 import java.util.*;
-import java.util.List;
 import javax.swing.Timer;
 
 public class Battle {
@@ -28,6 +28,10 @@ public class Battle {
     private Move pendingMove;
     private Enemy selectedTarget;
     private boolean isExecutingTurn = false;
+
+    // Item usage tracking
+    private Item pendingItem;
+    private boolean hasPendingItem;
 
     // Cycle System fields
     private List<Entity> currentTurnOrder;
@@ -57,6 +61,122 @@ public class Battle {
         this.battlePanel = battlePanel;
         this.player = player;
         this.enemies = new ArrayList<>(enemies);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Item Usage Methods
+    // ─────────────────────────────────────────────────────────────
+    public boolean hasPendingItem() {
+        return hasPendingItem;
+    }
+
+    public void setPendingItem(Item item, Enemy target) {
+        if (target != null) {
+            // Target already selected (for self-targeting items)
+            pendingItem = item;
+            hasPendingItem = false;
+            executeItemTurn(item, target);
+        } else {
+            // Need target selection
+            pendingItem = item;
+            hasPendingItem = true;
+            battlePanel.showItemTargetSelection(item);
+        }
+    }
+
+    public void handleItemTargetSelected(int enemyIndex) {
+        if (!hasPendingItem || pendingItem == null) return;
+
+        if (enemyIndex < enemies.size()) {
+            Enemy target = enemies.get(enemyIndex);
+            hasPendingItem = false;
+            executeItemTurn(pendingItem, target);
+            pendingItem = null;
+        }
+    }
+
+    public void cancelItemTargetSelection() {
+        hasPendingItem = false;
+        pendingItem = null;
+        isWaitingForPlayerInput = true;
+        battlePanel.showFightMenu();
+    }
+
+    public void executeItemTurn() {
+        // This is called when item was already selected (for self-targeting items)
+        if (pendingItem != null) {
+            executeItemTurn(pendingItem, null);
+            pendingItem = null;
+        }
+    }
+
+    private void executeItemTurn(Item item, Enemy target) {
+        if (!isBattleActive) return;
+
+        isExecutingTurn = true;
+        isWaitingForPlayerInput = false;
+        battlePanel.hideMainMenu();
+        battlePanel.hideBattleButtons();
+        battlePanel.hideTargetButtons();
+        battlePanel.setButtonsEnabled(false);
+
+        // Display message
+        String message = player.getName() + " used " + item.getName();
+        battlePanel.setBattleMessage(message);
+        battlePanel.repaint();
+
+        Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
+            if (!isBattleActive) return;
+
+            String resultMessage;
+
+            // Check item target type
+            if (item.getTargetType() == Item.TargetType.SELF) {
+                // Self-targeting item
+                item.useItem(player);
+                resultMessage = player.getName() + " used " + item.getName() + "!";
+            } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
+                // Single enemy target
+                double beforeHp = target.getHp();
+                item.useItem(target);
+                double afterHp = target.getHp();
+                double effectAmount = beforeHp - afterHp;
+
+                if (effectAmount > 0) {
+                    resultMessage = player.getName() + " used " + item.getName() + " on " +
+                            target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
+                } else {
+                    resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
+                }
+            } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
+                // AoE item
+                for (Enemy enemy : enemies) {
+                    if (enemy.getHp() > 0) {
+                        item.useItem(enemy);
+                    }
+                }
+                resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
+            } else {
+                resultMessage = player.getName() + " used " + item.getName() + "!";
+            }
+
+            battlePanel.setBattleMessage(resultMessage);
+            battlePanel.repaint();
+            battlePanel.updateTargetButtonStates();
+
+            // Check if battle should end
+            if (getAliveEnemies().isEmpty()) {
+                endBattle(true);
+                return;
+            }
+
+            // Move to next turn
+            Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+            nextTimer.setRepeats(false);
+            nextTimer.start();
+        });
+        executeTimer.setRepeats(false);
+        executeTimer.start();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -264,6 +384,9 @@ public class Battle {
 
         isWaitingForPlayerInput = true;
         isExecutingTurn = false;
+        hasPendingItem = false; // Reset item pending state
+        pendingItem = null;
+        pendingMove = null; // Reset move pending state
 
         // Show the main menu for player to choose action
         battlePanel.showMainMenu();
@@ -273,7 +396,6 @@ public class Battle {
 
     /** Start the phase where player chooses their move */
     private void startPlayerDecisionPhase() {
-        // This is kept for backward compatibility but not used in new system
         startPlayerTurn();
     }
 

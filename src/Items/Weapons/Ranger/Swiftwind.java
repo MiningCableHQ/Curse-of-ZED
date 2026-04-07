@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class Swiftwind extends Weapon {
     public Swiftwind() {
         super("Swiftwind", "Description pls", 20);
+
+        loadImage("/items/archer_weapon/swiftwind.png");
     }
 
     @Override

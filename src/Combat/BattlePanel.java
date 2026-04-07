@@ -14,6 +14,9 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import Items.Item;
+import Main.InventoryPanel;
+import java.util.function.BiConsumer;
 
 public class BattlePanel extends JPanel {
 
@@ -96,6 +99,9 @@ public class BattlePanel extends JPanel {
 
     // ── Background Image ──────────────────────────────────────────
     private Image backgroundImage;
+
+    // ── Item selection callback ───────────────────────────────────
+    private BiConsumer<Item, Enemy> itemSelectionCallback;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructors
@@ -366,7 +372,42 @@ public class BattlePanel extends JPanel {
 
         btnBag = new BattleButton("Bag");
         btnBag.setBounds(startX + (btnW + gap), rowY, btnW, btnH);
-        btnBag.addActionListener(e -> { /* TODO: open bag */ });
+        btnBag.addActionListener(e -> {
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
+
+            // Create callback for item selection
+            itemSelectionCallback = (item, target) -> {
+                System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
+                battle.setPendingItem(item, target);
+
+                // Close inventory and return to battle
+                parentFrame.getContentPane().removeAll();
+                parentFrame.add(BattlePanel.this);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+
+                // Execute the item as a turn action
+                battle.executeItemTurn();
+            };
+
+            InventoryPanel invPanel = new InventoryPanel(parentFrame, playerEntity, true,
+                    itemSelectionCallback,
+                    () -> {
+                        // Back button callback - just return to battle
+                        parentFrame.getContentPane().removeAll();
+                        parentFrame.add(BattlePanel.this);
+                        parentFrame.revalidate();
+                        parentFrame.repaint();
+                        battle.startBattle();
+                    }
+            );
+            invPanel.setBattle(battle);
+
+            parentFrame.getContentPane().removeAll();
+            parentFrame.add(invPanel);
+            parentFrame.revalidate();
+            parentFrame.repaint();
+        });
         add(btnBag);
 
         btnRun = new BattleButton("Run");
@@ -438,31 +479,21 @@ public class BattlePanel extends JPanel {
         btnBackTarget.addActionListener(e -> {
             System.out.println("Back button pressed during target selection - resetting UI");
 
-            // Clear pending move and target selection state in Battle
-            battle.cancelTargetSelection();
+            if (battle.hasPendingItem()) {
+                battle.cancelItemTargetSelection();
+            } else {
+                battle.cancelTargetSelection();
+            }
 
-            // Reset UI state to FIGHT menu
             uiState = UIState.FIGHT;
-
-            // Hide target buttons
             hideTargetButtons();
-
-            // Show move buttons and Back button
             for (BattleButton mb : moveBtns) mb.setVisible(true);
             btnBack.setVisible(true);
-
-            // Hide main menu buttons
             btnFight.setVisible(false);
             btnBag.setVisible(false);
             btnRun.setVisible(false);
-
-            // Clear any pending battle message
             battleMessage = "";
-
-            // Re-enable all buttons
             setButtonsEnabled(true);
-
-            // Force repaint
             repaint();
         });
         btnBackTarget.setVisible(false);
@@ -559,6 +590,27 @@ public class BattlePanel extends JPanel {
         this.repaint();
     }
 
+    public void showItemTargetSelection(Item item) {
+        System.out.println("showItemTargetSelection() called for item: " + item.getName());
+        uiState = UIState.TARGET_SELECT;
+        for (BattleButton mb : moveBtns) mb.setVisible(false);
+        btnBack.setVisible(false);
+        updateTargetButtonStates();
+        for (BattleButton targetBtn : targetButtons) {
+            targetBtn.setVisible(true);
+        }
+        if (btnBackTarget != null) {
+            btnBackTarget.setVisible(true);
+            btnBackTarget.setEnabled(true);
+            setComponentZOrder(btnBackTarget, 0);
+            btnBackTarget.revalidate();
+            btnBackTarget.repaint();
+        }
+        battleMessage = "Choose a target for " + item.getName() + "!";
+        this.revalidate();
+        this.repaint();
+    }
+
     public void hideTargetButtons() {
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(false);
@@ -600,7 +652,11 @@ public class BattlePanel extends JPanel {
 
     private void onTargetSelected(int enemyIndex) {
         System.out.println("Target selected: " + enemyIndex);
-        battle.handleTargetSelected(enemyIndex);
+        if (battle.hasPendingItem()) {
+            battle.handleItemTargetSelected(enemyIndex);
+        } else {
+            battle.handleTargetSelected(enemyIndex);
+        }
     }
 
     // ── Public methods for Battle class ─────────────────────────────
@@ -996,6 +1052,51 @@ public class BattlePanel extends JPanel {
         g2.drawLine(rx + 14, ry + 4, rx + 4, ry + 14);
         g2.setColor(new Color(90, 50, 10, 110));
         g2.fillOval(cx - 2, cy - 2, 5, 5);
+    }
+
+    /**
+     * Shows or hides all UI buttons (menus, move buttons, target buttons)
+     * Used during message display to prevent button clicks while messages are showing
+     */
+    public void setUIVisible(boolean visible) {
+        if (visible) {
+            // When showing UI, only show the appropriate buttons based on current state
+            if (uiState == UIState.MAIN) {
+                showMainMenu();
+            } else if (uiState == UIState.FIGHT) {
+                showFightMenu();
+            } else if (uiState == UIState.TARGET_SELECT) {
+                // For target selection, show target buttons and back button
+                for (BattleButton targetBtn : targetButtons) {
+                    targetBtn.setVisible(true);
+                }
+                if (btnBackTarget != null) {
+                    btnBackTarget.setVisible(true);
+                }
+            }
+        } else {
+            // Hide all buttons
+            btnFight.setVisible(false);
+            btnBag.setVisible(false);
+            btnRun.setVisible(false);
+
+            for (BattleButton mb : moveBtns) {
+                mb.setVisible(false);
+            }
+            btnBack.setVisible(false);
+
+            for (BattleButton targetBtn : targetButtons) {
+                targetBtn.setVisible(false);
+            }
+            if (btnBackTarget != null) {
+                btnBackTarget.setVisible(false);
+            }
+        }
+
+        if (visible) {
+            revalidate();
+            repaint();
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

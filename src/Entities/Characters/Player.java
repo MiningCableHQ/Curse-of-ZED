@@ -1,8 +1,16 @@
 package Entities.Characters;
+
 import Entities.Entity;
 import Items.Inventory;
 import Main.*;
 import Moves.Move;
+import Items.Consumables.Buff.LesserHardening;
+import Items.Consumables.Buff.LesserPower;
+import Items.Consumables.Buff.Power;
+import Items.Consumables.Heal.GreaterHealing;
+import Items.Consumables.Heal.LesserHealing;
+import Items.Weapons.Mage.AnkhStaff;
+import Items.Weapons.Mage.Arcanum;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -49,6 +57,8 @@ public abstract class Player extends Entity {
         inventory = new Inventory();
         moves =  new ArrayList<>();
         moveset = new ArrayList<>();
+
+        loadInventory();
     }
 
     public void setDefaultValues(){
@@ -187,6 +197,14 @@ public abstract class Player extends Entity {
 
     public abstract void loadMoves();
 
+    public void loadInventory(){
+        inventory.addItem(new LesserHealing(), 5);
+        inventory.addItem(new LesserHardening(), 5);
+        inventory.addItem(new LesserPower(), 5);
+        inventory.addItem(new Power(), 5);
+        inventory.addItem(new Arcanum(), 1);
+    }
+
     public void levelUp(){
         level++;
         experience -= expNeeded;
@@ -256,5 +274,8 @@ public abstract class Player extends Entity {
     }
     public Weapon getWeapon(){
         return weapon;
+    }
+    public Inventory getInventory(){
+        return inventory;
     }
 }

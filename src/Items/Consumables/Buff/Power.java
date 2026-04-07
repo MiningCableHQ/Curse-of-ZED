@@ -1,8 +1,42 @@
 package Items.Consumables.Buff;
 
-public class Power extends LesserPower{
-    public Power(){
-        name = "Power";
-        attackBuffAmount = 0.32;
+import Entities.Entity;
+import Entities.Characters.Player;
+import Items.Consumables.Consumable;
+
+public class Power extends Consumable {
+    protected double attackBuffAmount;
+
+    public Power() {
+        super("Power Potion", "Increases ATK by 150");
+        attackBuffAmount = 150;
+        useMessage = "Used Power Potion!";
+
+        loadImage("/items/buff_potions/power_potion.png");
+    }
+
+    @Override
+    public <T> void useItem(T Entity) {
+        if (Entity instanceof Player) {
+            Player target = (Player) Entity;
+            double beforeAttack = target.getAttack();
+
+            target.buffAttack(attackBuffAmount);
+            double afterAttack = target.getAttack();
+            double actualBuff = afterAttack - beforeAttack;
+
+            useMessage = "Used Power Potion on " + target.getName() + "! ATK increased by " +
+                    String.format("%.1f", actualBuff) + ".";
+        } else if (Entity instanceof Entity) {
+            Entity target = (Entity) Entity;
+            double beforeAttack = target.getAttack();
+
+            target.buffAttack(attackBuffAmount);
+            double afterAttack = target.getAttack();
+            double actualBuff = afterAttack - beforeAttack;
+
+            useMessage = "Used Power Potion on " + target.getName() + "! ATK increased by " +
+                    String.format("%.1f", actualBuff) + ".";
+        }
     }
 }

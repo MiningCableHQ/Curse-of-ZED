@@ -1,5 +1,7 @@
 package Entities.Characters;
 
+import Items.Consumables.Heal.GreaterHealing;
+import Items.Consumables.Heal.Healing;
 import Main.*;
 import Moves.Mage.*;
 

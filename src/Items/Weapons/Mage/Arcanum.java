@@ -5,6 +5,8 @@ import Items.Weapons.Weapon;
 public class Arcanum extends Weapon {
     public Arcanum(){
         super("Arcanum", "Description pls", 20);
+
+        loadImage("/items/mage_weapon/arcanum_staff.png");
     }
 
     @Override

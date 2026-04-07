@@ -1,5 +1,6 @@
 package Entities.Characters;
 
+import Items.Consumables.Heal.Healing;
 import Main.*;
 import Moves.Ranger.*;
 
