@@ -12,7 +12,7 @@ public class SnipersGamble extends Move {
     public SnipersGamble() {
         super("Sniper's Gamble", 50, TargetType.ENEMY);
         hasUnlocked = false;
-        description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 25% for this move";
+        description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 35% for this move";
     }
 
     @Override
@@ -21,8 +21,8 @@ public class SnipersGamble extends Move {
             Ranger ranger = (Ranger) Entity;
             Entity enemy = Move.currentTarget;
 
-            // Calculate base accuracy 95%(base) - 25%(this move's drawback)
-            double baseAccuracy = 0.7;
+            // Calculate base accuracy 95%(base) - 35%(this move's drawback)
+            double baseAccuracy = 0.60;
             double randomValue = rand.nextDouble();
 
             // Check if the attack hits
@@ -53,4 +53,3 @@ public class SnipersGamble extends Move {
         }
     }
 }
-//TODO accuracy is lowered by 25% for this move (I implemented it, but needs double checking)

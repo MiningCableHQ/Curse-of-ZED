@@ -4,8 +4,7 @@ import Items.Weapons.Weapon;
 
 public class RazorEdge extends Weapon{
     public RazorEdge(){
-        super("RazorEdge", "Description pls", 20);
-
+        super("RazorEdge", "Description pls", 20, "/items/warrior_weapon/razoredge_sword.png");
         loadImage("/items/warrior_weapon/razoredge_sword.png");
     }
 

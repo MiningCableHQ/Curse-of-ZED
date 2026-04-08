@@ -38,6 +38,11 @@ public class GamePanel extends JPanel implements Runnable {
     public SuperObject obj[] = new SuperObject[100000];
     public int currentMap = 0;
 
+    // Inventory management
+    private InventoryPanel currentInventoryPanel;
+    private boolean inventoryOpen = false;
+    private JFrame parentFrame;
+
     /**
      * No-arg constructor for compatibility.
      * Creates a default Swordsman with a new KeyHandler.
@@ -119,6 +124,18 @@ public class GamePanel extends JPanel implements Runnable {
         if (player != null) {
             player.update();
         }
+
+        // Handle inventory key press
+        if (keyH.iPressed) {
+            if (!inventoryOpen) {
+                openInventory();
+            } else {
+                // If inventory is already open, close it
+                closeInventory();
+            }
+            keyH.iPressed = false; // Reset to prevent multiple toggles
+        }
+
         checkMapTransition();
         // ANIMATE OBJECTS
         for (int i = 0; i < obj.length; i++) {
@@ -126,6 +143,54 @@ public class GamePanel extends JPanel implements Runnable {
                 ((OBJ_Torch) obj[i]).updateAnimation();
             }
         }
+    }
+
+    /**
+     * Opens the inventory panel during exploration
+     */
+    private void openInventory() {
+        if (parentFrame == null) {
+            // Get the parent frame
+            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        }
+
+        inventoryOpen = true;
+
+        // For exploration mode, we don't need item selection callback
+        currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
+                (item, target) -> {
+                    // Item selection callback - not used in exploration mode
+                    System.out.println("Cannot use items outside of combat!");
+                },
+                () -> {
+                    // Close inventory callback
+                    closeInventory();
+                }
+        );
+
+        // Hide GamePanel and show InventoryPanel
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentInventoryPanel);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        currentInventoryPanel.requestFocusInWindow();
+    }
+
+    /**
+     * Closes the inventory and returns to GamePanel
+     */
+    public void closeInventory() {
+        inventoryOpen = false;
+        currentInventoryPanel = null;
+
+        // Restore GamePanel
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
     }
 
     public void checkMapTransition() {

@@ -1,7 +1,6 @@
 package Entities.Characters;
 
-import Items.Consumables.Heal.GreaterHealing;
-import Items.Consumables.Heal.Healing;
+import Items.Weapons.Mage.*;
 import Main.*;
 import Moves.Mage.*;
 
@@ -26,6 +25,7 @@ public class Mage extends Player {
         speed = 35;
         dmgResistance = 0.13;
         loadMoves();
+        setWeapon(new ElementalCodex());
 
         originalAttack = attack;
     }

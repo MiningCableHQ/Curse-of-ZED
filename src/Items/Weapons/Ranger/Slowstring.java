@@ -4,8 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Slowstring extends Weapon {
     public Slowstring() {
-        super("Slowstring", "Description pls", 10);
-
+        super("Slowstring", "Description pls", 10, "/items/archer_weapon/slowstring.png");
         loadImage("/items/archer_weapon/slowstring.png");
     }
 

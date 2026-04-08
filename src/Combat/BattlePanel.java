@@ -375,25 +375,20 @@ public class BattlePanel extends JPanel {
         btnBag.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
 
-            // Create callback for item selection
-            itemSelectionCallback = (item, target) -> {
-                System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
-                battle.setPendingItem(item, target);
-
-                // Close inventory and return to battle
-                parentFrame.getContentPane().removeAll();
-                parentFrame.add(BattlePanel.this);
-                parentFrame.revalidate();
-                parentFrame.repaint();
-
-                // Execute the item as a turn action
-                battle.executeItemTurn();
-            };
-
             InventoryPanel invPanel = new InventoryPanel(parentFrame, playerEntity, true,
-                    itemSelectionCallback,
+                    (item, target) -> {
+                        System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
+                        battle.setPendingItem(item, target);
+
+                        parentFrame.getContentPane().removeAll();
+                        parentFrame.add(BattlePanel.this);
+                        parentFrame.revalidate();
+                        parentFrame.repaint();
+
+                        battle.executeItemTurn();
+                    },
                     () -> {
-                        // Back button callback - just return to battle
+                        // Back button callback - return to battle
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
@@ -407,6 +402,9 @@ public class BattlePanel extends JPanel {
             parentFrame.add(invPanel);
             parentFrame.revalidate();
             parentFrame.repaint();
+
+            // CRITICAL: Request focus for the inventory panel after it's added to the frame
+            invPanel.requestPanelFocus();
         });
         add(btnBag);
 

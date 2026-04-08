@@ -2,6 +2,7 @@ package Entities.Characters;
 
 import Entities.Entity;
 import Items.Inventory;
+import Items.Weapons.Mage.ElementalCodex;
 import Main.*;
 import Moves.Move;
 import Items.Consumables.Buff.LesserHardening;
@@ -18,6 +19,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import Items.Weapons.Weapon;
+
+import Items.Consumables.Debuff.Blinding.LesserBlinding;
+import Items.Consumables.Debuff.Clumsiness.LesserClumsiness;
+import Items.Consumables.Debuff.Dulling.LesserDulling;
+import Items.Consumables.Debuff.Softening.LesserSoftening;
+import Items.Weapons.Ranger.Swiftwind;
+import Items.Weapons.Swordsman.Unyielding;
 
 public abstract class Player extends Entity {
     public final int screenX;
@@ -199,10 +207,13 @@ public abstract class Player extends Entity {
 
     public void loadInventory(){
         inventory.addItem(new LesserHealing(), 5);
-        inventory.addItem(new LesserHardening(), 5);
-        inventory.addItem(new LesserPower(), 5);
-        inventory.addItem(new Power(), 5);
-        inventory.addItem(new Arcanum(), 1);
+        inventory.addItem(new LesserHardening(), 3);
+        inventory.addItem(new LesserPower(), 3);
+        inventory.addItem(new LesserSoftening(), 2);
+        // Add weapons to inventory (not equipped by default)
+        inventory.addItem(new ElementalCodex());
+        inventory.addItem(new Swiftwind());
+        inventory.addItem(new Unyielding());
     }
 
     public void levelUp(){
@@ -262,7 +273,34 @@ public abstract class Player extends Entity {
         }
     }
 
+    public boolean canEquipWeapon(Weapon weapon) {
+        String weaponPath = weapon.getImagePath();
+        if (weaponPath == null) return false;
+
+        if (this instanceof Swordsman) {
+            return weaponPath.contains("warrior_weapon");
+        } else if (this instanceof Ranger) {
+            return weaponPath.contains("archer_weapon");
+        } else if (this instanceof Mage) {
+            return weaponPath.contains("mage_weapon");
+        }
+        return false;
+    }
+
+    public void setWeapon(Weapon weapon) {
+        this.weapon = weapon;
+        // Recalculate attack (original attack + weapon bonus)
+        if (weapon != null) {
+            this.attack = this.maxAttack + weapon.getAttack();
+        } else {
+            this.attack = this.maxAttack;
+        }
+    }
+
     //Getters and Setters
+    public double getWeaponAttackBonus() {
+        return (weapon != null) ? weapon.getAttack() : 0;
+    }
     public int getExperience(){
         return experience;
     }

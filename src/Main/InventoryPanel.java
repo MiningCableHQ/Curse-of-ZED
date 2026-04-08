@@ -5,15 +5,25 @@ import Entities.Entity;
 import Entities.Enemies.Enemy;
 import Items.Item;
 import Items.Weapons.Weapon;
+import Items.Consumables.Heal.*;
+import Items.Consumables.Buff.*;
+import Items.Consumables.Debuff.Dulling.*;
+import Items.Consumables.Debuff.Softening.*;
+import Items.Consumables.Debuff.Clumsiness.*;
+import Items.Consumables.Debuff.Blinding.*;
 import Moves.Move;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.BiConsumer;
@@ -33,8 +43,8 @@ public class InventoryPanel extends JPanel {
     private static final Color PARCH_BORDER = new Color(80, 38, 2, 230);
     private static final Color TEXT_DARK = new Color(60, 30, 5);
     private static final Color TEXT_GOLD = new Color(252, 218, 72);
-    private static final Color HOVER_GOLD = new Color(252, 218, 72);
     private static final Color GOLD_DARK = new Color(178, 108, 0);
+    private static final Color HOVER_GOLD = new Color(252, 218, 72);
 
     // ── Stat Colors ────────────────────────────────────────────────
     private static final Color STAT_HP = new Color(220, 80, 80);
@@ -60,16 +70,23 @@ public class InventoryPanel extends JPanel {
     private static final Font FONT_ITEM = new Font("SansSerif", Font.PLAIN, 12);
     private static final Font FONT_DIALOG = new Font("Serif", Font.BOLD, 14);
 
+    // Title fonts
+    private Font fontTitle;
+    private float shimmer = 1.4f;
+    private float floatY = 0f;
+    private float floatDir = 1f;
+    private javax.swing.Timer titleAnimTimer;
+
     // ── Layout Constants ───────────────────────────────────────────
     private static final int CHAR_PANEL_X = 20;
-    private static final int CHAR_PANEL_Y = 80;
+    private static final int CHAR_PANEL_Y = 100;
     private static final int CHAR_PANEL_W = 300;
-    private static final int CHAR_PANEL_H = 480;
+    private static final int CHAR_PANEL_H = 460;
 
     private static final int INV_PANEL_X = 340;
-    private static final int INV_PANEL_Y = 80;
+    private static final int INV_PANEL_Y = 100;
     private static final int INV_PANEL_W = 664;
-    private static final int INV_PANEL_H = 480;
+    private static final int INV_PANEL_H = 460;
 
     private static final int MSG_PANEL_X = 20;
     private static final int MSG_PANEL_Y = 580;
@@ -100,6 +117,9 @@ public class InventoryPanel extends JPanel {
     private int currentPlayerFrame = 0;
     private Timer animationTimer;
     private JLabel playerImageLabel;
+    private JPanel equippedWeaponPanel;
+    private JLabel weaponIconLabel;
+    private JLabel weaponNameLabel;
 
     // ── Inventory Grid ────────────────────────────────────────────
     private JPanel inventoryGrid;
@@ -124,17 +144,188 @@ public class InventoryPanel extends JPanel {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setLayout(null);
         setOpaque(true);
+        setFocusable(true);
 
+        loadTitleFont();
         loadBackground();
         loadPlayerAnimations();
         initUI();
         startAnimationTimer();
+        startTitleAnimation();
 
         refreshInventory();
+        updateEquippedWeaponDisplay();
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.out.println("ESC pressed - closing inventory");
+                    if (animationTimer != null) {
+                        animationTimer.cancel();
+                        animationTimer = null;
+                    }
+                    if (titleAnimTimer != null) {
+                        titleAnimTimer.stop();
+                    }
+                    if (onBackPressed != null) {
+                        onBackPressed.run();
+                    }
+                }
+                if (!fromCombat && e.getKeyCode() == KeyEvent.VK_I) {
+                    System.out.println("I pressed - closing inventory (exploration mode)");
+                    if (animationTimer != null) {
+                        animationTimer.cancel();
+                        animationTimer = null;
+                    }
+                    if (titleAnimTimer != null) {
+                        titleAnimTimer.stop();
+                    }
+                    if (onBackPressed != null) {
+                        onBackPressed.run();
+                    }
+                }
+            }
+        });
+    }
+
+    public void requestPanelFocus() {
+        requestFocusInWindow();
     }
 
     public void setBattle(Combat.Battle battle) {
         this.battle = battle;
+    }
+
+    // ── Title Methods ─────────────────────────────────────────────
+    private void loadTitleFont() {
+        Font base = null;
+        for (String n : new String[]{
+                "RINGM___.TTF","RingbearerMedium.ttf","Ringbearer Medium.ttf",
+                "ringbearer medium.ttf","Ringbearer.ttf","ringbearer.ttf"}) {
+            java.io.File f = new java.io.File(n);
+            if (!f.exists()) continue;
+            try {
+                base = Font.createFont(Font.TRUETYPE_FONT, f);
+                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(base);
+                break;
+            } catch (Exception ex) { /* ignore */ }
+        }
+        if (base == null) base = new Font("Palatino Linotype", Font.PLAIN, 12);
+        fontTitle = base.deriveFont(Font.PLAIN, 52f);
+    }
+
+    private void startTitleAnimation() {
+        titleAnimTimer = new javax.swing.Timer(16, e -> {
+            floatY += 0.038f * floatDir;
+            if (floatY > 5f) floatDir = -1f;
+            if (floatY < -5f) floatDir = 1f;
+            shimmer -= 0.005f;
+            if (shimmer < -0.4f) shimmer = 1.4f;
+            repaint();
+        });
+        titleAnimTimer.start();
+    }
+
+    private void paintTitle(Graphics2D g2) {
+        String text = "Inventory";
+        g2.setFont(fontTitle);
+        FontRenderContext frc = g2.getFontRenderContext();
+        GlyphVector gv = fontTitle.createGlyphVector(frc, text);
+        Rectangle2D vis = gv.getVisualBounds();
+        int tw = (int) vis.getWidth();
+        int tx = (WIDTH - tw) / 2 - (int) vis.getX();
+        int ty = (int)(60 + floatY);
+
+        g2.setColor(new Color(0, 0, 0, 185));
+        g2.drawString(text, tx + 4, ty + 6);
+        g2.setColor(new Color(0, 0, 0, 75));
+        g2.drawString(text, tx + 8, ty + 11);
+
+        g2.setPaint(new LinearGradientPaint(
+                tx, ty - (int)vis.getHeight(), tx, ty + 8,
+                new float[]{0f, 0.35f, 0.65f, 1f},
+                new Color[]{
+                        new Color(255, 252, 210),
+                        new Color(252, 218, 72),
+                        new Color(218, 138, 18),
+                        new Color(245, 198, 48)
+                }));
+        g2.drawString(text, tx, ty);
+
+        float bandW = 110f;
+        float bandX = tx + shimmer * (tw + bandW) - bandW;
+        Shape savedClip = g2.getClip();
+        g2.clip(gv.getOutline(tx, ty));
+        g2.setPaint(new LinearGradientPaint(bandX, 0, bandX + bandW, 0,
+                new float[]{0f, 0.35f, 0.5f, 0.65f, 1f},
+                new Color[]{
+                        new Color(255, 248, 200, 0),
+                        new Color(255, 248, 200, 85),
+                        new Color(255, 255, 255, 215),
+                        new Color(255, 248, 200, 85),
+                        new Color(255, 248, 200, 0)
+                }));
+        g2.fill(new Rectangle2D.Float(bandX, ty - (int)vis.getHeight() - 6, bandW, (int)vis.getHeight() + 18));
+        g2.setClip(savedClip);
+    }
+
+    // ── Weapon Management Methods ─────────────────────────────────
+    private void updateEquippedWeaponDisplay() {
+        Weapon equipped = player.getWeapon();
+        if (equipped != null) {
+            BufferedImage weaponImg = equipped.getImage();
+            if (weaponImg != null) {
+                Image scaled = weaponImg.getScaledInstance(48, 48, Image.SCALE_FAST);
+                weaponIconLabel.setIcon(new ImageIcon(scaled));
+            } else {
+                weaponIconLabel.setIcon(null);
+            }
+            weaponNameLabel.setText(equipped.getName());
+            weaponNameLabel.setToolTipText("ATK: +" + (int)equipped.getAttack());
+        } else {
+            weaponIconLabel.setIcon(null);
+            weaponNameLabel.setText("No weapon equipped");
+            weaponNameLabel.setToolTipText("Equip a weapon to increase ATK");
+        }
+        repaint();
+    }
+
+    private void equipWeapon(Weapon weapon) {
+        if (!player.canEquipWeapon(weapon)) {
+            String className = player instanceof Swordsman ? "Swordsman" :
+                    (player instanceof Ranger ? "Ranger" : "Mage");
+            showParchmentDialog("Cannot Equip", "This weapon cannot be equipped by " + className + "!", "OK", null, null);
+            return;
+        }
+
+        String confirmMessage = "Equip " + weapon.getName() + "?\nATK: +" + (int)weapon.getAttack();
+        showParchmentDialog("Equip Weapon", confirmMessage, "Yes", "No", () -> {
+            Weapon currentWeapon = player.getWeapon();
+            if (currentWeapon != null) {
+                player.getInventory().addItem(currentWeapon, 1);
+            }
+            player.getInventory().removeItem(weapon, 1);
+            player.setWeapon(weapon);
+            updateEquippedWeaponDisplay();
+            refreshInventory();
+            updateStatsPanel();
+            messageLabel.setText("Equipped " + weapon.getName() + "! ATK increased by " + (int)weapon.getAttack());
+        });
+    }
+
+    private void unequipWeapon() {
+        Weapon currentWeapon = player.getWeapon();
+        if (currentWeapon == null) return;
+
+        showParchmentDialog("Unequip Weapon", "Unequip " + currentWeapon.getName() + "?", "Yes", "No", () -> {
+            player.getInventory().addItem(currentWeapon, 1);
+            player.setWeapon(null);
+            updateEquippedWeaponDisplay();
+            refreshInventory();
+            updateStatsPanel();
+            messageLabel.setText("Unequipped " + currentWeapon.getName());
+        });
     }
 
     // ── Helper Methods ─────────────────────────────────────────────
@@ -203,6 +394,50 @@ public class InventoryPanel extends JPanel {
                 name.contains("Clumsiness") || name.contains("Blinding");
     }
 
+    private boolean isHealingItem(Item item) {
+        return item instanceof LesserHealing || item instanceof Healing || item instanceof GreaterHealing;
+    }
+
+    private boolean isBuffItem(Item item) {
+        return item instanceof LesserPower || item instanceof Power ||
+                item instanceof LesserHardening || item instanceof Hardening;
+    }
+
+    private boolean isWeaponItem(Item item) {
+        return item instanceof Weapon;
+    }
+
+    private void useItemInExploration(Item item) {
+        if (isWeaponItem(item)) {
+            equipWeapon((Weapon) item);
+        }
+        else if (isHealingItem(item)) {
+            if (player.getHp() >= player.getMaxHp()) {
+                showParchmentDialog("Cannot Use", "Your health is already full! You don't need to use a " + item.getName() + ".", "OK", null, null);
+                return;
+            }
+            String confirmMessage = "Use " + item.getName() + " on yourself?\n" + item.getDescription();
+            showParchmentDialog("Use Item", confirmMessage, "Yes", "No", () -> {
+                item.useItem(player);
+                player.getInventory().removeItem(item, 1);
+                messageLabel.setText(item.getUseMessage());
+                refreshInventory();
+                updateStatsPanel();
+                System.out.println("Used " + item.getName() + " in exploration. Healed " +
+                        String.format("%.1f", player.getHp()) + "/" + player.getMaxHp() + " HP");
+            });
+        }
+        else if (isBuffItem(item)) {
+            showParchmentDialog("Cannot Use", "Cannot use " + item.getName() + " outside of battle!", "OK", null, null);
+        }
+        else if (isDebuffItem(item)) {
+            showParchmentDialog("Cannot Use", "Cannot use " + item.getName() + " outside of battle!", "OK", null, null);
+        }
+        else {
+            showParchmentDialog("Cannot Use", "Cannot use " + item.getName() + " outside of battle!", "OK", null, null);
+        }
+    }
+
     // ── Setup Methods ─────────────────────────────────────────────
     private void loadBackground() {
         try {
@@ -264,18 +499,18 @@ public class InventoryPanel extends JPanel {
     }
 
     private BufferedImage createPlaceholderImage(Color color, String initial) {
-        int w = 150, h = 150;
+        int w = 135, h = 135;
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
 
         g2.setColor(color);
         g2.fillRect(0, 0, w, h);
 
-        Font bigFont = new Font("Serif", Font.BOLD, 60);
+        Font bigFont = new Font("Serif", Font.BOLD, 32);
         g2.setFont(bigFont);
         FontMetrics fm = g2.getFontMetrics();
         int lx = (w - fm.stringWidth(initial)) / 2;
-        int ly = (h + fm.getAscent() - fm.getDescent()) / 2;
+        int ly = (h + fm.getAscent() - fm.getDescent()) / 2 + 2;
 
         g2.setColor(new Color(0, 0, 0, 80));
         g2.drawString(initial, lx + 2, ly + 2);
@@ -297,7 +532,7 @@ public class InventoryPanel extends JPanel {
                 currentPlayerFrame = (currentPlayerFrame + 1) % 5;
                 SwingUtilities.invokeLater(() -> {
                     if (playerImageLabel != null && playerIdleFrames[currentPlayerFrame] != null) {
-                        Image scaled = playerIdleFrames[currentPlayerFrame].getScaledInstance(150, 150, Image.SCALE_FAST);
+                        Image scaled = playerIdleFrames[currentPlayerFrame].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
                         playerImageLabel.setIcon(new ImageIcon(scaled));
                     }
                     repaint();
@@ -325,6 +560,9 @@ public class InventoryPanel extends JPanel {
             if (animationTimer != null) {
                 animationTimer.cancel();
                 animationTimer = null;
+            }
+            if (titleAnimTimer != null) {
+                titleAnimTimer.stop();
             }
             if (onBackPressed != null) {
                 onBackPressed.run();
@@ -376,15 +614,68 @@ public class InventoryPanel extends JPanel {
     }
 
     private void setupCharacterPanel() {
+        // Left side: Player image
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
-            Image scaled = playerIdleFrames[0].getScaledInstance(150, 150, Image.SCALE_FAST);
+            Image scaled = playerIdleFrames[0].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
             playerImageLabel.setIcon(new ImageIcon(scaled));
         }
-        playerImageLabel.setBounds(75, 20, 150, 150);
+        playerImageLabel.setBounds(15, 20, 135, 135);
         playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        playerImageLabel.setVerticalAlignment(SwingConstants.CENTER);
         characterPanel.add(playerImageLabel);
 
+        // Right side: Equipped weapon display
+        equippedWeaponPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 100));
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
+                g2.setColor(TEXT_GOLD);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.draw(new RoundRectangle2D.Float(2, 2, getWidth() - 4, getHeight() - 4, 8, 8));
+                g2.dispose();
+            }
+        };
+        equippedWeaponPanel.setLayout(null);
+        equippedWeaponPanel.setOpaque(false);
+        equippedWeaponPanel.setBounds(160, 20, 120, 150);
+        equippedWeaponPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!fromCombat && player.getWeapon() != null) {
+                    unequipWeapon();
+                }
+            }
+        });
+        characterPanel.add(equippedWeaponPanel);
+
+        // Weapon icon
+        weaponIconLabel = new JLabel();
+        weaponIconLabel.setBounds(36, 20, 48, 48);
+        weaponIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        equippedWeaponPanel.add(weaponIconLabel);
+
+        // Weapon name label
+        weaponNameLabel = new JLabel("No weapon equipped");
+        weaponNameLabel.setFont(new Font("Serif", Font.BOLD, 11));
+        weaponNameLabel.setForeground(TEXT_GOLD);
+        weaponNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        weaponNameLabel.setBounds(10, 80, 100, 40);
+        equippedWeaponPanel.add(weaponNameLabel);
+
+        // Unequip hint
+        JLabel unequipHint = new JLabel("(click to unequip)");
+        unequipHint.setFont(new Font("Serif", Font.ITALIC, 9));
+        unequipHint.setForeground(new Color(200, 200, 150));
+        unequipHint.setHorizontalAlignment(SwingConstants.CENTER);
+        unequipHint.setBounds(10, 120, 100, 20);
+        equippedWeaponPanel.add(unequipHint);
+
+        // Stats Box Panel
         JPanel statsBox = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -459,6 +750,43 @@ public class InventoryPanel extends JPanel {
         panel.add(valueComp);
     }
 
+    private void updateStatsPanel() {
+        for (Component comp : characterPanel.getComponents()) {
+            if (comp instanceof JPanel && ((JPanel) comp).getLayout() == null &&
+                    comp.getBounds().x == 20 && comp.getBounds().y == 180) {
+                JPanel statsBox = (JPanel) comp;
+                Component[] components = statsBox.getComponents();
+                for (int i = 0; i < components.length; i += 2) {
+                    if (i + 1 < components.length && components[i] instanceof JLabel && components[i + 1] instanceof JLabel) {
+                        String labelText = ((JLabel) components[i]).getText();
+                        JLabel valueLabel = (JLabel) components[i + 1];
+                        switch (labelText) {
+                            case "HP:":
+                                valueLabel.setText((int) player.getHp() + " / " + (int) player.getMaxHp());
+                                break;
+                            case "ATK:":
+                                valueLabel.setText((int) player.getAttack() + " / " + (int) player.getMaxAttack());
+                                break;
+                            case "DEF:":
+                                valueLabel.setText((int) player.getDefense() + " / " + (int) player.getMaxDefense());
+                                break;
+                            case "SPD:":
+                                valueLabel.setText(String.valueOf((int) player.getSpeed()));
+                                break;
+                            case "ACC:":
+                                valueLabel.setText(String.format("%.0f", player.getAccuracy() * 100) + "%");
+                                break;
+                            case "EXP:":
+                                valueLabel.setText(player.getExperience() + " / " + player.getExpNeeded());
+                                break;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
     private void setupInventoryPanel() {
         inventoryGrid = new JPanel();
         inventoryGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
@@ -468,13 +796,14 @@ public class InventoryPanel extends JPanel {
         inventoryScrollPane.setOpaque(false);
         inventoryScrollPane.getViewport().setOpaque(false);
         inventoryScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        inventoryScrollPane.setBounds(20, 20, INV_PANEL_W - 40, INV_PANEL_H - 40);
+        inventoryScrollPane.setBounds(20, 20, INV_PANEL_W - 50, INV_PANEL_H - 50);
         inventoryScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         inventoryScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         JScrollBar verticalBar = inventoryScrollPane.getVerticalScrollBar();
-        verticalBar.setBackground(new Color(60, 40, 20));
-        verticalBar.setForeground(new Color(200, 160, 100));
+        verticalBar.setUI(new ParchmentScrollBarUI());
+        verticalBar.setUnitIncrement(70);
+        verticalBar.setBlockIncrement(210);
 
         inventoryPanel.add(inventoryScrollPane);
         refreshInventory();
@@ -493,7 +822,7 @@ public class InventoryPanel extends JPanel {
             emptyLabel.setFont(FONT_NAME);
             emptyLabel.setForeground(TEXT_GOLD);
             emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            emptyLabel.setPreferredSize(new Dimension(600, 50));
+            emptyLabel.setPreferredSize(new Dimension(INV_PANEL_W - 70, 50));
             inventoryGrid.add(emptyLabel);
         } else {
             for (Item item : items) {
@@ -505,7 +834,13 @@ public class InventoryPanel extends JPanel {
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             slot.setHovered(true);
-                            messageLabel.setText(item.getName() + " x" + quantity + " - " + item.getDescription());
+                            String displayText = item.getName() + " x" + quantity;
+                            if (item instanceof Weapon) {
+                                displayText += " - ATK: +" + (int)((Weapon)item).getAttack();
+                            } else {
+                                displayText += " - " + item.getDescription();
+                            }
+                            messageLabel.setText(displayText);
                         }
 
                         @Override
@@ -522,25 +857,25 @@ public class InventoryPanel extends JPanel {
                                     return;
                                 }
 
+                                if (isHealingItem(item)) {
+                                    if (player.getHp() >= player.getMaxHp()) {
+                                        showParchmentDialog("Cannot Use", "Your health is already full! You don't need to use a " + item.getName() + ".", "OK", null, null);
+                                        return;
+                                    }
+                                }
+
                                 boolean isDebuff = isDebuffItem(item);
                                 String confirmMessage = isDebuff ?
                                         "Use " + item.getName() + " on an enemy?\n" + item.getDescription() :
                                         "Use " + item.getName() + " on yourself?\n" + item.getDescription();
 
                                 showParchmentDialog("Use Item", confirmMessage, "Yes", "No", () -> {
-                                    if (isDebuff) {
-                                        // For debuff items, we need to show enemy target selection
-                                        // First close inventory, then BattlePanel will show target selection
-                                        if (onItemSelected != null) {
-                                            onItemSelected.accept(item, null);
-                                        }
-                                    } else {
-                                        // For healing/buff items, target is the player (null indicates self)
-                                        if (onItemSelected != null) {
-                                            onItemSelected.accept(item, null);
-                                        }
+                                    if (onItemSelected != null) {
+                                        onItemSelected.accept(item, null);
                                     }
                                 });
+                            } else {
+                                useItemInExploration(item);
                             }
                         }
                     });
@@ -575,6 +910,8 @@ public class InventoryPanel extends JPanel {
             g2.setColor(BG_COLOR);
             g2.fillRect(0, 0, WIDTH, HEIGHT);
         }
+
+        paintTitle(g2);
 
         g2.dispose();
     }
@@ -699,6 +1036,195 @@ public class InventoryPanel extends JPanel {
             return new Polygon(
                     new int[]{x + c, x + w - c, x + w, x + w, x + w - c, x + c, x, x},
                     new int[]{y, y, y + c, y + h - c, y + h, y + h, y + h - c, y + c}, 8);
+        }
+    }
+
+    private class ParchmentScrollBarUI extends BasicScrollBarUI {
+
+        private boolean thumbHovered = false;
+        private boolean thumbPressed = false;
+
+        @Override
+        protected void installListeners() {
+            super.installListeners();
+            if (scrollbar != null) {
+                scrollbar.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        if (isThumb(e.getPoint())) {
+                            thumbHovered = true;
+                            scrollbar.repaint();
+                        }
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        thumbHovered = false;
+                        scrollbar.repaint();
+                    }
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        if (isThumb(e.getPoint())) {
+                            thumbPressed = true;
+                            scrollbar.repaint();
+                        }
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        thumbPressed = false;
+                        scrollbar.repaint();
+                    }
+                });
+
+                scrollbar.addMouseMotionListener(new MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(MouseEvent e) {
+                        boolean wasHovered = thumbHovered;
+                        thumbHovered = isThumb(e.getPoint());
+                        if (wasHovered != thumbHovered) {
+                            scrollbar.repaint();
+                        }
+                    }
+                });
+            }
+        }
+
+        private boolean isThumb(Point p) {
+            Rectangle thumbRect = getThumbBounds();
+            return thumbRect != null && thumbRect.contains(p);
+        }
+
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return createEmptyButton();
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return createEmptyButton();
+        }
+
+        private JButton createEmptyButton() {
+            JButton button = new JButton();
+            button.setPreferredSize(new Dimension(0, 0));
+            button.setMinimumSize(new Dimension(0, 0));
+            button.setMaximumSize(new Dimension(0, 0));
+            button.setOpaque(false);
+            button.setContentAreaFilled(false);
+            button.setBorderPainted(false);
+            button.setFocusPainted(false);
+            return button;
+        }
+
+        @Override
+        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setPaint(new LinearGradientPaint(
+                    trackBounds.x, trackBounds.y,
+                    trackBounds.x, trackBounds.y + trackBounds.height,
+                    new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
+                    new Color[]{
+                            PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
+                            PARCH_WARM, PARCH_TAN, PARCH_TOP
+                    }
+            ));
+            g2.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
+
+            g2.setColor(new Color(60, 30, 5, 30));
+            g2.setStroke(new BasicStroke(0.5f));
+            for (int y = trackBounds.y; y < trackBounds.y + trackBounds.height; y += 3) {
+                g2.drawLine(trackBounds.x + 2, y, trackBounds.x + trackBounds.width - 4, y);
+            }
+
+            g2.setColor(new Color(80, 40, 10, 20));
+            Random random = new Random(trackBounds.hashCode());
+            for (int i = 0; i < 5; i++) {
+                int spotY = trackBounds.y + random.nextInt(trackBounds.height - 8);
+                int spotSize = 3 + random.nextInt(5);
+                g2.fillOval(trackBounds.x + 2, spotY, spotSize, spotSize);
+            }
+
+            g2.setColor(PARCH_BORDER);
+            g2.setStroke(new BasicStroke(2.0f));
+            g2.drawRect(trackBounds.x + 1, trackBounds.y, trackBounds.width - 2, trackBounds.height - 1);
+
+            g2.dispose();
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) {
+                return;
+            }
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int w = thumbBounds.width;
+            int h = Math.max(thumbBounds.height, 40);
+            int y = thumbBounds.y;
+
+            if (thumbBounds.height < 40) {
+                y = thumbBounds.y - (40 - thumbBounds.height) / 2;
+                y = Math.max(0, Math.min(y, c.getHeight() - 40));
+            }
+
+            int cSize = Math.min(w, h) / 6;
+            if (cSize < 4) cSize = 4;
+
+            Polygon oct = makeOctagon(thumbBounds.x, y, w, h, cSize);
+
+            Color fillColor;
+            if (!scrollbar.isEnabled()) {
+                fillColor = new Color(160, 140, 100);
+            } else if (thumbPressed) {
+                fillColor = BTN_GOLD_PRESS;
+            } else if (thumbHovered) {
+                fillColor = BTN_GOLD_HOVER;
+            } else {
+                fillColor = BTN_GOLD_NORMAL;
+            }
+
+            g2.setColor(fillColor);
+            g2.fill(oct);
+
+            if (thumbHovered && !thumbPressed) {
+                g2.setColor(new Color(255, 255, 255, 40));
+                Polygon topOct = makeOctagon(thumbBounds.x, y, w, h / 2, cSize);
+                g2.fill(topOct);
+            }
+
+            g2.setColor(BTN_BORDER_CLR);
+            g2.setStroke(new BasicStroke(2.0f));
+            g2.draw(oct);
+
+            g2.setColor(new Color(252, 218, 72, 100));
+            g2.setStroke(new BasicStroke(1.0f));
+            g2.drawLine(thumbBounds.x + 4, y + h / 2, thumbBounds.x + w - 4, y + h / 2);
+
+            g2.dispose();
+        }
+
+        private Polygon makeOctagon(int x, int y, int w, int h, int c) {
+            return new Polygon(
+                    new int[]{x + c, x + w - c, x + w, x + w, x + w - c, x + c, x, x},
+                    new int[]{y, y, y + c, y + h - c, y + h, y + h, y + h - c, y + c},
+                    8
+            );
+        }
+
+        @Override
+        protected void setThumbBounds(int x, int y, int width, int height) {
+            super.setThumbBounds(x, y, width, Math.max(height, 40));
+        }
+
+        @Override
+        protected Dimension getMinimumThumbSize() {
+            return new Dimension(16, 40);
         }
     }
 }

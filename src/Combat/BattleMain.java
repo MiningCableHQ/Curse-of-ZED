@@ -20,13 +20,13 @@ public class BattleMain {
         SwingUtilities.invokeLater(() -> {
 
             // ── Create dummy entities for testing ──────────────
-            GamePanel  gp   = new GamePanel();
+            GamePanel  gp = new GamePanel();
             KeyHandler keyH = new KeyHandler();
 
             Player testPlayer = new Ranger(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new Frankenstein());
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new ZED());
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

@@ -4,8 +4,7 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        super("Ankh Staff", "Description pls", 10);
-
+        super("Ankh Staff", "Description pls", 10, "/items/mage_weapon/ankh_staff.png");
         loadImage("/items/mage_weapon/ankh_staff.png");
     }
 
