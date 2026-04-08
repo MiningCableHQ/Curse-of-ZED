@@ -131,7 +131,7 @@ public class Ranger extends Player {
         moves.add(new PreciseShot());
         moves.add(new Scattershot());
         moves.add(new Harmony());
-        moves.add(new SnipersGamble());
+        moves.add(new BounceShot());
     }
 
     // --- For move: Harmony ------------------------------------------------------------------------------------------
