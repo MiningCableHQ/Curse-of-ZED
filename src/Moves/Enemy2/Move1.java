@@ -15,14 +15,16 @@ public class Move1 extends Move {
             Zenzilla zenzilla = (Zenzilla) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
+            // Add total atk from enemy and this move
             double totalATK = zenzilla.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier
             double damage = totalATK * 1.10;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            setDamageDealt(actualDamage);
+            setMessage(zenzilla.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }

@@ -28,9 +28,13 @@ public class HeroicSlash extends Move {
             }
             totalATK += this.attack;
 
-            double dmgMultiplier = 1.60;
-            double damage = totalATK * dmgMultiplier;
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            double damage = totalATK * 1.60;
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+            //display message
+            setDamageDealt(actualDamage);
+            setMessage(swordsman.getName() + " used " + this.name + " on " + enemy.getName() +
+                    " and dealt " + String.format("%d", (int)actualDamage) + " damage!");
         }
     }
 }

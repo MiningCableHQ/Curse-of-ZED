@@ -18,15 +18,16 @@ public class SacrificialBlade extends Move {
             Swordsman swordsman = (Swordsman) Entity;
             Entity enemy = Move.currentTarget;
 
-            double currentHp = swordsman.getHp();
-            double sacrificeAmount = currentHp * 0.50; //50% sacrifice amount
+            // Store values before execution for message
+            double beforePlayerHp = swordsman.getHp();
 
+            // Calculate sacrifice amount (50% of current HP)
+            double sacrificeAmount = beforePlayerHp * 0.50;
             swordsman.sacrifice(sacrificeAmount);
 
             // Calculate total ATK for damage
             double totalATK = swordsman.getAttack();
 
-            // Add weapon attack if equipped
             if (swordsman.getWeapon() != null) {
                 if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = swordsman.getWeapon();
@@ -34,11 +35,26 @@ public class SacrificialBlade extends Move {
                 }
             }
 
-            totalATK += this.attack; //this move's atk
+            totalATK += this.attack; // this move's atk
 
-            //multiply sum to dmg multiplier
             double damage = totalATK * 5;
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+            // Apply damage to enemy
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+            // Calculate actual HP lost
+            double afterPlayerHp = swordsman.getHp();
+            double hpLost = beforePlayerHp - afterPlayerHp;
+
+            setDamageDealt(actualDamage);
+            if (actualDamage > 1) {
+                setMessage(swordsman.getName() + " used " + this.name + " on " + enemy.getName() +
+                        " and dealt " + String.format("%d", (int)actualDamage) + " damage, sacrificing " +
+                        String.format("%d", (int)hpLost) + " HP!");
+            } else {
+                setMessage(swordsman.getName() + " used " + this.name + " on " + enemy.getName() +
+                        " but it had no effect, sacrificing " + String.format("%d", (int)hpLost) + " HP in vain!");
+            }
         }
     }
 }

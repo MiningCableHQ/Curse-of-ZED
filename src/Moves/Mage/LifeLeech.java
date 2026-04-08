@@ -7,7 +7,7 @@ import Moves.Move;
 
 public class LifeLeech extends Move {
     public LifeLeech() {
-        super("Life Leech", 30);
+        super("Life Leech", 30, TargetType.ENEMY);
         hasUnlocked = false;
         description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
     }
@@ -18,25 +18,46 @@ public class LifeLeech extends Move {
             Mage mage = (Mage) Entity;
             Entity enemy = Move.currentTarget;
 
+            double beforeMageHp = mage.getHp();
+
             // --- Damage Part -----------------------------------------------------------------------------------------
-            //all 3 needed ATK stats
-            double totalATK = mage.getAttack(); //mage atk
+            // All 3 needed ATK stats
+            double totalATK = mage.getAttack(); // mage atk
             if (mage.getWeapon() != null) {
                 if (mage.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = mage.getWeapon();
                     totalATK += equippedWeapon.getAttack();
                 }
             }
-            totalATK += this.attack; //this move's atk
+            totalATK += this.attack; // this move's atk
 
-            //multiply sum to dmg multiplier
+            // Multiply sum to damage multiplier
             double damage = totalATK * 1.10;
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
             // --- Self Heal Part --------------------------------------------------------------------------------------
             double maxHp = mage.getMaxHp();
-            double healAmount = maxHp * 0.15; // 15% of MaxHP type shi heal
+            double healAmount = maxHp * 0.15; // 15% of MaxHP heal
             mage.heal(healAmount);
+
+            // Calculate actual heal amount
+            double afterMageHp = mage.getHp();
+            double actualHeal = afterMageHp - beforeMageHp;
+
+            // Set message for battle display
+            setDamageDealt(actualDamage);
+            setHealAmount(actualHeal);
+
+            String message = mage.getName() + " used " + this.name + " on " + enemy.getName()
+                    + " and dealt " + (int)actualDamage + " damage";
+
+            if (actualHeal > 1) {
+                message += ", and healed " + (int)actualHeal + " HP!";
+            } else {
+                message += ", but was already at full health!";
+            }
+
+            setMessage(message);
         }
     }
 }

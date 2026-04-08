@@ -19,7 +19,7 @@ public class GuideToAfterlife extends Move {
             Entity enemy = Move.currentTarget;
 
             double currentHp = swordsman.getHp();
-            double sacrificeAmount = currentHp * 0.10; //50% sacrifice amount
+            double sacrificeAmount = currentHp * 0.10; //10% sacrifice amount per enemy hit
 
             swordsman.sacrifice(sacrificeAmount);
 
@@ -38,7 +38,10 @@ public class GuideToAfterlife extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK;
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+            setDamageDealt(actualDamage);
+            setMessage(swordsman.getName() + " used " + this.name + " and dealt damage to all enemies!");
         }
     }
 }

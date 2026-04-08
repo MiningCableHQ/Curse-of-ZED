@@ -15,14 +15,15 @@ public class Move2 extends Move {
             Sanjveil sanjveil = (Sanjveil) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
+            // Add total atk from enemy and this move
             double totalATK = sanjveil.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
             double damage = totalATK * 0.50;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            setDamageDealt(actualDamage);
+            setMessage(sanjveil.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
             //TODO FRANK guaranteed inflict burn
         }
     }

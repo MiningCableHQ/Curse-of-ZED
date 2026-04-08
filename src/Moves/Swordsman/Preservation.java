@@ -18,10 +18,23 @@ public class Preservation extends Move {
         if (Entity instanceof Swordsman) {
             Swordsman swordsman = (Swordsman) Entity;
 
-            //Random heal amount between 300 and 800
-            double healAmount = 300 + rand.nextInt(501);
+            double beforeHp = swordsman.getHp();
 
+            // Random heal amount between 300 and 800
+            double healAmount = 300 + rand.nextInt(501);
             swordsman.heal(healAmount);
+
+            // Calculate actual healed amount (capped by max HP)
+            double afterHp = swordsman.getHp();
+            double actualHeal = afterHp - beforeHp;
+
+            setHealAmount(actualHeal);
+            if (actualHeal > 1) {
+                setMessage(swordsman.getName() + " used " + this.name + " and healed " +
+                        String.format("%d", (int)actualHeal) + " HP!");
+            } else {
+                setMessage(swordsman.getName() + " used " + this.name + " but was already at full health!");
+            }
         }
     }
 }

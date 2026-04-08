@@ -22,7 +22,10 @@ public class Move2 extends Move {
             //multiply sum to multiplier
             double damage = totalATK * 2;
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+
+            setDamageDealt(actualDamage);
+            setMessage(razormaw.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }

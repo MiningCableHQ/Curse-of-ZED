@@ -15,15 +15,17 @@ public class Move3 extends Move {
             ZED zed = (ZED) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
+            // Add total atk from enemy and this move
             double totalATK = zed.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier (150% damage)
             double damage = totalATK * 1.50;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
-            //TODO FRANK 30% chance to inflict frozen
+            setDamageDealt(actualDamage);
+            setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }
+//TODO FRANK 30% chance to inflict frozen

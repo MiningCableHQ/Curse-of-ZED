@@ -15,12 +15,26 @@ public class Revitalize extends Move {
         if (Entity instanceof Mage) {
             Mage mage = (Mage) Entity;
 
+            double beforeHp = mage.getHp();
             double maxHp = mage.getMaxHp();
 
-            double healPercentage = 0.30 + (Math.random() * 0.20); //Random between 0.30 and 0.50
+            // Random between 30% and 50%
+            double healPercentage = 0.30 + (Math.random() * 0.20);
             double healAmount = maxHp * healPercentage;
 
             mage.heal(healAmount);
+
+            // Calculate actual healed amount (capped by max HP)
+            double afterHp = mage.getHp();
+            double actualHeal = afterHp - beforeHp;
+
+            setHealAmount(actualHeal);
+            if (actualHeal > 1) {
+                setMessage(mage.getName() + " used " + this.name + " and healed " +
+                        (int)actualHeal + " HP (" + (int)(healPercentage * 100) + "% of max HP)!");
+            } else {
+                setMessage(mage.getName() + " used " + this.name + " but was already at full health!");
+            }
         }
     }
 }

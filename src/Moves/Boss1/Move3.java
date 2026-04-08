@@ -15,14 +15,15 @@ public class Move3 extends Move {
             Thorncrusher thorncrusher = (Thorncrusher) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
             double totalATK = thorncrusher.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier
             double damage = totalATK * 3;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            setDamageDealt(actualDamage);
+            setMessage(thorncrusher.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }

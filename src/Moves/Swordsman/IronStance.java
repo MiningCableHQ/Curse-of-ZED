@@ -16,10 +16,21 @@ public class IronStance extends Move {
             Swordsman swordsman = (Swordsman) Entity;
 
             if (swordsman.canUseIronStance()) {
+                // Store defense before buff
+                double beforeDefense = swordsman.getDefense();
+
                 swordsman.addIronStanceStack();
-                //Increases DEF by 10% per stack
+
+                // Calculate actual defense increase
+                double afterDefense = swordsman.getDefense();
+                double defenseIncreased = afterDefense - beforeDefense;
+                int stacks = swordsman.getIronStanceStacks();
+
+                setBuffAmount(defenseIncreased, "DEF");
+                setMessage(swordsman.getName() + " used " + this.name + "! Defense increased to " +
+                        String.format("%d", (int)afterDefense) + " (Stack " + stacks + "/3)");
             } else {
-                //TODO inform player "Iron Stance cannot be used! Already at max stacks (3)!"
+                setMessage(swordsman.getName() + " used " + this.name + " but is already at max stacks (3)!");
             }
         }
     }

@@ -15,15 +15,21 @@ public class Move1 extends Move {
             Masklet masklet = (Masklet) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
+            // Add total atk from enemy and this move
             double totalATK = masklet.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier
             double damage = totalATK * 1.20;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            //Apply the damage
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            setDamageDealt(actualDamage);
+            if (actualDamage > 1) {
+                setMessage(masklet.getName() + " used " + this.name + " and dealt " +
+                        String.format("%d", (int)actualDamage) + " damage!");
+            } else {
+                setMessage(masklet.getName() + " used " + this.name + " but it had no effect!");
+            }
         }
     }
 }

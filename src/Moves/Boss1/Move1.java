@@ -15,15 +15,16 @@ public class Move1 extends Move {
             Thorncrusher thorncrusher = (Thorncrusher) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
             double totalATK = thorncrusher.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier
             double damage = totalATK * 1.10;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
-            //TODO FRANK 20% chance to inflict poison
+            setDamageDealt(actualDamage);
+            setMessage(thorncrusher.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }
+//TODO FRANK 20% chance to inflict poison

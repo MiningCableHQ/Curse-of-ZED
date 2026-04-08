@@ -16,12 +16,19 @@ public abstract class Move {
     // Target type for this move
     protected TargetType targetType;
 
+    // Store execution results for message display
+    protected String lastMessage = "";
+    protected double lastDamageDealt = 0;
+    protected double lastHealAmount = 0;
+    protected double lastBuffAmount = 0;
+    protected String lastStatBuffed = "";
+
     public Move(String name, int attack){
         this.name = name;
         this.attack = attack;
         isDisabled = false;
         disabledCounter = 0;
-        this.targetType = targetType.ENEMY; // Default target type
+        this.targetType = TargetType.ENEMY; // Default target type
     }
 
     // Overloaded constructor with target type
@@ -34,6 +41,39 @@ public abstract class Move {
     }
 
     public abstract <T> void execute(T Entity);
+
+    // Method to get the battle message after execution
+    public String getMessage() {
+        return lastMessage;
+    }
+
+    // Method to get the damage dealt (for enemy moves)
+    public double getLastDamageDealt() {
+        return lastDamageDealt;
+    }
+
+    // Method to get the heal amount (for healing moves)
+    public double getLastHealAmount() {
+        return lastHealAmount;
+    }
+
+    // Protected methods for subclasses to set message
+    protected void setMessage(String message) {
+        this.lastMessage = message;
+    }
+
+    protected void setDamageDealt(double damage) {
+        this.lastDamageDealt = damage;
+    }
+
+    protected void setHealAmount(double heal) {
+        this.lastHealAmount = heal;
+    }
+
+    protected void setBuffAmount(double amount, String stat) {
+        this.lastBuffAmount = amount;
+        this.lastStatBuffed = stat;
+    }
 
     // getters
     public String getName() {
@@ -70,7 +110,6 @@ public abstract class Move {
     public boolean targetsSelf() {
         return targetType == TargetType.SELF;
     }
-
 
     // ─────────────────────────────────────────────────────────────
     //  Target Type Enum

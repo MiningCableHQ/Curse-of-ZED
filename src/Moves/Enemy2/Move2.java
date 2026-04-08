@@ -13,8 +13,17 @@ public class Move2 extends Move {
         if (Entity instanceof Zenzilla) {
             Zenzilla zenzilla = (Zenzilla) Entity;
 
-            // Increase attack by 10
+            // Store attack before buff
+            double beforeAttack = zenzilla.getAttack();
+
             zenzilla.buffAttack(10);
+
+            // Calculate actual attack increase
+            double afterAttack = zenzilla.getAttack();
+            double attackIncreased = afterAttack - beforeAttack;
+
+            setBuffAmount(attackIncreased, "ATK");
+            setMessage(zenzilla.getName() + " used " + this.name + " and increased attack by " + (int)attackIncreased);
         }
     }
 }

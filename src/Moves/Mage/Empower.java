@@ -16,10 +16,20 @@ public class Empower extends Move {
             Mage mage = (Mage) Entity;
 
             if (mage.canUseEmpower()) {
+                double beforeAttack = mage.getAttack();
                 mage.addEmpowerStack();
-                //Increase ATK by 6% per stack
+
+                // Calculate actual attack increase
+                double afterAttack = mage.getAttack();
+                double attackIncreased = afterAttack - beforeAttack;
+                int stacks = mage.getEmpowerStacks();
+
+                // Set message for battle display
+                setBuffAmount(attackIncreased, "ATK");
+                setMessage(mage.getName() + " used " + this.name + "! Attack increased to " +
+                        (int)afterAttack + " (Stack " + stacks + "/3)");
             } else {
-                //TODO inform player "Empower cannot be used! Already at max stacks (3)!"
+                setMessage(mage.getName() + " used " + this.name + " but is already at max stacks (3)!");
             }
         }
     }

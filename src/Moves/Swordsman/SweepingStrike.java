@@ -31,8 +31,10 @@ public class SweepingStrike extends Move {
 
             //multiply sum to dmg multiplier
             double damage = totalATK * 0.80;
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            setDamageDealt(actualDamage);
+            setMessage(swordsman.getName() + " used " + this.name + " and dealt damage to all enemies!");
         }
     }
 }

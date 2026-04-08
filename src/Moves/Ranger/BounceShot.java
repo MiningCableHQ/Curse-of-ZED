@@ -21,19 +21,25 @@ public class BounceShot extends Move {
             Ranger ranger = (Ranger) Entity;
             Entity enemy = Move.currentTarget;
 
-            //all 3 needed ATK stats
-            double totalATK = ranger.getAttack(); //ranger atk
+            // All 3 needed ATK stats
+            double totalATK = ranger.getAttack(); // ranger atk
             if (ranger.getWeapon() != null) {
                 if (ranger.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = ranger.getWeapon();
                     totalATK += equippedWeapon.getAttack();
                 }
             }
-            totalATK += this.attack; //this move's atk
+            totalATK += this.attack; // this move's atk
 
-            //multiply sum to dmg multiplier
-            double damage = totalATK * 0.20 * rand.nextDouble(1, 6);
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            // Random number of hits between 1 and 5
+            int hits = rand.nextInt(5) + 1; // 1 to 5 inclusive
+            double damagePerHit = totalATK * 0.20;
+            double totalDamage = damagePerHit * hits;
+            double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
+
+            // Set message for battle display
+            setDamageDealt(actualDamage);
+            setMessage(ranger.getName() + " used " + this.name + " and dealt damage to all enemies (" + hits + " hits)!");
         }
     }
 }

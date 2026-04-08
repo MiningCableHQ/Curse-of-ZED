@@ -21,9 +21,11 @@ public class Move3 extends Move {
 
             //multiply sum to multiplier
             double damage = totalATK * 2;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
-            //TODO FRANK 30% chance to inflict stun, not stackable
+            setDamageDealt(actualDamage);
+            setMessage(frankenstein.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }
+//TODO FRANK 30% chance to inflict stun, not stackable

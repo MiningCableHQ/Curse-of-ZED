@@ -5,8 +5,6 @@ import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
-import java.lang.annotation.Target;
-
 public class ArcaneBolt extends Move {
     public ArcaneBolt() {
         super("Arcane Bolt", 20, TargetType.ENEMY);
@@ -20,19 +18,24 @@ public class ArcaneBolt extends Move {
             Mage mage = (Mage) Entity;
             Entity enemy = Move.currentTarget;
 
-            //all 3 needed ATK stats
-            double totalATK = mage.getAttack(); //mage atk
+            // All 3 needed ATK stats
+            double totalATK = mage.getAttack(); // mage atk
             if (mage.getWeapon() != null) {
                 if (mage.getWeapon() instanceof Items.Weapons.Weapon) {
                     Weapon equippedWeapon = mage.getWeapon();
                     totalATK += equippedWeapon.getAttack();
                 }
             }
-            totalATK += this.attack; //this move's atk
+            totalATK += this.attack; // this move's atk
 
-            //multiply sum to dmg multiplier
+            // Multiply sum to damage multiplier
             double damage = totalATK * 1.45;
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+            // Set message for battle display
+            setDamageDealt(actualDamage);
+            setMessage(mage.getName() + " used " + this.name + " on " + enemy.getName() +
+                    " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }

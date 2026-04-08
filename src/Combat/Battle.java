@@ -416,138 +416,27 @@ public class Battle {
             return;
         }
 
-        // Display message
         String message = enemy.getName() + " used " + enemyMove.getName();
         battlePanel.setBattleMessage(message);
         battlePanel.repaint();
 
-        // Execute move after delay
         Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
             if (!isBattleActive) return;
-            String resultMessage = "";
 
-            // Self target moves
-            boolean isSelfBuffMove = true;
-
-            switch (enemyMove.getName()) {
-                case "Inner Focus":
-                    if (enemy instanceof Zenzilla) {
-                        double beforeAttack = enemy.getAttack();
-                        Move.currentTarget = enemy;
-                        enemyMove.execute(enemy);
-                        Move.currentTarget = null;
-                        double attackIncreased = enemy.getAttack() - beforeAttack;
-
-                        if (attackIncreased > 0) {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and increased attack by " +
-                                    String.format("%d", (int)attackIncreased);
-                        } else {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but attack was already at maximum!";
-                        }
-                    } else {
-                        isSelfBuffMove = false;
-                    }
-                    break;
-
-                case "Glimmerweave":
-                    if (enemy instanceof Masklet) {
-                        double beforeHp = enemy.getHp();
-                        Move.currentTarget = enemy;
-                        enemyMove.execute(enemy);
-                        Move.currentTarget = null;
-                        double healAmount = enemy.getHp() - beforeHp;
-
-                        if (healAmount > 0) {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
-                                    String.format("%d", (int)healAmount) + " HP!";
-                        } else {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
-                        }
-                    } else {
-                        isSelfBuffMove = false;
-                    }
-                    break;
-
-                case "Root Recovery":
-                    if(enemy instanceof Thorncrusher) {
-                        double beforeHp = enemy.getHp();
-                        Move.currentTarget = enemy;
-                        enemyMove.execute(enemy);
-                        Move.currentTarget = null;
-                        double healAmount = enemy.getHp() - beforeHp;
-
-                        if (healAmount > 0) {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
-                                    String.format("%d", (int)healAmount) + " HP!";
-                        } else {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
-                        }
-                    } else {
-                        isSelfBuffMove = false;
-                    }
-                    break;
-
-                case "NAOLNAOLNAOL":
-                    if(enemy instanceof Frankenstein) {
-                        double beforeHp = enemy.getHp();
-                        Move.currentTarget = enemy;
-                        enemyMove.execute(enemy);
-                        Move.currentTarget = null;
-                        double healAmount = enemy.getHp() - beforeHp;
-
-                        if (healAmount > 0) {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and healed " +
-                                    String.format("%d", (int)healAmount) + " HP!";
-                        } else {
-                            resultMessage = enemy.getName() + " used " + enemyMove.getName() + " but was already at full health!";
-                        }
-                    } else {
-                        isSelfBuffMove = false;
-                    }
-                    break;
-
-                default:
-                    isSelfBuffMove = false;
-                    break;
-            }
-
-            if (isSelfBuffMove) {
-                battlePanel.setBattleMessage(resultMessage);
-                battlePanel.repaint();
-
-                // Move to next turn
-                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
-                nextTimer.setRepeats(false);
-                nextTimer.start();
-                return;
-            }
-
-            // For attack moves
-            double beforeHp = player.getHp();
             Move.currentTarget = player;
             enemyMove.execute(enemy);
             Move.currentTarget = null;
-            double afterHp = player.getHp();
-            double damageDealt = beforeHp - afterHp;
 
-            if (damageDealt > 0) {
-                resultMessage = enemy.getName() + " used " + enemyMove.getName() + " and dealt " +
-                        String.format("%d", (int)damageDealt) + " damage!";
-            } else {
-                resultMessage = enemy.getName() + " used " + enemyMove.getName();
-            }
-
-            battlePanel.setBattleMessage(resultMessage);
+            // Use the move's own message
+            battlePanel.setBattleMessage(enemyMove.getMessage());
             battlePanel.repaint();
 
-            // Check if player is defeated
             if (player.getHp() < 1) {
                 player.setHp(0);
                 endBattle(false);
                 return;
             }
 
-            // Move to next turn
             Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
             nextTimer.setRepeats(false);
             nextTimer.start();
@@ -699,7 +588,6 @@ public class Battle {
                 List<Enemy> aliveEnemies = getAliveEnemies();
                 if (!aliveEnemies.isEmpty()) {
                     chosenTarget = aliveEnemies.get(0);
-                    System.out.println("Fallback target selected: " + chosenTarget.getName());
                 } else {
                     moveToNextTurn();
                     return;
@@ -713,7 +601,6 @@ public class Battle {
         battlePanel.hideBattleButtons();
         battlePanel.hideTargetButtons();
 
-        // Display message that player is about to act
         String startMessage = player.getName() + " is about to use " + move.getName() + "!";
         battlePanel.setBattleMessage(startMessage);
         battlePanel.repaint();
@@ -723,38 +610,10 @@ public class Battle {
 
             // Execute the move based on target type
             if (move.getTargetType() == Move.TargetType.SELF) {
-                double beforeHp = player.getHp();
                 Move.currentTarget = player;
                 move.execute(player);
                 Move.currentTarget = null;
-
-                String message = player.getName() + " used " + move.getName();
-
-                if (move.getName().equals("Iron Stance") && player instanceof Swordsman) {
-                    Swordsman swordsman = (Swordsman) player;
-                    message = player.getName() + " used " + move.getName() + "! Defense increased to " +
-                            String.format("%d", (int)swordsman.getDefense());
-                } else if (move.getName().equals("Empower") && player instanceof Mage) {
-                    Mage mage = (Mage) player;
-                    message = player.getName() + " used " + move.getName() + "! Attack increased to " +
-                            String.format("%d", (int)mage.getAttack());
-                } else if (move.getName().equals("Revitalize") && player instanceof Mage) {
-                    double afterHp = player.getHp();
-                    double healAmount = afterHp - beforeHp;
-                    if (healAmount > 0) {
-                        message = player.getName() + " used " + move.getName() + " and healed " +
-                                String.format("%d", (int)healAmount) + " HP!";
-                    } else {
-                        message = player.getName() + " used " + move.getName() + " but was already at full health!";
-                    }
-                } else if (move.getName().equals("Harmony") && player instanceof Ranger) {
-                    Ranger ranger = (Ranger) player;
-                    message = player.getName() + " used " + move.getName() + "! " +
-                            "ATK increased to " + String.format("%d", (int)ranger.getAttack()) +
-                            ", DEF increased to " + String.format("%d", (int)ranger.getDefense());
-                }
-
-                battlePanel.setBattleMessage(message);
+                battlePanel.setBattleMessage(move.getMessage());
                 battlePanel.repaint();
 
             } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
@@ -765,15 +624,12 @@ public class Battle {
                     }
                 }
                 Move.currentTarget = null;
-
-                String message = player.getName() + " used " + move.getName() + " on all enemies!";
-                battlePanel.setBattleMessage(message);
+                battlePanel.setBattleMessage(move.getMessage());
                 battlePanel.repaint();
                 battlePanel.updateTargetButtonStates();
 
             } else {
                 Enemy currentTarget = target;
-
                 if (currentTarget == null || currentTarget.getHp() <= 0) {
                     List<Enemy> aliveEnemies = getAliveEnemies();
                     if (!aliveEnemies.isEmpty()) {
@@ -785,58 +641,25 @@ public class Battle {
                 }
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
-                    double beforeTargetHp = currentTarget.getHp();
-                    double beforePlayerHp = player.getHp();
-
                     Move.currentTarget = currentTarget;
                     move.execute(player);
                     Move.currentTarget = null;
-
-                    double afterTargetHp = currentTarget.getHp();
-                    double afterPlayerHp = player.getHp();
-                    double damageDealt = beforeTargetHp - afterTargetHp;
-                    double playerHpLost = beforePlayerHp - afterPlayerHp;
-
-                    String message;
-                    if (damageDealt > 0) {
-                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%d", (int)damageDealt) +
-                                    " damage, sacrificing " + String.format("%d", (int)playerHpLost) + " HP!";
-                        } else {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " and dealt " + String.format("%d", (int)damageDealt) + " damage!";
-                        }
-                    } else {
-                        if (move.getName().equals("Sacrificial Blade") && player instanceof Swordsman && playerHpLost > 0) {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " but it had no effect, sacrificing " +
-                                    String.format("%d", (int)playerHpLost) + " HP in vain!";
-                        } else {
-                            message = player.getName() + " used " + move.getName() + " on " +
-                                    currentTarget.getName() + " but it had no effect!";
-                        }
-                    }
-
-                    battlePanel.setBattleMessage(message);
+                    battlePanel.setBattleMessage(move.getMessage());
                     battlePanel.repaint();
                     battlePanel.updateTargetButtonStates();
                 }
             }
 
-            // Check if battle should end
             if (getAliveEnemies().isEmpty()) {
                 endBattle(true);
                 return;
             }
 
-            // Check if player died
             if (player.getHp() < 1) {
                 endBattle(false);
                 return;
             }
 
-            // Move to next turn
             Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
             nextTimer.setRepeats(false);
             nextTimer.start();

@@ -16,10 +16,25 @@ public class Harmony extends Move {
             Ranger ranger = (Ranger) Entity;
 
             if (ranger.canUseHarmony()) {
-                //Add Harmony stack
+                double beforeAttack = ranger.getAttack();
+                double beforeDefense = ranger.getDefense();
+
                 ranger.addHarmonyStack();
+
+                // Calculate actual stat increases
+                double afterAttack = ranger.getAttack();
+                double afterDefense = ranger.getDefense();
+                double attackIncreased = afterAttack - beforeAttack;
+                double defenseIncreased = afterDefense - beforeDefense;
+                int stacks = ranger.getHarmonyStacks();
+
+                // Set message for battle display
+                setBuffAmount(attackIncreased, "ATK/DEF");
+                setMessage(ranger.getName() + " used " + this.name + "! " +
+                        "ATK and DEF increased by " + (int)attackIncreased +
+                        " (Stack " + stacks + "/3)");
             } else {
-                //TODO inform player "Harmony cannot be used! Already at max stacks (3)!"
+                setMessage(ranger.getName() + " used " + this.name + " but is already at max stacks (3)!");
             }
         }
     }

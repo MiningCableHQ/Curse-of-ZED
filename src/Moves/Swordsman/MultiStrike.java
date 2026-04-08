@@ -33,9 +33,14 @@ public class MultiStrike extends Move {
             totalATK += this.attack; //this move's atk
 
             //multiply sum to dmg multiplier
-            double damage = totalATK * 0.20 * rand.nextDouble(5,11);
+            int hits = rand.nextInt(6) + 5; // 5 to 10 inclusive
+            double damagePerHit = totalATK * 0.20;
+            double totalDamage = damagePerHit * hits;
+            double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
 
-            enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+            setDamageDealt(actualDamage);
+            setMessage(swordsman.getName() + " used " + this.name + " and dealt damage to all enemies!" +
+                    " damage (" + hits + " hits)!");
         }
     }
 }

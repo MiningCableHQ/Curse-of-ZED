@@ -22,7 +22,10 @@ public class Move1 extends Move {
             //multiply sum to multiplier
             double damage = totalATK * 0.70;
 
-            target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+
+            setDamageDealt(actualDamage);
+            setMessage(frankenstein.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }
