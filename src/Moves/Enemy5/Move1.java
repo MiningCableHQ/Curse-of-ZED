@@ -3,8 +3,11 @@ package Moves.Enemy5;
 import Entities.Enemies.Reyven;
 import Entities.Entity;
 import Moves.Move;
+import java.util.Random;
 
 public class Move1 extends Move {
+    Random rand = new Random();
+
     public Move1(){
         super("Reyven Strike", 10);
     }
@@ -15,17 +18,22 @@ public class Move1 extends Move {
             Reyven reyven = (Reyven) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
-            double totalATK = reyven.getAttack();
-            totalATK += this.attack;
+            if(rand.nextDouble() <= reyven.getAccuracy()){
+                //Add total atk from enemy and this move
+                double totalATK = reyven.getAttack();
+                totalATK += this.attack;
 
-            //multiply sum to multiplier
-            double damage = totalATK * 1.40;
+                //multiply sum to multiplier
+                double damage = totalATK * 1.40;
 
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+                double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            setDamageDealt(actualDamage);
-            setMessage(reyven.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+                setDamageDealt(actualDamage);
+                setMessage(reyven.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+            } else {
+                setDamageDealt(0);
+                setMessage(reyven.getName() + " used " + this.name + " but missed!");
+            }
         }
     }
 }

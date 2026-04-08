@@ -21,26 +21,31 @@ public class MultiStrike extends Move {
             Swordsman swordsman = (Swordsman) Entity;
             Entity enemy = Move.currentTarget;
 
-            //all 3 needed ATK stats
-            double totalATK = swordsman.getAttack(); //swordsman atk
-            if (swordsman.getWeapon() != null) {
-                if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
-                    Weapon equippedWeapon = swordsman.getWeapon();
-                    totalATK += equippedWeapon.getAttack();
+            if(rand.nextDouble() <= swordsman.getAccuracy()){
+                //all 3 needed ATK stats
+                double totalATK = swordsman.getAttack(); //swordsman atk
+                if (swordsman.getWeapon() != null) {
+                    if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
+                        Weapon equippedWeapon = swordsman.getWeapon();
+                        totalATK += equippedWeapon.getAttack();
+                    }
                 }
+
+                totalATK += this.attack; //this move's atk
+
+                //multiply sum to dmg multiplier
+                int hits = rand.nextInt(6) + 5; // 5 to 10 inclusive
+                double damagePerHit = totalATK * 0.20;
+                double totalDamage = damagePerHit * hits;
+                double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
+
+                setDamageDealt(actualDamage);
+                setMessage(swordsman.getName() + " used " + this.name + " and dealt damage to all enemies!" +
+                        " damage (" + hits + " hits)!");
+            } else {
+                setDamageDealt(0);
+                setMessage(swordsman.getName() + " used " + this.name + " but missed!");
             }
-
-            totalATK += this.attack; //this move's atk
-
-            //multiply sum to dmg multiplier
-            int hits = rand.nextInt(6) + 5; // 5 to 10 inclusive
-            double damagePerHit = totalATK * 0.20;
-            double totalDamage = damagePerHit * hits;
-            double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
-
-            setDamageDealt(actualDamage);
-            setMessage(swordsman.getName() + " used " + this.name + " and dealt damage to all enemies!" +
-                    " damage (" + hits + " hits)!");
         }
     }
 }

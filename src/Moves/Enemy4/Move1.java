@@ -3,8 +3,11 @@ package Moves.Enemy4;
 import Entities.Enemies.Razormaw;
 import Entities.Entity;
 import Moves.Move;
+import java.util.Random;
 
 public class Move1 extends Move {
+    Random rand = new Random();
+
     public Move1(){
         super("Jaw Snap", 10);
     }
@@ -15,16 +18,21 @@ public class Move1 extends Move {
             Razormaw razormaw = (Razormaw) Entity;
             Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
-            double totalATK = razormaw.getAttack();
-            totalATK += this.attack;
+            if(rand.nextDouble() <= razormaw.getAccuracy()){
+                //Add total atk from enemy and this move
+                double totalATK = razormaw.getAttack();
+                totalATK += this.attack;
 
-            //multiply sum to multiplier
-            double damage = totalATK;
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+                //multiply sum to multiplier
+                double damage = totalATK;
+                double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            setDamageDealt(actualDamage);
-            setMessage(razormaw.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+                setDamageDealt(actualDamage);
+                setMessage(razormaw.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+            } else {
+                setDamageDealt(0);
+                setMessage(razormaw.getName() + " used " + this.name + " but missed!");
+            }
         }
     }
 }

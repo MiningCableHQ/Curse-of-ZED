@@ -21,37 +21,42 @@ public class LifedrainArrow extends Move {
             Ranger ranger = (Ranger) Entity;
             Entity enemy = Move.currentTarget;
 
-            // Store HP before damage and heal
-            double beforeRangerHp = ranger.getHp();
+            if(rand.nextDouble() <= ranger.getAccuracy()){
+                // Store HP before damage and heal
+                double beforeRangerHp = ranger.getHp();
 
-            // --- Damage Part -----------------------------------------------------------------------------------------
-            // All 3 needed ATK stats
-            double totalATK = ranger.getAttack();
-            if(ranger.getWeapon() != null){
-                if(ranger.getWeapon() instanceof Items.Weapons.Weapon){
-                    Weapon equippedWeapon = ranger.getWeapon();
-                    totalATK += equippedWeapon.getAttack();
+                // --- Damage Part -----------------------------------------------------------------------------------------
+                // All 3 needed ATK stats
+                double totalATK = ranger.getAttack();
+                if(ranger.getWeapon() != null){
+                    if(ranger.getWeapon() instanceof Items.Weapons.Weapon){
+                        Weapon equippedWeapon = ranger.getWeapon();
+                        totalATK += equippedWeapon.getAttack();
+                    }
                 }
+                totalATK += this.attack; // this move's atk
+
+                double damage = totalATK * 0.5;
+                double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+                // --- Self Heal Part --------------------------------------------------------------------------------------
+                ranger.heal(150); // Heals 150 for every enemy hit
+
+                // Calculate actual heal amount
+                double afterRangerHp = ranger.getHp();
+                double actualHeal = afterRangerHp - beforeRangerHp;
+
+                // Set message for battle display
+                setDamageDealt(actualDamage);
+                setHealAmount(actualHeal);
+
+                String message = ranger.getName() + " used " + this.name + " and dealt damage to all enemies";
+
+                setMessage(message);
+            } else {
+                setDamageDealt(0);
+                setMessage(ranger.getName() + " used " + this.name + " but missed!");
             }
-            totalATK += this.attack; // this move's atk
-
-            double damage = totalATK * 0.5;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
-
-            // --- Self Heal Part --------------------------------------------------------------------------------------
-            ranger.heal(150); // Heals 150 for every enemy hit
-
-            // Calculate actual heal amount
-            double afterRangerHp = ranger.getHp();
-            double actualHeal = afterRangerHp - beforeRangerHp;
-
-            // Set message for battle display
-            setDamageDealt(actualDamage);
-            setHealAmount(actualHeal);
-
-            String message = ranger.getName() + " used " + this.name + " and dealt damage to all enemies";
-
-            setMessage(message);
         }
     }
 }

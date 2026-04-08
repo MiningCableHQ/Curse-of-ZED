@@ -182,7 +182,7 @@ public abstract class Entity {
         this.speed = Math.max(0, speed);
     }
     public void setDefense(double defense) {
-        this.defense = Math.min(defense, maxDefense * 4);
+        this.defense = Math.min(defense, 500);
     }
     public void setAccuracy(double accuracy) {
         this.accuracy = Math.max(0.5, Math.min(accuracy, 1.0));

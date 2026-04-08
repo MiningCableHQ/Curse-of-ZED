@@ -21,31 +21,33 @@ public class Roulette extends Move {
             Mage mage = (Mage) Entity;
             Entity enemy = Move.currentTarget;
 
-            // Store HP before damage
-            double beforeHp = enemy.getHp();
-
-            // All 3 needed ATK stats
-            double totalATK = mage.getAttack(); // mage atk
-            if (mage.getWeapon() != null) {
-                if (mage.getWeapon() instanceof Items.Weapons.Weapon) {
-                    Weapon equippedWeapon = mage.getWeapon();
-                    totalATK += equippedWeapon.getAttack();
+            if(rand.nextDouble() <= mage.getAccuracy()){
+                // All 3 needed ATK stats
+                double totalATK = mage.getAttack(); // mage atk
+                if (mage.getWeapon() != null) {
+                    if (mage.getWeapon() instanceof Items.Weapons.Weapon) {
+                        Weapon equippedWeapon = mage.getWeapon();
+                        totalATK += equippedWeapon.getAttack();
+                    }
                 }
+                totalATK += this.attack; // this move's atk
+
+                // Random number of hits between 3 and 10
+                int hits = rand.nextInt(8) + 3; // 3 to 10 inclusive
+                double damagePerHit = totalATK * 0.15;
+                double totalDamage = damagePerHit * hits;
+
+                // Apply the damage
+                double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
+
+                // Set message for battle display
+                setDamageDealt(actualDamage);
+                setMessage(mage.getName() + " used " + this.name + " on " + enemy.getName() +
+                        " and dealt " + (int)actualDamage + " damage (" + hits + " hits)!");
+            } else {
+                setDamageDealt(0);
+                setMessage(mage.getName() + " used " + this.name + " but missed!");
             }
-            totalATK += this.attack; // this move's atk
-
-            // Random number of hits between 3 and 10
-            int hits = rand.nextInt(8) + 3; // 3 to 10 inclusive
-            double damagePerHit = totalATK * 0.15;
-            double totalDamage = damagePerHit * hits;
-
-            // Apply the damage
-            double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
-
-            // Set message for battle display
-            setDamageDealt(actualDamage);
-            setMessage(mage.getName() + " used " + this.name + " on " + enemy.getName() +
-                    " and dealt " + (int)actualDamage + " damage (" + hits + " hits)!");
         }
     }
 }

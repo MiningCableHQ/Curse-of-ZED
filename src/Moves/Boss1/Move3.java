@@ -3,8 +3,11 @@ package Moves.Boss1;
 import Entities.Enemies.Thorncrusher;
 import Entities.Entity;
 import Moves.Move;
+import java.util.Random;
 
 public class Move3 extends Move {
+    Random rand = new Random();
+
     public Move3(){
         super("Crushing Blow", 10);
     }
@@ -15,15 +18,20 @@ public class Move3 extends Move {
             Thorncrusher thorncrusher = (Thorncrusher) Entity;
             Entity target = Move.currentTarget;
 
-            double totalATK = thorncrusher.getAttack();
-            totalATK += this.attack;
+            if(rand.nextDouble() <= thorncrusher.getAccuracy()){
+                double totalATK = thorncrusher.getAttack();
+                totalATK += this.attack;
 
-            // Multiply sum to multiplier
-            double damage = totalATK * 3;
-            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+                // Multiply sum to multiplier
+                double damage = totalATK * 3;
+                double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
 
-            setDamageDealt(actualDamage);
-            setMessage(thorncrusher.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+                setDamageDealt(actualDamage);
+                setMessage(thorncrusher.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+            } else {
+                setDamageDealt(0);
+                setMessage(thorncrusher.getName() + " used " + this.name + " but missed!");
+            }
         }
     }
 }

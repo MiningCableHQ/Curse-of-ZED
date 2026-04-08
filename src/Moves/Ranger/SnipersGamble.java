@@ -23,10 +23,9 @@ public class SnipersGamble extends Move {
 
             // Calculate base accuracy 95%(base) - 35%(this move's drawback)
             double baseAccuracy = 0.60;
-            double randomValue = rand.nextDouble();
 
             // Check if the attack hits
-            if (randomValue <= baseAccuracy) {
+            if (rand.nextDouble() <= baseAccuracy) {
                 // All 3 needed ATK stats
                 double totalATK = ranger.getAttack(); // ranger atk
                 if (ranger.getWeapon() != null) {

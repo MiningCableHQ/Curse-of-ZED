@@ -210,7 +210,7 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserHardening(), 3);
         inventory.addItem(new LesserPower(), 3);
         inventory.addItem(new LesserSoftening(), 2);
-        // Add weapons to inventory (not equipped by default)
+
         inventory.addItem(new ElementalCodex());
         inventory.addItem(new Swiftwind());
         inventory.addItem(new Unyielding());

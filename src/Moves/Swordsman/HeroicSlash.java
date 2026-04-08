@@ -5,7 +5,11 @@ import Entities.Entity;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
+import java.util.Random;
+
 public class HeroicSlash extends Move {
+    Random rand = new Random();
+
     public HeroicSlash(){
         super("Heroic Slash", 20);
         hasUnlocked = true;
@@ -18,23 +22,28 @@ public class HeroicSlash extends Move {
             Swordsman swordsman = (Swordsman) Entity;
             Entity enemy = Move.currentTarget;
 
-            //all 3 needed ATK stats
-            double totalATK = swordsman.getAttack();
-            if (swordsman.getWeapon() != null) {
-                if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
-                    Weapon equippedWeapon = swordsman.getWeapon();
-                    totalATK += equippedWeapon.getAttack();
+            if(rand.nextDouble() <= swordsman.getAccuracy()){
+                //all 3 needed ATK stats
+                double totalATK = swordsman.getAttack();
+                if (swordsman.getWeapon() != null) {
+                    if (swordsman.getWeapon() instanceof Items.Weapons.Weapon) {
+                        Weapon equippedWeapon = swordsman.getWeapon();
+                        totalATK += equippedWeapon.getAttack();
+                    }
                 }
+                totalATK += this.attack;
+
+                double damage = totalATK * 1.60;
+                double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+                //display message
+                setDamageDealt(actualDamage);
+                setMessage(swordsman.getName() + " used " + this.name + " on " + enemy.getName() +
+                        " and dealt " + String.format("%d", (int)actualDamage) + " damage!");
+            } else {
+                setDamageDealt(0);
+                setMessage(swordsman.getName() + " used " + this.name + " but missed!");
             }
-            totalATK += this.attack;
-
-            double damage = totalATK * 1.60;
-            double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
-
-            //display message
-            setDamageDealt(actualDamage);
-            setMessage(swordsman.getName() + " used " + this.name + " on " + enemy.getName() +
-                    " and dealt " + String.format("%d", (int)actualDamage) + " damage!");
         }
     }
 }
