@@ -4,7 +4,9 @@ import Items.Weapons.Weapon;
 
 public class Mistwood extends Weapon {
     public Mistwood() {
-        //TODO implement attack stats
+        super("Mistwood", "Description pls", 15);
+
+        loadImage("/items/archer_weapon/mistwood.png");
     }
 
     @Override

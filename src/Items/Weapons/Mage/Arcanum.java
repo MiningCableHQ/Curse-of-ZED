@@ -4,7 +4,9 @@ import Items.Weapons.Weapon;
 
 public class Arcanum extends Weapon {
     public Arcanum(){
-        //TODO implement attack stats
+        super("Arcanum", "Description pls", 20);
+
+        loadImage("/items/mage_weapon/arcanum_staff.png");
     }
 
     @Override

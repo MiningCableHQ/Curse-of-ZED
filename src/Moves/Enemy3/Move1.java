@@ -1,24 +1,30 @@
 package Moves.Enemy3;
 
-import Entities.Enemies.Enemy3;
+import Entities.Enemies.Sanjveil;
+import Entities.Entity;
 import Moves.Move;
 
 public class Move1 extends Move {
     public Move1(){
-        super("Move 1", 10);
+        super("Veil Pierce", 10);
     }
 
     @Override
     public <T> void execute(T Entity){
-        if(Entity instanceof Enemy3){
-            Enemy3 enemy3 = (Enemy3) Entity;
+        if(Entity instanceof Sanjveil && Move.currentTarget != null){
+            Sanjveil sanjveil = (Sanjveil) Entity;
+            Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
-            double totalATK = enemy3.getAttack();
+            // Add total atk from enemy and this move
+            double totalATK = sanjveil.getAttack();
             totalATK += this.attack;
 
-            //multiply sum to multiplier
+            // Multiply sum to multiplier
             double damage = totalATK * 1.30;
+            double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+
+            setDamageDealt(actualDamage);
+            setMessage(sanjveil.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
         }
     }
 }

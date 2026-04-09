@@ -1,14 +1,23 @@
 package Entities.Characters;
+
 import Entities.Entity;
 import Items.Inventory;
 import Main.*;
 import Moves.Move;
+import Items.Consumables.Buff.LesserHardening;
+import Items.Consumables.Buff.LesserPower;
+import Items.Consumables.Buff.Power;
+import Items.Consumables.Heal.GreaterHealing;
+import Items.Consumables.Heal.LesserHealing;
+import Items.Weapons.Mage.AnkhStaff;
+import Items.Weapons.Mage.Arcanum;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import Items.Weapons.Weapon;
 
 public abstract class Player extends Entity {
     public final int screenX;
@@ -17,12 +26,19 @@ public abstract class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
 
-    protected int level;
     protected int experience;
     protected int expNeeded;
     protected Inventory inventory;
     protected ArrayList<Move> moves;
     protected ArrayList<Move> moveset;
+    protected Weapon weapon;
+
+    // Idle animation arrays
+    protected BufferedImage[] idleLeft = new BufferedImage[5];
+    protected BufferedImage[] idleRight = new BufferedImage[5];
+    protected int idleSpriteNum = 0;
+    protected int idleSpriteCounter = 0;
+    protected static final int IDLE_ANIMATION_SPEED = 8; // Frames per sprite change
 
     public Player(GamePanel gp, KeyHandler keyH){
         screenX = gp.screenWidth/2 - (gp.tileSize/2);
@@ -41,6 +57,8 @@ public abstract class Player extends Entity {
         inventory = new Inventory();
         moves =  new ArrayList<>();
         moveset = new ArrayList<>();
+
+        loadInventory();
     }
 
     public void setDefaultValues(){
@@ -59,6 +77,12 @@ public abstract class Player extends Entity {
         entitySpeed = keyH.shiftPressed ? sprintSpeed : normalSpeed;
 
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+            // Reset idle animation when starting to move
+            if (!isMoving) {
+                idleSpriteNum = 0;
+                idleSpriteCounter = 0;
+            }
+
             if (keyH.upPressed) direction = "up";
             else if (keyH.downPressed) direction = "down";
             else if (keyH.leftPressed) direction = "left";
@@ -78,7 +102,7 @@ public abstract class Player extends Entity {
                 }
             }
 
-            // Animation
+            // Walking animation
             spriteCounter++;
             if (spriteCounter > 5) {
                 spriteNum++;
@@ -88,6 +112,16 @@ public abstract class Player extends Entity {
             isMoving = true;
         } else {
             isMoving = false;
+
+            // Idle animation when not moving
+            idleSpriteCounter++;
+            if (idleSpriteCounter > IDLE_ANIMATION_SPEED) {
+                idleSpriteNum++;
+                if (idleSpriteNum >= 5) idleSpriteNum = 0;
+                idleSpriteCounter = 0;
+            }
+
+            // Reset walking sprite to first frame
             spriteNum = 1;
         }
     }
@@ -95,19 +129,34 @@ public abstract class Player extends Entity {
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
 
-        switch (direction) {
-            case "up":
-                image = getWalkingImage("left");
-                break;
-            case "down":
-                image = getWalkingImage("left");
-                break;
-            case "left":
-                image = getWalkingImage("left");
-                break;
-            case "right":
-                image = getWalkingImage("right");
-                break;
+        if (isMoving) {
+            // Walking animation
+            switch (direction) {
+                case "up":
+                    image = getWalkingImage("left");
+                    break;
+                case "down":
+                    image = getWalkingImage("left");
+                    break;
+                case "left":
+                    image = getWalkingImage("left");
+                    break;
+                case "right":
+                    image = getWalkingImage("right");
+                    break;
+            }
+        } else {
+            // Idle animation
+            switch (direction) {
+                case "up":
+                case "down":
+                case "left":
+                    image = getIdleImage("left");
+                    break;
+                case "right":
+                    image = getIdleImage("right");
+                    break;
+            }
         }
 
         if (image != null) {
@@ -117,11 +166,6 @@ public abstract class Player extends Entity {
 
     // Helper method to get the correct walking frame
     private BufferedImage getWalkingImage(String dir) {
-        if (!isMoving) {
-            // Return idle frame when not moving
-            return dir.equals("right") ? right1 : left1;
-        }
-
         switch (spriteNum) {
             case 1:
                 return dir.equals("right") ? right1 : left1;
@@ -136,38 +180,102 @@ public abstract class Player extends Entity {
         }
     }
 
+    // Helper method to get the correct idle frame
+    private BufferedImage getIdleImage(String dir) {
+        if (dir.equals("right")) {
+            if (idleRight[idleSpriteNum] != null) {
+                return idleRight[idleSpriteNum];
+            }
+        } else {
+            if (idleLeft[idleSpriteNum] != null) {
+                return idleLeft[idleSpriteNum];
+            }
+        }
+        // Fallback to first walking frame if idle frames not available
+        return dir.equals("right") ? right1 : left1;
+    }
+
     public abstract void loadMoves();
 
-    public void gainExp(int experience){
-        this.experience += experience;
-        if(this.experience >= this.expNeeded){
-            levelUp();
-        }
+    public void loadInventory(){
+        inventory.addItem(new LesserHealing(), 5);
+        inventory.addItem(new LesserHardening(), 5);
+        inventory.addItem(new LesserPower(), 5);
+        inventory.addItem(new Power(), 5);
+        inventory.addItem(new Arcanum(), 1);
     }
+
     public void levelUp(){
-        //TODO implement max level threshold per chapter/map
-
         level++;
-
         experience -= expNeeded;
 
-        if(level <= 4){
+        // Base stat increases (flat amounts)
+        double hpIncrease = 110;
+        double attackIncrease = 5;
+        double defenseIncrease = 3;
+        double speedIncrease = 3;
+
+        //For unique class level up
+        if (this instanceof Swordsman){
+            hpIncrease = 300;
+        } else if (this instanceof Ranger) {
+            speedIncrease = 6;
+        } else if (this instanceof Mage){
+            attackIncrease = 10;
+        }
+
+        // Apply stat increases
+        maxHp += hpIncrease;
+        hp = maxHp; // Heal to full on level up
+        maxAttack += attackIncrease;
+        attack = maxAttack;
+        maxDefense += defenseIncrease;
+        defense = maxDefense;
+        speed += speedIncrease;
+
+        if(level < 4){
             expNeeded = 100;
-        }else if(level <= 7){
-            expNeeded = 120;
+        }else if(level < 7){
+            expNeeded = 125;
         }else{
             expNeeded = 150;
         }
     }
 
-    //Getters and Setters
-    public int getLevel(){
-        return level;
+    public boolean canGainExp(int chapter){
+        return switch (chapter) {
+            case 1 -> level < 4;
+            case 2 -> level < 7;
+            case 3 -> level < 10;
+            default -> true;
+        };
     }
+
+    public void gainExp(int experience, int chapter) {
+        if(canGainExp(chapter)){
+            this.experience += experience;
+            while (this.experience >= this.expNeeded && level < 10) {//level cap
+                levelUp();
+            }
+        }else{
+            //TODO Inform the player that he cannot gain exp
+        }
+    }
+
+    //Getters and Setters
     public int getExperience(){
         return experience;
     }
     public int getExpNeeded(){
         return expNeeded;
+    }
+    public ArrayList<Move> getMoves(){
+        return moves;
+    }
+    public Weapon getWeapon(){
+        return weapon;
+    }
+    public Inventory getInventory(){
+        return inventory;
     }
 }

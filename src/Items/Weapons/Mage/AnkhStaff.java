@@ -4,7 +4,9 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        //TODO implement attack stats
+        super("Ankh Staff", "Description pls", 10);
+
+        loadImage("/items/mage_weapon/ankh_staff.png");
     }
 
     @Override
@@ -17,4 +19,3 @@ public class AnkhStaff extends Weapon {
 
     }
 }
-

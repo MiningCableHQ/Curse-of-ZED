@@ -1,17 +1,33 @@
 package Items.Consumables.Heal;
 
+import Entities.Entity;
 import Items.Consumables.Consumable;
 
 public class LesserHealing extends Consumable {
     protected double healingAmount;
 
     public LesserHealing(){
-        name = "Lesser Healing Potion";
-        healingAmount = 0.30;
+        super("Lesser Healing Potion", "Restores (10% MaxHP + 250) HP");
+        healingAmount = 0.10;
+        useMessage = "Used Lesser Healing Potion!";
+
+        loadImage("/items/healing_potions/lesser_healing_potion.png");
     }
 
     @Override
-    public <T> void useItem(T Entity){
-        //TODO heals hp to entity
+    public <T> void useItem(T Entity) {
+        if (Entity instanceof Entity) {
+            Entity target = (Entity) Entity;
+            double maxHp = target.getMaxHp();
+            double healValue = (maxHp * healingAmount) + 250;
+            double beforeHp = target.getHp();
+
+            target.heal(healValue);
+            double afterHp = target.getHp();
+            double actualHeal = afterHp - beforeHp;
+
+            useMessage = "Used Lesser Healing Potion on " + target.getName() + "! Restored " +
+                    String.format("%.1f", actualHeal) + " HP.";
+        }
     }
 }
