@@ -2,9 +2,16 @@ package Main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+
 import Entities.Characters.*;
 import Tile.TileManager;
 import Objects.*;
+import Entities.Characters.NPC;
+import Dialogue.*;
+import Main.*;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -14,6 +21,10 @@ public class GamePanel extends JPanel implements Runnable {
     public CollisionChecker cChecker;
     public AssetSetter aSetter;
     Thread gameThread;
+    public DialogueSystem dialogueSystem;
+    public InteractionPrompt interactionPrompt;
+    private NPC nearbyNPC = null;
+    private boolean ePressedLastFrame = false;
 
     // Screen Settings
     public final int originalTileSize = 32;
@@ -84,6 +95,35 @@ public class GamePanel extends JPanel implements Runnable {
             // Create a default player with proper GamePanel reference
             this.player = new Swordsman(this, this.keyH);
         }
+        this.dialogueSystem    = new DialogueSystem();
+        this.interactionPrompt = new InteractionPrompt();
+
+// Mouse listener for dialogue clicks
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (dialogueSystem.isActive()) {
+                    dialogueSystem.handleClick(e.getX(), e.getY());
+                }
+            }
+        });
+
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (dialogueSystem.isActive()) {
+                    dialogueSystem.handleHover(e.getX(), e.getY());
+                }
+            }
+        });
+
+// Hook up shop callback
+        dialogueSystem.setOnOpenShop(() -> {
+            // TODO: Your teammate's shop UI call goes here, e.g.:
+            // ShopUI.open(player);
+            System.out.println("OPEN SHOP UI HERE");
+        });
+
     }
 
     public void setupGame() {
@@ -116,15 +156,44 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        if (player != null) {
-            player.update();
-        }
+         //if (player != null) { player.update();}
         checkMapTransition();
         // ANIMATE OBJECTS
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] != null && obj[i] instanceof OBJ_Torch) {
                 ((OBJ_Torch) obj[i]).updateAnimation();
             }
+        }
+        // Dialogue update
+        dialogueSystem.update();
+        interactionPrompt.update();
+
+// Find nearby NPC
+        nearbyNPC = null;
+        if (!dialogueSystem.isActive()) {
+            for (SuperObject o : obj) {
+                if (o instanceof NPC) {
+                    NPC npc = (NPC) o;
+                    if (npc.available && npc.isPlayerNearby()) {
+                        nearbyNPC = npc;
+                        break;
+                    }
+                }
+            }
+        }
+
+// E key to open dialogue
+        if (keyH.ePressed && !ePressedLastFrame && nearbyNPC != null
+                && !dialogueSystem.isActive()) {
+            String cls = player.getClass().getSimpleName(); // "Swordsman", "Ranger", "Mage"
+            dialogueSystem.open(nearbyNPC, cls);
+        }
+        ePressedLastFrame = keyH.ePressed;
+
+// Block movement during dialogue
+        // Alternative: only skip player movement
+        if (!dialogueSystem.isActive()) {
+            player.update();
         }
     }
 
@@ -224,6 +293,15 @@ public class GamePanel extends JPanel implements Runnable {
         if (!playerDrawn && player != null) {
             player.draw(g2);
         }
+        // Draw interaction prompt above nearby NPC
+        if (nearbyNPC != null && !dialogueSystem.isActive()) {
+            int nx = nearbyNPC.worldX - player.worldX + player.screenX + tileSize / 2;
+            int ny = nearbyNPC.worldY - player.worldY + player.screenY - 20;
+            interactionPrompt.draw(g2, nx, ny);
+        }
+
+// Draw dialogue overlay (always on top)
+        dialogueSystem.draw(g2);
 
         g2.dispose();
     }

@@ -61,6 +61,7 @@ public abstract class Player extends Entity {
         loadInventory();
     }
 
+
     public void setDefaultValues(){
         worldX = gp.tileSize * 27;
         worldY = gp.tileSize * 27;

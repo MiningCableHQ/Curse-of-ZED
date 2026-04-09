@@ -1,6 +1,7 @@
 package Objects;
 
 import Main.GamePanel;
+import Entities.Characters.*;
 import Objects.*;
 public class Map1Setter {
     GamePanel gp;
@@ -2571,6 +2572,21 @@ public class Map1Setter {
         gp.obj[616] = new OBJ_Grass();
         gp.obj[616].worldX = 0 * gp.tileSize; // Col 13
         gp.obj[616].worldY = 21 * gp.tileSize; // Row 36
+
+        NPC_Chief chief = new NPC_Chief(gp);
+        chief.worldX = 15 * gp.tileSize;  // <-- set to wherever Chief stands
+        chief.worldY = 10 * gp.tileSize;
+        gp.obj[10] = chief;
+
+        NPC_Ranger ranger = new NPC_Ranger(gp);
+        ranger.worldX = 20 * gp.tileSize; // <-- adjust as needed
+        ranger.worldY = 10 * gp.tileSize;
+        gp.obj[11] = ranger;
+
+        NPC_Frank frank = new NPC_Frank(gp);
+        frank.worldX = 25 * gp.tileSize;  // <-- adjust as needed
+        frank.worldY = 10 * gp.tileSize;
+        gp.obj[12] = frank;
 
 
 
