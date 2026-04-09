@@ -85,7 +85,7 @@ public class DialogueSystem {
         if (base == null) base = new Font("Palatino Linotype", Font.PLAIN, 12);
 
         fontName = base.deriveFont(Font.PLAIN, 16f);
-        fontText = new Font("Serif", Font.PLAIN, 15);
+        fontText = new Font("Serif", Font.PLAIN, 17);
         fontBtn  = new Font("Serif", Font.BOLD,  13);
     }
 
@@ -201,12 +201,6 @@ public class DialogueSystem {
     private void onDialogueEnd() {
         if (currentNPC != null) {
             currentNPC.interacted = true;
-
-            // After chief dialogue ends, disable the chief from being re-talked to
-            // (until story flag is re-enabled elsewhere)
-            if (currentNPC.npcName.equals("Chief")) {
-                currentNPC.available = false;
-            }
         }
         close();
     }
@@ -406,7 +400,7 @@ public class DialogueSystem {
         }
 
         // Exit / Close button — far left
-        btnExit.setBounds(BOX_X + 18, btnY, 90, btnH);
+        btnExit.setBounds(PORTRAIT_X + PORTRAIT_W + 22, btnY, 90, btnH);
         drawStyledButton(g2, btnExit, "✕ Exit", new Color(150, 50, 50), hoverExit);
     }
 

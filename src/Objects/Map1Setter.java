@@ -2574,18 +2574,18 @@ public class Map1Setter {
         gp.obj[616].worldY = 21 * gp.tileSize; // Row 36
 
         NPC_Chief chief = new NPC_Chief(gp);
-        chief.worldX = 15 * gp.tileSize;  // <-- set to wherever Chief stands
-        chief.worldY = 10 * gp.tileSize;
+        chief.worldX = 34 * gp.tileSize;  // <-- set to wherever Chief stands
+        chief.worldY = 20 * gp.tileSize;
         gp.obj[10] = chief;
 
         NPC_Ranger ranger = new NPC_Ranger(gp);
-        ranger.worldX = 20 * gp.tileSize; // <-- adjust as needed
-        ranger.worldY = 10 * gp.tileSize;
+        ranger.worldX = 8  * gp.tileSize; // <-- adjust as needed
+        ranger.worldY = 29 * gp.tileSize;
         gp.obj[11] = ranger;
 
         NPC_Frank frank = new NPC_Frank(gp);
-        frank.worldX = 25 * gp.tileSize;  // <-- adjust as needed
-        frank.worldY = 10 * gp.tileSize;
+        frank.worldX = 14 * gp.tileSize;  // <-- adjust as needed
+        frank.worldY = 36 * gp.tileSize;
         gp.obj[12] = frank;
 
 

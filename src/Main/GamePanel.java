@@ -25,6 +25,7 @@ public class GamePanel extends JPanel implements Runnable {
     public InteractionPrompt interactionPrompt;
     private NPC nearbyNPC = null;
     private boolean ePressedLastFrame = false;
+    public MapLabel mapLabel;
 
     // Screen Settings
     public final int originalTileSize = 32;
@@ -97,6 +98,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
         this.dialogueSystem    = new DialogueSystem();
         this.interactionPrompt = new InteractionPrompt();
+        this.mapLabel = new MapLabel("Map 1", "The Neverwinter Village");
 
 // Mouse listener for dialogue clicks
         this.addMouseListener(new MouseAdapter() {
@@ -123,6 +125,17 @@ public class GamePanel extends JPanel implements Runnable {
             // ShopUI.open(player);
             System.out.println("OPEN SHOP UI HERE");
         });
+
+        // ADD IT RIGHT HERE — load player portrait for dialogue
+        try {
+            String cls = player.getClass().getSimpleName().toLowerCase();
+            String portraitName = cls.equals("ranger") ? "archer" : cls;
+            java.awt.image.BufferedImage pp = javax.imageio.ImageIO.read(
+                    getClass().getResourceAsStream("/player/" + portraitName  + "_portrait.png"));
+            dialogueSystem.setPlayerPortrait(pp);
+        } catch (Exception e) {
+            System.err.println("Player portrait not found.");
+        }
 
     }
 
@@ -159,14 +172,21 @@ public class GamePanel extends JPanel implements Runnable {
          //if (player != null) { player.update();}
         checkMapTransition();
         // ANIMATE OBJECTS
+        // ANIMATE OBJECTS
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] != null && obj[i] instanceof OBJ_Torch) {
                 ((OBJ_Torch) obj[i]).updateAnimation();
             }
+            // ADD THIS:
+            if (obj[i] != null && obj[i] instanceof NPC) {
+                ((NPC) obj[i]).updateAnimation();
+            }
         }
+        mapLabel.update();
         // Dialogue update
         dialogueSystem.update();
         interactionPrompt.update();
+
 
 // Find nearby NPC
         nearbyNPC = null;
@@ -206,8 +226,10 @@ public class GamePanel extends JPanel implements Runnable {
             if (player.worldX > worldWidth - (tileSize * 1.5)) {
                 currentMap = 1;
                 tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
 
+
+                aSetter.setObject();
+                mapLabel.reset("Map 2", "The Sorcerer's Lair");
                 player.worldX = tileSize * 3;
                 player.worldY = tileSize * 10;
             }
@@ -222,10 +244,12 @@ public class GamePanel extends JPanel implements Runnable {
                 currentMap = 2;
                 tileM.loadMap("/maps/world03.txt");
                 aSetter.setObject();
+                mapLabel.reset("Map 3", "The Sorcerer's Lair - Final Battle");
 
                 // SPAWN ON MAP 3: Top-Left Corner
                 player.worldX = tileSize * 2; // 2 tiles from the left
                 player.worldY = tileSize * 2; // 2 tiles from the top
+
             }
         }
 
@@ -299,7 +323,7 @@ public class GamePanel extends JPanel implements Runnable {
             int ny = nearbyNPC.worldY - player.worldY + player.screenY - 20;
             interactionPrompt.draw(g2, nx, ny);
         }
-
+        mapLabel.draw(g2);
 // Draw dialogue overlay (always on top)
         dialogueSystem.draw(g2);
 

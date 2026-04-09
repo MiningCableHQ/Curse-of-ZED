@@ -10,7 +10,9 @@ public class NPC_Frank extends NPC {
         super(gp);
         npcName = "Frank";
         try {
-            image = ImageIO.read(getClass().getResourceAsStream("/npc/frank/frank_idle.png"));
+            idleFrames[0] = ImageIO.read(getClass().getResourceAsStream("/npc/frank/frank_idle1.png"));
+            idleFrames[1] = ImageIO.read(getClass().getResourceAsStream("/npc/frank/frank_idle2.png"));
+            image = idleFrames[0];
         } catch (Exception e) {
             System.err.println("Frank sprite not found.");
         }

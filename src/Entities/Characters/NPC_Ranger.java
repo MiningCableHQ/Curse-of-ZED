@@ -10,7 +10,9 @@ public class NPC_Ranger extends NPC {
         super(gp);
         npcName = "Ranger";
         try {
-            image = ImageIO.read(getClass().getResourceAsStream("/npc/ranger/ranger_idle.png"));
+            idleFrames[0] = ImageIO.read(getClass().getResourceAsStream("/npc/ranger/ranger_idle1.png"));
+            idleFrames[1] = ImageIO.read(getClass().getResourceAsStream("/npc/ranger/ranger_idle2.png"));
+            image = idleFrames[0];
         } catch (Exception e) {
             System.err.println("Ranger sprite not found.");
         }
@@ -19,7 +21,8 @@ public class NPC_Ranger extends NPC {
 
     @Override
     public DialogueTree getDialogue(String playerClassName) {
-        String khaiTitle = "Khai the " + playerClassName;
+        String displayClass = playerClassName.equals("Ranger") ? "Archer" : playerClassName;
+        String khaiTitle = "Khai the " + displayClass;
         DialogueTree tree = new DialogueTree();
 
         // Page 0

@@ -8,13 +8,13 @@ public class NPC_Chief extends NPC {
     public NPC_Chief(GamePanel gp) {
         super(gp);
         npcName = "Chief";
-        // Load your NPC sprite image here
         try {
-            image = ImageIO.read(getClass().getResourceAsStream("/npc/chief/chief_idle.png"));
+            idleFrames[0] = ImageIO.read(getClass().getResourceAsStream("/npc/chief/chief_idle1.png"));
+            idleFrames[1] = ImageIO.read(getClass().getResourceAsStream("/npc/chief/chief_idle2.png"));
+            image = idleFrames[0]; // set starting frame
         } catch (Exception e) {
             System.err.println("Chief sprite not found.");
         }
-        // Load portrait (250x250 for dialogue box)
         portrait = loadPortrait("/npc/chief/chief_portrait.png");
     }
 

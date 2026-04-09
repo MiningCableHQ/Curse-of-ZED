@@ -20,10 +20,16 @@ public abstract class NPC extends SuperObject {
     // Interaction range (pixels from player center)
     public int interactRange = 80;
 
+    // Idle animation
+    protected BufferedImage[] idleFrames = new BufferedImage[2];
+    protected int idleSpriteNum = 0;
+    protected int idleSpriteCounter = 0;
+    protected static final int IDLE_ANIMATION_SPEED = 15; // frames per sprite change
+
     public NPC(GamePanel gp) {
         this.gp = gp;
-        collision = false; // NPCs block walking via solidArea but don't block map collision
-        solidArea = new Rectangle(8, 8, 48, 48);
+        collision = true; // NPCs block walking via solidArea but don't block map collision
+        solidArea = new Rectangle(0, 0, 48, 48);
         solidAreaDefaultX = 8;
         solidAreaDefaultY = 8;
     }
@@ -34,6 +40,14 @@ public abstract class NPC extends SuperObject {
         } catch (Exception e) {
             System.err.println("Portrait not found: " + path);
             return null;
+        }
+    }
+    public void updateAnimation() {
+        idleSpriteCounter++;
+        if (idleSpriteCounter >= IDLE_ANIMATION_SPEED) {
+            idleSpriteNum = (idleSpriteNum + 1) % 2; // toggles between 0 and 1
+            idleSpriteCounter = 0;
+            image = idleFrames[idleSpriteNum]; // swap the current image
         }
     }
 
