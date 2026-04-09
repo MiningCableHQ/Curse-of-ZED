@@ -1,7 +1,8 @@
 package Main;
 
-import Entities.Characters.Player;
 
+import Entities.Characters.Player;
+import StoryLine.StoryPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -27,6 +28,7 @@ public class CurseOfZed extends JFrame {
 
     private Runnable onStartCallback;
     private Player selectedPlayer;
+    private StoryPanel storyPanel;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -35,7 +37,8 @@ public class CurseOfZed extends JFrame {
 
             // 2. Set the callback to show character selection
             window.setOnStartCallback(() -> {
-                window.showCharacterSelection();
+                window.showStoryIntro();
+                // window.showCharacterSelection();
             });
 
             window.setVisible(true);
@@ -62,21 +65,42 @@ public class CurseOfZed extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    private void showStoryIntro() {
+        // We save the storyPanel to the class variable we just created
+        this.storyPanel = new StoryPanel(() -> {
+            showCharacterSelection();
+        });
+
+        getContentPane().removeAll();
+        add(storyPanel);
+        revalidate();
+        repaint();
+    }
+
     /**
      * Shows the character selection panel by replacing the TitlePanel
      * in the same JFrame window.
      */
     private void showCharacterSelection() {
-        // Create the character selection panel with reference to this frame
         CharacterSelectionPanel selectionPanel = new CharacterSelectionPanel(this);
 
-        // Set callback for when character is selected
+        // Tell the selection panel to reset the story when BACK is pressed
+        selectionPanel.setOnBackPressed(() -> {
+            if (storyPanel != null) {
+                storyPanel.resetToBeginning(); // This triggers the animation
+
+                getContentPane().removeAll();
+                add(storyPanel);
+                revalidate();
+                repaint();
+            }
+        });
+
         selectionPanel.setOnCharacterSelected(player -> {
             this.selectedPlayer = player;
             startGameWithPlayer(selectedPlayer);
         });
 
-        // Replace TitlePanel with CharacterSelectionPanel
         getContentPane().removeAll();
         add(selectionPanel);
         revalidate();
@@ -118,6 +142,7 @@ public class CurseOfZed extends JFrame {
         gamePanel.startGameThread();
     }
 }
+
 
 // ═════════════════════════════════════════════════════════════
 //  Main Panel

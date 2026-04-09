@@ -131,31 +131,43 @@ public class GamePanel extends JPanel implements Runnable {
     public void checkMapTransition() {
         if (player == null) return;
 
-        // --- MAP 0 (Starting Map) ---
+        // --- MAP 1  ---
         if (currentMap == 0) {
-            // EXIT RIGHT: If player hits the right edge of Map 0
+            // EXIT RIGHT -> TO MAP 2
             if (player.worldX > worldWidth - (tileSize * 1.5)) {
                 currentMap = 1;
                 tileM.loadMap("/maps/world02.txt");
                 aSetter.setObject();
 
-                // SPAWN ON MAP 1: Move to Column 3 to stay away from the left-exit trigger
                 player.worldX = tileSize * 3;
                 player.worldY = tileSize * 10;
             }
         }
 
-        // --- MAP 1 (Middle Map) ---
+        // --- MAP 2 ---
         else if (currentMap == 1) {
-            // EXIT LEFT: Back to Map 0
-            // We check if player is at the far left (less than 1 tile in)
-            if (player.worldX < tileSize) {
-                currentMap = 0;
-                tileM.loadMap("/maps/world01.txt");
+            // ... (previous left-exit code)
+
+            // EXIT RIGHT -> TO MAP 3
+            if (player.worldX > worldWidth - (tileSize * 1.5)) {
+                currentMap = 2;
+                tileM.loadMap("/maps/world03.txt");
                 aSetter.setObject();
 
-                // SPAWN ON MAP 0: Move them back to the right side
-                // (worldWidth minus 3 tiles keeps you away from the right-exit trigger)
+                // SPAWN ON MAP 3: Top-Left Corner
+                player.worldX = tileSize * 2; // 2 tiles from the left
+                player.worldY = tileSize * 2; // 2 tiles from the top
+            }
+        }
+
+        // --- MAP 3  ---
+        else if (currentMap == 2) {
+            // EXIT LEFT -> TO MAP 2
+            if (player.worldX < tileSize) {
+                currentMap = 1;
+                tileM.loadMap("/maps/world02.txt");
+                aSetter.setObject();
+
                 player.worldX = worldWidth - (tileSize * 3);
                 player.worldY = tileSize * 10;
             }
