@@ -4338,6 +4338,28 @@ public class Map3Setter {
         gp.obj[1044].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[1044].worldY = 49 * gp.tileSize; // Row 36
 
+        gp.obj[1045] = new OBJ_Bvines();
+        gp.obj[1045].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[1045].worldY = 49 * gp.tileSize; // Row 36
+
+        gp.obj[1046] = new OBJ_Bvines();
+        gp.obj[1046].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[1046].worldY = 48 * gp.tileSize; // Row 36
+
+        gp.obj[1047] = new OBJ_Bvines();
+        gp.obj[1047].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[1047].worldY = 47 * gp.tileSize; // Row 36
+
+        gp.obj[1048] = new OBJ_Bvines();
+        gp.obj[1048].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[1048].worldY = 46 * gp.tileSize; // Row 36
+
+        gp.obj[1049] = new OBJ_Bvines();
+        gp.obj[1049].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[1049].worldY = 45 * gp.tileSize; // Row 36
+
+
+
 
 
 
