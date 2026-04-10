@@ -11,8 +11,8 @@ import java.io.IOException;
 
 public class Ranger extends Player {
     private int harmonyStacks = 0;
-    private double originalAttack;
-    private double originalDefense;
+    private double flatAttackBonus = 0;
+    private double flatDefenseBonus = 0;
 
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
@@ -26,9 +26,6 @@ public class Ranger extends Player {
         speed = 50;
         dmgResistance = 0.10;
         loadMoves();
-
-        originalAttack = attack;
-        originalDefense = defense;
     }
 
     @Override
@@ -138,42 +135,80 @@ public class Ranger extends Player {
     public int getHarmonyStacks() {
         return harmonyStacks;
     }
+
+    public boolean canUseHarmony() {
+        return harmonyStacks < 3;
+    }
+
+    public void addHarmonyStack() {
+        if (harmonyStacks < 3) {
+            harmonyStacks++;
+            // Increase attack by 12 per stack
+            flatAttackBonus = 12 * harmonyStacks;
+            // Increase defense by 12 per stack
+            flatDefenseBonus = 12 * harmonyStacks;
+            recalculateStats();
+        }
+    }
+
     public void resetBattleBuffs() {
         harmonyStacks = 0;
-        attack = originalAttack;
-        defense = originalDefense;
+        flatAttackBonus = 0;
+        flatDefenseBonus = 0;
+        recalculateStats();
     }
+
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
             resetBattleBuffs();
         }
     }
-    public boolean canUseHarmony() {
-        return harmonyStacks < 3;
+
+    // Methods to add flat bonuses (from potions)
+    public void addFlatAttackBonus(double bonus) {
+        flatAttackBonus += bonus;
+        recalculateStats();
     }
-    public void addHarmonyStack() {
-        if (harmonyStacks < 3) {
-            harmonyStacks++;
 
-            // Increase attack by 12 per stack
-            attack = originalAttack + (12 * harmonyStacks);
-            if (attack > maxAttack * 2) {
-                attack = maxAttack * 2;
-            }
+    public void addFlatDefenseBonus(double bonus) {
+        flatDefenseBonus += bonus;
+        recalculateStats();
+    }
 
-            // Increase defense by 12 per stack
-            defense = originalDefense + (12 * harmonyStacks);
-            if (defense > maxDefense * 4) {
-                defense = maxDefense * 4;
-            }
+    // Methods to remove flat bonuses (if needed)
+    public void removeFlatAttackBonus(double bonus) {
+        flatAttackBonus -= bonus;
+        if (flatAttackBonus < 0) flatAttackBonus = 0;
+        recalculateStats();
+    }
+
+    public void removeFlatDefenseBonus(double bonus) {
+        flatDefenseBonus -= bonus;
+        if (flatDefenseBonus < 0) flatDefenseBonus = 0;
+        recalculateStats();
+    }
+
+    // Recalculate total stats based on original stats + flat bonuses
+    private void recalculateStats() {
+        // Recalculate attack
+        this.attack = attack + flatAttackBonus;
+        if (this.attack > maxAttack * 2) {
+            this.attack = maxAttack * 2;
+        }
+
+        // Recalculate defense
+        this.defense = defense + flatDefenseBonus;
+        if (this.defense > maxDefense * 4) {
+            this.defense = maxDefense * 4;
         }
     }
 
-    //Getters
+    // Getters
     @Override
     public double getAttack() {
         return attack;
     }
+
     @Override
     public double getDefense() {
         return defense;

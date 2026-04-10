@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Swordsman extends Player {
     private int ironStanceStacks = 0;
-    private double originalDefense;
+    private double flatDefenseBonus = 0;
 
     public Swordsman(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
@@ -20,13 +20,11 @@ public class Swordsman extends Player {
         maxHp = hp;
         attack = 205;
         maxAttack = attack;
-        defense = 65;
+        defense = 40;
         maxDefense = defense;
         speed = 28;
         dmgResistance = 0.15;
         loadMoves();
-
-        originalDefense = defense;
     }
 
     @Override
@@ -136,25 +134,54 @@ public class Swordsman extends Player {
     public int getIronStanceStacks() {
         return ironStanceStacks;
     }
+
     public boolean canUseIronStance() {
         return ironStanceStacks < 3;
     }
+
     public void addIronStanceStack() {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
-            //Increase DEF by 10%
-            defense = originalDefense + (originalDefense * 0.10 * ironStanceStacks);
+            // Increase defense by flat 15 per stack
+            flatDefenseBonus = 15 * ironStanceStacks;
+            recalculateDefense();
         }
     }
+
     public void resetBattleBuffs() {
         ironStanceStacks = 0;
-        defense = originalDefense;
+        flatDefenseBonus = 0;
+        recalculateDefense();
     }
+
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
             resetBattleBuffs();
         }
     }
+
+    // Method to add a flat defense bonus (from potions)
+    public void addFlatDefenseBonus(double bonus) {
+        flatDefenseBonus += bonus;
+        recalculateDefense();
+    }
+
+    // Method to remove a flat defense bonus (if needed)
+    public void removeFlatDefenseBonus(double bonus) {
+        flatDefenseBonus -= bonus;
+        if (flatDefenseBonus < 0) flatDefenseBonus = 0;
+        recalculateDefense();
+    }
+
+    // Recalculate total defense based on original defense + flat bonuses
+    private void recalculateDefense() {
+        this.defense = defense + flatDefenseBonus;
+        // Cap at maxDefense * 4 (as you had before)
+        if (this.defense > maxDefense * 4) {
+            this.defense = maxDefense * 4;
+        }
+    }
+
     @Override
     public double getDefense() {
         return defense;

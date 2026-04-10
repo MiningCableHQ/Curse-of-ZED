@@ -58,14 +58,14 @@ public class CharacterSelectionPanel extends JPanel {
             new Color( 80, 120, 220)    // Mage — blue
     };
     private static final String[] STAT_LINES = {
-            "HP: 800   ATK: 205\nDEF: 65   SPD: 28",
-            "HP: 680   ATK: 240\nDEF: 20   SPD: 50",
-            "HP: 650   ATK: 335\nDEF: 10   SPD: 35"
+            "HP: 1000  ATK: 205\nDEF: 40   SPD: 28",
+            "HP: 880   ATK: 240\nDEF: 20   SPD: 50",
+            "HP: 800   ATK: 335\nDEF: 10   SPD: 35"
     };
     private static final String[] DESCS = {
-            "A mighty warrior clad in heavy\narmor, master of blade and shield.",
-            "Swift and precise, striking from\nafar with unmatched accuracy.",
-            "Wielder of arcane forces, bending\nthe elements to their will."
+            "Specializes on survivability,\ntanking everything with absurd \nhp and defenses.",
+            "Specializes on frequent attack\nintervals with unmatched speed\nand accuracy.",
+            "Specializes on burst damage,\nattack high enough to reach \nthe heavens."
     };
 
     // ── Animation data for each character ─────────────────────────

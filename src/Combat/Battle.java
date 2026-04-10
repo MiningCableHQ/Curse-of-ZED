@@ -120,9 +120,9 @@ public class Battle {
         battlePanel.hideTargetButtons();
         battlePanel.setButtonsEnabled(false);
 
-        // Display message
-        String message = player.getName() + " used " + item.getName();
-        battlePanel.setBattleMessage(message);
+        // Display message that player is about to act
+        String startMessage = player.getName() + " is about to use " + item.getName() + "!";
+        battlePanel.setBattleMessage(startMessage);
         battlePanel.repaint();
 
         Timer executeTimer = new Timer(MESSAGE_DELAY, e -> {
@@ -134,7 +134,12 @@ public class Battle {
             if (item.getTargetType() == Item.TargetType.SELF) {
                 // Self-targeting item
                 item.useItem(player);
-                resultMessage = player.getName() + " used " + item.getName() + "!";
+                // USE THE ITEM'S MESSAGE
+                resultMessage = item.getUseMessage();
+                if (resultMessage == null || resultMessage.isEmpty()) {
+                    resultMessage = player.getName() + " used " + item.getName() + "!";
+                }
+
             } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
                 // Single enemy target
                 double beforeHp = target.getHp();
@@ -142,12 +147,17 @@ public class Battle {
                 double afterHp = target.getHp();
                 double effectAmount = beforeHp - afterHp;
 
-                if (effectAmount > 0) {
-                    resultMessage = player.getName() + " used " + item.getName() + " on " +
-                            target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
-                } else {
-                    resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
+                // USE THE ITEM'S MESSAGE OR CREATE ONE
+                resultMessage = item.getUseMessage();
+                if (resultMessage == null || resultMessage.isEmpty()) {
+                    if (effectAmount > 0) {
+                        resultMessage = player.getName() + " used " + item.getName() + " on " +
+                                target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
+                    } else {
+                        resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
+                    }
                 }
+
             } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
                 // AoE item
                 for (Enemy enemy : enemies) {
@@ -155,9 +165,18 @@ public class Battle {
                         item.useItem(enemy);
                     }
                 }
-                resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
+                // USE THE ITEM'S MESSAGE
+                resultMessage = item.getUseMessage();
+                if (resultMessage == null || resultMessage.isEmpty()) {
+                    resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
+                }
+
             } else {
-                resultMessage = player.getName() + " used " + item.getName() + "!";
+                // Default case
+                resultMessage = item.getUseMessage();
+                if (resultMessage == null || resultMessage.isEmpty()) {
+                    resultMessage = player.getName() + " used " + item.getName() + "!";
+                }
             }
 
             battlePanel.setBattleMessage(resultMessage);

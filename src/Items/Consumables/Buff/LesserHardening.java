@@ -26,17 +26,7 @@ public class LesserHardening extends Consumable {
             double actualBuff = afterDefense - beforeDefense;
 
             useMessage = "Used Lesser Hardening Potion on " + target.getName() + "! DEF increased by " +
-                    String.format("%.1f", actualBuff) + ".";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeDefense = target.getDefense();
-
-            target.buffDefense(defenseBuffAmount);
-            double afterDefense = target.getDefense();
-            double actualBuff = afterDefense - beforeDefense;
-
-            useMessage = "Used Lesser Hardening Potion on " + target.getName() + "! DEF increased by " +
-                    String.format("%.1f", actualBuff) + ".";
+                    String.format("%.0f", actualBuff) + ".";
         }
     }
 }

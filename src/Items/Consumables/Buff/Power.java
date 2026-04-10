@@ -26,17 +26,7 @@ public class Power extends Consumable {
             double actualBuff = afterAttack - beforeAttack;
 
             useMessage = "Used Power Potion on " + target.getName() + "! ATK increased by " +
-                    String.format("%.1f", actualBuff) + ".";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeAttack = target.getAttack();
-
-            target.buffAttack(attackBuffAmount);
-            double afterAttack = target.getAttack();
-            double actualBuff = afterAttack - beforeAttack;
-
-            useMessage = "Used Power Potion on " + target.getName() + "! ATK increased by " +
-                    String.format("%.1f", actualBuff) + ".";
+                    String.format("%.0f", actualBuff) + ".";
         }
     }
 }

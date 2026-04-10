@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class Mage extends Player {
     private int empowerStacks = 0;
-    private double originalAttack;
+    private double flatAttackBonus = 0;
 
     public Mage(GamePanel gp, KeyHandler keyH){
         super(gp, keyH);
@@ -25,8 +25,6 @@ public class Mage extends Player {
         speed = 35;
         dmgResistance = 0.13;
         loadMoves();
-
-        originalAttack = attack;
     }
 
     @Override
@@ -136,25 +134,54 @@ public class Mage extends Player {
     public int getEmpowerStacks() {
         return empowerStacks;
     }
+
     public boolean canUseEmpower() {
         return empowerStacks < 3;
     }
+
     public void addEmpowerStack() {
         if (empowerStacks < 3) {
             empowerStacks++;
-            // Increase attack by 6% per stack
-            attack = originalAttack + (originalAttack * 0.06 * empowerStacks);
+            // Increase attack by flat 25 per stack
+            flatAttackBonus = 25 * empowerStacks;
+            recalculateAttack();
         }
     }
+
     public void resetBattleBuffs() {
         empowerStacks = 0;
-        attack = originalAttack;
+        flatAttackBonus = 0;
+        recalculateAttack();
     }
+
     public void setInBattle(boolean inBattle) {
         if (!inBattle) {
             resetBattleBuffs();
         }
     }
+
+    // Method to add a flat attack bonus (from potions)
+    public void addFlatAttackBonus(double bonus) {
+        flatAttackBonus += bonus;
+        recalculateAttack();
+    }
+
+    // Method to remove a flat attack bonus (if needed)
+    public void removeFlatAttackBonus(double bonus) {
+        flatAttackBonus -= bonus;
+        if (flatAttackBonus < 0) flatAttackBonus = 0;
+        recalculateAttack();
+    }
+
+    // Recalculate total attack based on original attack + flat bonuses
+    private void recalculateAttack() {
+        this.attack = attack + flatAttackBonus;
+        // Cap at maxAttack * 2
+        if (this.attack > maxAttack * 2) {
+            this.attack = maxAttack * 2;
+        }
+    }
+
     @Override
     public double getAttack() {
         return attack;
