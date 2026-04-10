@@ -15,6 +15,12 @@ public class MultiStrike extends Move {
         description = "Deals 20% of ATK to all enemies 5-10x";
     }
 
+    public MultiStrike(boolean hasUnlocked) {
+        super("Multi Strike", 40, TargetType.ALL_ENEMIES);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deals 20% of ATK to all enemies 5-10x";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Swordsman && Move.currentTarget != null){

@@ -13,6 +13,12 @@ public class Preservation extends Move {
         description = "Heals the character by 300-800 HP";
     }
 
+    public Preservation(boolean hasUnlocked) {
+        super("Preservation", 0, TargetType.SELF);
+        hasUnlocked = this.hasUnlocked;
+        description = "Heals the character by 300-800 HP";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if (Entity instanceof Swordsman) {

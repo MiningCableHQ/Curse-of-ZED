@@ -16,6 +16,12 @@ public class SacrificialBlade extends Move {
         description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
     }
 
+    public SacrificialBlade(boolean hasUnlocked) {
+        super("Sacrificial Blade", 70);
+        hasUnlocked = this.hasUnlocked;
+        description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if (Entity instanceof Swordsman && Move.currentTarget != null) {

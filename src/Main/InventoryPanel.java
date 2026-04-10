@@ -45,6 +45,7 @@ public class InventoryPanel extends JPanel {
     private static final Color TEXT_GOLD = new Color(252, 218, 72);
     private static final Color GOLD_DARK = new Color(178, 108, 0);
     private static final Color HOVER_GOLD = new Color(252, 218, 72);
+    private static final Color TEXT_BROWN = new Color(80, 38, 2, 230);
 
     // ── Stat Colors ────────────────────────────────────────────────
     private static final Color STAT_HP = new Color(220, 80, 80);
@@ -120,6 +121,7 @@ public class InventoryPanel extends JPanel {
     private JPanel equippedWeaponPanel;
     private JLabel weaponIconLabel;
     private JLabel weaponNameLabel;
+    private JLabel characterLevelLabel;
 
     // ── Inventory Grid ────────────────────────────────────────────
     private JPanel inventoryGrid;
@@ -399,8 +401,8 @@ public class InventoryPanel extends JPanel {
     }
 
     private boolean isBuffItem(Item item) {
-        return item instanceof LesserPower || item instanceof Power ||
-                item instanceof LesserHardening || item instanceof Hardening;
+        return item instanceof LesserPower || item instanceof Power || item instanceof GreaterPower ||
+                item instanceof LesserHardening || item instanceof Hardening || item instanceof GreaterHardening;
     }
 
     private boolean isWeaponItem(Item item) {
@@ -675,7 +677,17 @@ public class InventoryPanel extends JPanel {
         unequipHint.setBounds(10, 120, 100, 20);
         equippedWeaponPanel.add(unequipHint);
 
-        // Stats Box Panel
+        // ADD THIS: Level label
+        int level = player.getLevel();
+        if (level < 1) level = 1;
+        characterLevelLabel = new JLabel("Lv. " + level, SwingConstants.CENTER);
+        characterLevelLabel.setFont(FONT_STAT);
+        characterLevelLabel.setForeground(TEXT_BROWN);
+        characterLevelLabel.setBounds(-40, 145, 260, 24);
+        characterLevelLabel.setOpaque(false);
+        characterPanel.add(characterLevelLabel);
+
+        // Stats Box Panel (semi-transparent dark with gold border)
         JPanel statsBox = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -784,6 +796,10 @@ public class InventoryPanel extends JPanel {
                 }
                 break;
             }
+        }
+
+        if (characterLevelLabel != null) {
+            characterLevelLabel.setText("Lv. " + player.getLevel());
         }
     }
 

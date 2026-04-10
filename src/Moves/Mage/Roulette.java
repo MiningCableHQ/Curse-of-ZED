@@ -15,6 +15,12 @@ public class Roulette extends Move {
         description = "Deal 15% damage to all enemies 3-10x";
     }
 
+    public Roulette(boolean hasUnlocked) {
+        super("Roulette", 35, TargetType.ALL_ENEMIES);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deal 15% damage to all enemies 3-10x";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Mage && Move.currentTarget != null){

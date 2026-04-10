@@ -14,6 +14,12 @@ public class FlurryShot extends Move {
         description = "Deals 45% of ATK as dmg 2-5x to a single target";
     }
 
+    public FlurryShot(boolean hasUnlocked) {
+        super("Flurry Shot", 40);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deals 45% of ATK as dmg 2-5x to a single target";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Ranger && Move.currentTarget != null) {

@@ -119,11 +119,6 @@ public abstract class Entity {
         this.accuracy = Math.max(newAccuracy, 0.5); // Can't go below 50% accuracy
     }
 
-    // Setters
-    public void setOriginalSpeed(double newSpeed) {
-        this.originalSpeed = newSpeed;
-    }
-
     //Getters
     public String getName(){
         return name;
@@ -172,6 +167,12 @@ public abstract class Entity {
     }
 
     //Setters
+    public void setName(String name){
+        this.name = name;
+    }
+    public void setOriginalSpeed(double newSpeed) {
+        this.originalSpeed = newSpeed;
+    }
     public void setHp(double hp) {
         this.hp = Math.max(0, Math.min(hp, maxHp));
     }

@@ -16,6 +16,12 @@ public class ChillingGamble extends Move {
         description = "Deals 300% of ATK as dmg to a single target, but gains Frozen status";
     }
 
+    public ChillingGamble(boolean hasUnlocked) {
+        super("Chilling Gamble", 40);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deals 300% of ATK as dmg to a single target, but gains Frozen status";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Mage && Move.currentTarget != null){

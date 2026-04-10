@@ -25,7 +25,6 @@ public class Mage extends Player {
         speed = 35;
         dmgResistance = 0.13;
         loadMoves();
-        setWeapon(new ElementalCodex());
 
         originalAttack = attack;
     }

@@ -6,6 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed, shiftPressed;
     public boolean iPressed;  // Inventory key
+    public boolean cPressed;  // Character panel key
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -33,6 +34,9 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_I){
             iPressed = true;
         }
+        if(code == KeyEvent.VK_C){
+            cPressed = true;
+        }
         if(code == KeyEvent.VK_ESCAPE){
             // ESC handled separately in panels
         }
@@ -59,6 +63,9 @@ public class KeyHandler implements KeyListener {
         }
         if(code == KeyEvent.VK_I){
             iPressed = false;
+        }
+        if(code == KeyEvent.VK_C){
+            cPressed = false;
         }
     }
 }

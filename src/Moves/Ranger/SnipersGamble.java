@@ -15,6 +15,12 @@ public class SnipersGamble extends Move {
         description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 35% for this move";
     }
 
+    public SnipersGamble(boolean hasUnlocked) {
+        super("Sniper's Gamble", 50, TargetType.ENEMY);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 35% for this move";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Ranger && Move.currentTarget != null){

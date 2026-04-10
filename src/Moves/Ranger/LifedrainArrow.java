@@ -15,6 +15,12 @@ public class LifedrainArrow extends Move {
         description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
     }
 
+    public LifedrainArrow(boolean hasUnlocked){
+        super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES);
+        hasUnlocked = this.hasUnlocked();
+        description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Ranger && Move.currentTarget != null){

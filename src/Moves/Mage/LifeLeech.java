@@ -16,6 +16,12 @@ public class LifeLeech extends Move {
         description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
     }
 
+    public LifeLeech(boolean hasUnlocked) {
+        super("Life Leech", 30);
+        this.hasUnlocked = hasUnlocked;
+        description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
+    }
+
     @Override
     public <T> void execute(T Entity) {
         if(Entity instanceof Mage && Move.currentTarget != null){

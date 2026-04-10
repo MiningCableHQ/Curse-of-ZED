@@ -43,6 +43,10 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean inventoryOpen = false;
     private JFrame parentFrame;
 
+    // Character management
+    private CharacterPanel currentCharacterPanel;
+    private boolean characterOpen = false;
+
     /**
      * No-arg constructor for compatibility.
      * Creates a default Swordsman with a new KeyHandler.
@@ -127,13 +131,22 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Handle inventory key press
         if (keyH.iPressed) {
-            if (!inventoryOpen) {
+            if (!inventoryOpen && !characterOpen) {
                 openInventory();
-            } else {
-                // If inventory is already open, close it
+            } else if (inventoryOpen) {
                 closeInventory();
             }
             keyH.iPressed = false; // Reset to prevent multiple toggles
+        }
+
+        // Handle character panel key press
+        if (keyH.cPressed) {
+            if (!characterOpen && !inventoryOpen) {
+                openCharacter();
+            } else if (characterOpen) {
+                closeCharacter();
+            }
+            keyH.cPressed = false;
         }
 
         checkMapTransition();
@@ -193,6 +206,48 @@ public class GamePanel extends JPanel implements Runnable {
         this.requestFocusInWindow();
     }
 
+    /**
+     * Opens the character panel during exploration
+     */
+    private void openCharacter() {
+        if (parentFrame == null) {
+            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        }
+
+        characterOpen = true;
+
+        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
+                () -> {
+                    // Close character panel callback
+                    closeCharacter();
+                }
+        );
+
+        // Hide GamePanel and show CharacterPanel
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentCharacterPanel);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        currentCharacterPanel.requestFocusInWindow();
+    }
+
+    /**
+     * Closes the character panel and returns to GamePanel
+     */
+    public void closeCharacter() {
+        characterOpen = false;
+        currentCharacterPanel = null;
+
+        // Restore GamePanel
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
     public void checkMapTransition() {
         if (player == null) return;
 
@@ -211,7 +266,15 @@ public class GamePanel extends JPanel implements Runnable {
 
         // --- MAP 2 ---
         else if (currentMap == 1) {
-            // ... (previous left-exit code)
+            // EXIT LEFT -> TO MAP 1
+            if (player.worldX < tileSize) {
+                currentMap = 0;
+                tileM.loadMap("/maps/world01.txt");
+                aSetter.setObject();
+
+                player.worldX = worldWidth - (tileSize * 3);
+                player.worldY = tileSize * 10;
+            }
 
             // EXIT RIGHT -> TO MAP 3
             if (player.worldX > worldWidth - (tileSize * 1.5)) {
@@ -220,8 +283,8 @@ public class GamePanel extends JPanel implements Runnable {
                 aSetter.setObject();
 
                 // SPAWN ON MAP 3: Top-Left Corner
-                player.worldX = tileSize * 2; // 2 tiles from the left
-                player.worldY = tileSize * 2; // 2 tiles from the top
+                player.worldX = tileSize * 2;
+                player.worldY = tileSize * 2;
             }
         }
 
@@ -238,8 +301,6 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
     }
-
-
 
     @Override
     public void paintComponent(Graphics g) {

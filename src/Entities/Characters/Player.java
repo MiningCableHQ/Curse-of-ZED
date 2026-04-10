@@ -226,7 +226,7 @@ public abstract class Player extends Entity {
         double defenseIncrease = 3;
         double speedIncrease = 3;
 
-        //For unique class level up
+        // For unique class level up
         if (this instanceof Swordsman){
             hpIncrease = 300;
         } else if (this instanceof Ranger) {
@@ -265,11 +265,11 @@ public abstract class Player extends Entity {
     public void gainExp(int experience, int chapter) {
         if(canGainExp(chapter)){
             this.experience += experience;
-            while (this.experience >= this.expNeeded && level < 10) {//level cap
+            while (this.experience >= this.expNeeded && level < 10) {
                 levelUp();
             }
         }else{
-            //TODO Inform the player that he cannot gain exp
+            // TODO Inform the player that he cannot gain exp
         }
     }
 
@@ -297,22 +297,31 @@ public abstract class Player extends Entity {
         }
     }
 
-    //Getters and Setters
     public double getWeaponAttackBonus() {
         return (weapon != null) ? weapon.getAttack() : 0;
     }
+
+    // Getters and Setters
     public int getExperience(){
         return experience;
     }
+
     public int getExpNeeded(){
         return expNeeded;
     }
+
     public ArrayList<Move> getMoves(){
         return moves;
     }
+
+    public ArrayList<Move> getMoveset(){
+        return moveset;
+    }
+
     public Weapon getWeapon(){
         return weapon;
     }
+
     public Inventory getInventory(){
         return inventory;
     }

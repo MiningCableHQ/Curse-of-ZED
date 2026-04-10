@@ -92,6 +92,10 @@ public abstract class Move {
         return targetType;
     }
 
+    public boolean hasUnlocked() {
+        return hasUnlocked;
+    }
+
     public void setTargetType(TargetType targetType) {
         this.targetType = targetType;
     }
