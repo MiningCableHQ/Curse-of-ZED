@@ -28,17 +28,6 @@ public class LesserSoftening extends Consumable {
             useMessage = "Used Lesser Softening Potion on " + target.getName() + "! DEF reduced by " +
                     String.format("%.0f", reductionPercent) + "% (" +
                     String.format("%.1f", beforeDefense - afterDefense) + " points).";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeDefense = target.getDefense();
-
-            target.debuffDefense(defenseDebuffMultiplier);
-            double afterDefense = target.getDefense();
-            double reductionPercent = (1 - defenseDebuffMultiplier) * 100;
-
-            useMessage = "Used Lesser Softening Potion on " + target.getName() + "! DEF reduced by " +
-                    String.format("%.0f", reductionPercent) + "% (" +
-                    String.format("%.1f", beforeDefense - afterDefense) + " points).";
         }
     }
 }

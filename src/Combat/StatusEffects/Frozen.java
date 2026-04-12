@@ -7,6 +7,6 @@ public class Frozen extends StatusEffect{
 
     @Override
     public <T> void executeEffect(T Entity){
-        //TODO Skips a turn and removes the status
+        //TODO Cannot move until next cycle, then removes this status
     }
 }

@@ -7,6 +7,6 @@ public class Stun extends StatusEffect{
 
     @Override
     public <T> void executeEffect(T Entity){
-        //TODO reduces accuracy by 20% for 3 turns
+        //TODO reduces entity accuracy by 10% for 1 cycle
     }
 }

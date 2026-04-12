@@ -28,17 +28,6 @@ public class GreaterBlinding extends Consumable {
             useMessage = "Used Greater Blinding Potion on " + target.getName() + "! ACC reduced by " +
                     String.format("%.0f", reductionPercent) + "% (" +
                     String.format("%.2f", beforeAccuracy - afterAccuracy) + " points).";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeAccuracy = target.getAccuracy();
-
-            target.debuffAccuracy(accuracyDebuffMultiplier);
-            double afterAccuracy = target.getAccuracy();
-            double reductionPercent = (1 - accuracyDebuffMultiplier) * 100;
-
-            useMessage = "Used Greater Blinding Potion on " + target.getName() + "! ACC reduced by " +
-                    String.format("%.0f", reductionPercent) + "% (" +
-                    String.format("%.2f", beforeAccuracy - afterAccuracy) + " points).";
         }
     }
 }

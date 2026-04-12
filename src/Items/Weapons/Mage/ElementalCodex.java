@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class ElementalCodex extends Weapon {
     public ElementalCodex(){
-        super("ElementalCodex", "Description pls", 15, "/items/mage_weapon/elemental_codex.png");
+        super("ElementalCodex", "Chance to apply poison/burn/frozen debuff on an enemy", 15, "/items/mage_weapon/elemental_codex.png");
         loadImage("/items/mage_weapon/elemental_codex.png");
     }
 

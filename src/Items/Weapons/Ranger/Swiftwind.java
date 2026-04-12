@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Swiftwind extends Weapon {
     public Swiftwind() {
-        super("Swiftwind", "Description pls", 20, "/items/archer_weapon/swiftwind.png");
+        super("Swiftwind", "30% Chance to deal multiplied damage", 20, "/items/archer_weapon/swiftwind.png");
         loadImage("/items/archer_weapon/swiftwind.png");
     }
 

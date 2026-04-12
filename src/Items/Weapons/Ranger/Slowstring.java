@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Slowstring extends Weapon {
     public Slowstring() {
-        super("Slowstring", "Description pls", 10, "/items/archer_weapon/slowstring.png");
+        super("Slowstring", "Chance to apply a slow debuff on an enemy", 10, "/items/archer_weapon/slowstring.png");
         loadImage("/items/archer_weapon/slowstring.png");
     }
 

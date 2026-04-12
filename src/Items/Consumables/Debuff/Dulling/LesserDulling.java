@@ -28,17 +28,6 @@ public class LesserDulling extends Consumable {
             useMessage = "Used Lesser Dulling Potion on " + target.getName() + "! ATK reduced by " +
                     String.format("%.0f", reductionPercent) + "% (" +
                     String.format("%.1f", beforeAttack - afterAttack) + " points).";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeAttack = target.getAttack();
-
-            target.debuffAttack(attackDebuffMultiplier);
-            double afterAttack = target.getAttack();
-            double reductionPercent = (1 - attackDebuffMultiplier) * 100;
-
-            useMessage = "Used Lesser Dulling Potion on " + target.getName() + "! ATK reduced by " +
-                    String.format("%.0f", reductionPercent) + "% (" +
-                    String.format("%.1f", beforeAttack - afterAttack) + " points).";
         }
     }
 }

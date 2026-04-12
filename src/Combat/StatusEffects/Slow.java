@@ -7,6 +7,6 @@ public class Slow extends StatusEffect{
 
     @Override
     public <T> void executeEffect(T Entity){
-        //TODO reduces speed for 3 turns (subject to change / TBA)
+        //TODO skips a turn and removes this status
     }
 }

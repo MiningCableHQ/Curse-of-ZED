@@ -27,7 +27,7 @@ public class GreaterHealing extends Consumable {
             double actualHeal = afterHp - beforeHp;
 
             useMessage = "Used Greater Healing Potion on " + target.getName() + "! Restored " +
-                    String.format("%.1f", actualHeal) + " HP.";
+                    String.format("%.0f", actualHeal) + " HP.";
         }
     }
 }

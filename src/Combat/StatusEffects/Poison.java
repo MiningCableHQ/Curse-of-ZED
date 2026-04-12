@@ -7,6 +7,6 @@ public class Poison extends StatusEffect{
 
     @Override
     public <T> void executeEffect(T Entity){
-        //TODO 2% max hp is reduced per start of turn, lasts 10 turns
+        //TODO 60 hp is reduced per start of turn, lasts 5 entity turns
     }
 }

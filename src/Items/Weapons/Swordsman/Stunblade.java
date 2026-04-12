@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Stunblade extends Weapon {
     public Stunblade(){
-        super("Stunblade", "Description pls", 15, "/items/warrior_weapon/stunblade_sword.png");
+        super("Stunblade", "Chance to apply a stun debuff on an enemy", 15, "/items/warrior_weapon/stunblade_sword.png");
         loadImage("/items/warrior_weapon/stunblade_sword.png");
     }
 

@@ -28,17 +28,10 @@ public class LesserClumsiness extends Consumable {
             useMessage = "Used Lesser Clumsiness Potion on " + target.getName() + "! SPD reduced by " +
                     String.format("%.0f", reductionPercent) + "% (" +
                     String.format("%.1f", beforeSpeed - afterSpeed) + " points).";
-        } else if (Entity instanceof Entity) {
-            Entity target = (Entity) Entity;
-            double beforeSpeed = target.getSpeed();
-
-            target.debuffSpeed(speedDebuffMultiplier);
-            double afterSpeed = target.getSpeed();
-            double reductionPercent = (1 - speedDebuffMultiplier) * 100;
-
-            useMessage = "Used Lesser Clumsiness Potion on " + target.getName() + "! SPD reduced by " +
-                    String.format("%.0f", reductionPercent) + "% (" +
-                    String.format("%.1f", beforeSpeed - afterSpeed) + " points).";
         }
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// --- TODO: To be removed
+// ---------------------------------------------------------------------------------------------------------------------
