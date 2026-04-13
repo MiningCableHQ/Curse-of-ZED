@@ -17,7 +17,7 @@ public class Slow extends StatusEffect {
     public <T> void executeEffect(T Entity) {
         if (Entity instanceof Entity) {
             Entity target = (Entity) Entity;
-            // The effect is handled in Battle class - prevents movement
+
             System.out.println(target.getName() + " is Slowed and cannot move this turn!");
         }
     }
