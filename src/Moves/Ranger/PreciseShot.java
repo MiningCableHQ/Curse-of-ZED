@@ -1,5 +1,6 @@
 package Moves.Ranger;
 
+import Combat.StatusEffects.*;
 import Entities.Characters.Ranger;
 import Entities.Entity;
 import Items.Weapons.Weapon;
@@ -36,6 +37,13 @@ public class PreciseShot extends Move {
                 // Multiply sum to damage multiplier
                 double damage = totalATK * 1.50;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
+
+                //--- TEST ---
+                //enemy.addStatusEffect(new Poison(5));
+                //enemy.addStatusEffect(new Burn(1));
+                //Move.currentBattle.applyFrozen(enemy);
+                //Move.currentBattle.applyStun(enemy);
+                //Move.currentBattle.applySlow(enemy);
 
                 setDamageDealt(actualDamage);
                 setMessage(ranger.getName() + " used " + this.name + " on " + enemy.getName() +

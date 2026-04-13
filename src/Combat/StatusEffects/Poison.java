@@ -1,12 +1,29 @@
 package Combat.StatusEffects;
 
-public class Poison extends StatusEffect{
-    public Poison(){
-        super("Poison");
+import Entities.Entity;
+
+public class Poison extends StatusEffect {
+    private static final int DAMAGE_PER_TICK = 60;
+
+    public Poison() {
+        super("Poison", false);
+    }
+
+    public Poison(int duration) {
+        super("Poison", false);
+        this.duration = duration;
     }
 
     @Override
-    public <T> void executeEffect(T Entity){
-        //TODO 60 hp is reduced per start of turn, lasts 5 entity turns
+    public <T> void executeEffect(T Entity) {
+        if (Entity instanceof Entity) {
+            Entity target = (Entity) Entity;
+
+            double trueDamage = DAMAGE_PER_TICK;
+            double actualDamage = target.takeTrueDamage(trueDamage);
+
+            System.out.println(target.getName() + " takes " + (int)actualDamage +
+                    " poison damage! (" + duration + " turns remaining)");
+        }
     }
 }

@@ -17,10 +17,18 @@ public class Purific extends Consumable {
         if (Entity instanceof Entity) {
             Entity target = (Entity) Entity;
 
-            // TODO: Clear all status effects from the target
-            // This will be implemented when the status effect system is complete
+            //Store the number of status effects before clearing
+            int effectCount = target.getStatusEffects().size();
+            target.removeAllStatusEffects();
 
-            useMessage = "Used Purific Potion on " + target.getName() + "! All status effects have been cured.";
+            if (effectCount > 0) {
+                useMessage = "Used Purific Potion on " + target.getName() +
+                        "! Cured " + effectCount + " status effect" +
+                        (effectCount != 1 ? "s" : "") + ".";
+            } else {
+                useMessage = "Used Purific Potion on " + target.getName() +
+                        "! No status effects to cure.";
+            }
         }
     }
 }

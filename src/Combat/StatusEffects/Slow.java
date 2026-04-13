@@ -1,12 +1,24 @@
 package Combat.StatusEffects;
 
-public class Slow extends StatusEffect{
-    public Slow(){
-        super("Slow");
+import Entities.Entity;
+
+public class Slow extends StatusEffect {
+
+    public Slow() {
+        super("Slow", false); // Turn-based effect
+    }
+
+    public Slow(int duration) {
+        super("Slowed", false);
+        this.duration = duration;
     }
 
     @Override
-    public <T> void executeEffect(T Entity){
-        //TODO skips a turn and removes this status
+    public <T> void executeEffect(T Entity) {
+        if (Entity instanceof Entity) {
+            Entity target = (Entity) Entity;
+            // The effect is handled in Battle class - prevents movement
+            System.out.println(target.getName() + " is Slowed and cannot move this turn!");
+        }
     }
 }

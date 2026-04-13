@@ -1,6 +1,8 @@
 package Entities;
 
 import java.awt.Rectangle;
+
+import Combat.StatusEffects.StatusEffect;
 import Moves.Move;
 import java.util.*;
 
@@ -22,6 +24,10 @@ public abstract class Entity {
     public int solidAreaDefaultX, solidAreaDefaultY;
     public boolean collisionOn = false;
     public Move weapon;
+
+    //Status Effects
+    protected List<StatusEffect> statusEffects = new ArrayList<>();
+    protected List<StatusEffect> effectsToRemove = new ArrayList<>();
 
     //Entity Stats
     protected String name;
@@ -57,6 +63,65 @@ public abstract class Entity {
         hp -= actualDamage;
 
         return actualDamage;
+    }
+
+    public double takeTrueDamage(double damage) {
+        double actualDamage = Math.max(1, damage);
+        hp -= actualDamage;
+        if (hp < 0) hp = 0;
+        return actualDamage;
+    }
+
+    // Status Effect Management
+    public void     addStatusEffect(StatusEffect effect) {
+        // Check if already has this effect
+        for (StatusEffect existing : statusEffects) {
+            if (existing.getName().equals(effect.getName())) {
+                // Refresh duration instead of stacking
+                existing.setDuration(effect.getDuration());
+                System.out.println(name + "'s " + effect.getName() + " refreshed!");
+                return;
+            }
+        }
+        statusEffects.add(effect);
+        System.out.println(name + " is now " + effect.getName().toLowerCase() + "ed!");
+    }
+
+    public void removeStatusEffect(String effectName) {
+        statusEffects.removeIf(effect -> effect.getName().equals(effectName));
+    }
+
+    public void removeAllStatusEffects() {
+        if (!statusEffects.isEmpty()) {
+            int count = statusEffects.size();
+            statusEffects.clear();
+            System.out.println(name + " has been purified! Removed " + count + " status effects.");
+        }
+    }
+
+    public List<StatusEffect> getStatusEffects() {
+        return statusEffects;
+    }
+
+    public boolean hasStatusEffect(String effectName) {
+        return statusEffects.stream().anyMatch(e -> e.getName().equals(effectName));
+    }
+
+    // Process all status effects (called during turn/cycle)
+    public void processStatusEffects() {
+        effectsToRemove.clear();
+
+        for (StatusEffect effect : statusEffects) {
+            effect.executeEffect(this);
+            effect.reduceDuration();
+
+            if (effect.isExpired()) {
+                effectsToRemove.add(effect);
+                System.out.println(name + "'s " + effect.getName() + " has worn off!");
+            }
+        }
+
+        statusEffects.removeAll(effectsToRemove);
     }
 
     // Stat management methods

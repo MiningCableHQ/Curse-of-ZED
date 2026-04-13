@@ -17,6 +17,7 @@ import java.util.List;
 import Items.Item;
 import Main.InventoryPanel;
 import java.util.function.BiConsumer;
+import Combat.StatusEffects.StatusEffect;
 
 public class BattlePanel extends JPanel {
 
@@ -102,6 +103,9 @@ public class BattlePanel extends JPanel {
 
     // ── Item selection callback ───────────────────────────────────
     private BiConsumer<Item, Enemy> itemSelectionCallback;
+
+    // ── Status Effect Display ─────────────────────────────────────
+    private boolean showStatusEffects = true;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructors
@@ -840,8 +844,11 @@ public class BattlePanel extends JPanel {
             g2.drawString(expLine, tx, ty);
         }
 
+        // Player buffs and status effects
         if (showExp) {
             int tyOffset = 0;
+
+            // Player class buffs
             if (playerEntity instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) playerEntity;
                 int stacks = swordsman.getIronStanceStacks();
@@ -872,15 +879,28 @@ public class BattlePanel extends JPanel {
                     g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
                 }
             }
+
+            // Player status effects
+            List<Combat.StatusEffects.StatusEffect> playerEffects = playerEntity.getStatusEffects();
+            if (!playerEffects.isEmpty()) {
+                tyOffset += 12;
+                g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                for (Combat.StatusEffects.StatusEffect effect : playerEffects) {
+                    g2.setColor(new Color(255, 100, 100));
+                    g2.drawString(effect.toString(), tx, ty + tyOffset);
+                    tyOffset += 10;
+                }
+            }
         }
 
+        // Enemy buffs and status effects
         if (!showExp && enemies.size() > 0) {
             for (int i = 0; i < enemies.size(); i++) {
                 if (enemies.get(i).getName().equals(name)) {
                     Enemy enemy = enemies.get(i);
                     int tyOffset = 0;
 
-                    //DEF buffs for Final Boss
+                    // DEF buffs for Final Boss
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();
@@ -889,6 +909,18 @@ public class BattlePanel extends JPanel {
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
                             g2.drawString("DEF: +" + (stacks * 8), tx, ty + tyOffset);
+                        }
+                    }
+
+                    // Enemy status effects
+                    List<Combat.StatusEffects.StatusEffect> enemyEffects = enemy.getStatusEffects();
+                    if (!enemyEffects.isEmpty()) {
+                        tyOffset += 12;
+                        g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                        for (Combat.StatusEffects.StatusEffect effect : enemyEffects) {
+                            g2.setColor(new Color(255, 100, 100));
+                            g2.drawString(effect.toString(), tx, ty + tyOffset);
+                            tyOffset += 10;
                         }
                     }
                     break;

@@ -13,6 +13,9 @@ public abstract class Move {
     // Current target type shi
     public static Entity currentTarget;
 
+    // For frozen
+    public static Combat.Battle currentBattle;
+
     // Target type for this move
     protected TargetType targetType;
 

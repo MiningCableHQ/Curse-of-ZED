@@ -1,5 +1,9 @@
 package Combat;
 
+import Combat.StatusEffects.Frozen;
+import Combat.StatusEffects.Slow;
+import Combat.StatusEffects.StatusEffect;
+import Combat.StatusEffects.Stun;
 import Entities.Characters.Player;
 import Entities.Characters.Ranger;
 import Entities.Characters.Swordsman;
@@ -14,6 +18,8 @@ import javax.swing.*;
 import java.awt.Window;
 import java.util.*;
 import javax.swing.Timer;
+
+import static Combat.StatusEffects.Stun.ACCURACY_REDUCTION;
 
 public class Battle {
 
@@ -53,6 +59,14 @@ public class Battle {
     // Store the chosen move for the player's turn
     private Move chosenMove;
     private Enemy chosenTarget;
+
+    // Track status effects on entities for the current cycle
+    private List<Entity> frozenEntities = new ArrayList<>();
+    private List<Entity> stunnedEntities = new ArrayList<>();
+    private List<Entity> slowedEntities = new ArrayList<>();
+
+    // Store original accuracy for stunned entities to restore later
+    private java.util.Map<Entity, Double> originalAccuracyMap = new java.util.HashMap<>();
 
     // ─────────────────────────────────────────────────────────────
     // Constructor
@@ -212,6 +226,10 @@ public class Battle {
     private void startNewCycle() {
         if (!isBattleActive) return;
 
+        // CLEAR ALL FROZEN AND STUNNED STATUS EFFECTS AT START OF NEW CYCLE
+        clearAllFrozenEffects();
+        clearAllStunEffects();
+
         // Store original speeds (preserving any buffs)
         storeOriginalSpeeds();
 
@@ -305,30 +323,44 @@ public class Battle {
         }
     }
 
+    /** Process status effects for all entities at the start of their turn/cycle */
+    private void processEntityStatusEffects(Entity entity) {
+        if (entity.getHp() <= 0) return;
+
+        // Process all status effects for this entity
+        entity.processStatusEffects();
+
+        // Check if entity died from status effects
+        if (entity.getHp() <= 0) {
+            battlePanel.setBattleMessage(entity.getName() + " has been defeated by status effects!");
+            battlePanel.repaint();
+        }
+    }
+
     /** Process the next turn in the cycle */
     private void processNextTurn() {
         if (!isBattleActive) return;
 
         // Check if we've completed the current round
-//        if (currentTurnIndex >= currentTurnOrder.size()) {
-//            // End of round - deduct speed from all entities
-//            deductSpeedFromAll();
-//
-//            // Remove defeated entities from turn order for next round
-//            currentTurnOrder.removeIf(entity -> entity.getHp() < 1);
-//
-//            // Check if cycle should end
-//            if (shouldEndCycle()) {
-//                endCycle();
-//                return;
-//            } else {
-//                // Start new round within the same cycle
-//                currentTurnIndex = 0;
-//                calculateTurnOrder(); // Recalculate order with reduced speeds
-//                processNextTurn();
-//                return;
-//            }
-//        }
+        if (currentTurnIndex >= currentTurnOrder.size()) {
+            // End of round - deduct speed from all entities
+            deductSpeedFromAll();
+
+            // Remove defeated entities from turn order for next round
+            currentTurnOrder.removeIf(entity -> entity.getHp() < 1);
+
+            // Check if cycle should end
+            if (shouldEndCycle()) {
+                endCycle();
+                return;
+            } else {
+                // Start new round within the same cycle
+                currentTurnIndex = 0;
+                calculateTurnOrder();
+                processNextTurn();
+                return;
+            }
+        }
 
         Entity currentEntity = currentTurnOrder.get(currentTurnIndex);
 
@@ -340,6 +372,53 @@ public class Battle {
         }
 
         System.out.println("\n--- Turn: " + currentEntity.getName() + " ---");
+
+        // Process turn-based status effects BEFORE the entity acts
+        processTurnBasedStatusEffects(currentEntity);
+
+        // Check if entity died from status effects
+        if (currentEntity.getHp() < 1) {
+            battlePanel.setBattleMessage(currentEntity.getName() + " succumbed to their wounds!");
+            battlePanel.repaint();
+
+            if (currentEntity instanceof Player) {
+                endBattle(false);
+                return;
+            } else if (getAliveEnemies().isEmpty()) {
+                endBattle(true);
+                return;
+            }
+
+            currentTurnIndex++;
+            processNextTurn();
+            return;
+        }
+
+        // CHECK IF ENTITY IS FROZEN - skip entire turn
+        if (isFrozen(currentEntity)) {
+            battlePanel.setBattleMessage(currentEntity.getName() + " is Frozen and cannot act!");
+            battlePanel.repaint();
+
+            Timer frozenTimer = new Timer(800, ev -> moveToNextTurn());
+            frozenTimer.setRepeats(false);
+            frozenTimer.start();
+            return;
+        }
+
+        // CHECK IF ENTITY IS SLOWED - cannot move (but can still act? depends on your definition)
+        // If "cannot move" means cannot act at all, treat like frozen for 1 turn:
+        if (isSlowed(currentEntity)) {
+            battlePanel.setBattleMessage(currentEntity.getName() + " is Slowed and cannot move this turn!");
+            battlePanel.repaint();
+
+            // Remove slow after this skipped turn
+            removeSlow(currentEntity);
+
+            Timer slowTimer = new Timer(800, ev -> moveToNextTurn());
+            slowTimer.setRepeats(false);
+            slowTimer.start();
+            return;
+        }
 
         if (currentEntity instanceof Player) {
             startPlayerTurn();
@@ -397,6 +476,39 @@ public class Battle {
         }
     }
 
+    /** Process only cycle-based status effects */
+    private void processCycleBasedEffects(Entity entity) {
+        List<StatusEffect> effects = entity.getStatusEffects();
+        List<StatusEffect> toRemove = new ArrayList<>();
+
+        for (StatusEffect effect : effects) {
+            if (effect.isCycleBased()) {
+                // For Frozen, we just log the effect (actual skipping happens in turn processing)
+                if (effect.getName().equals("Frozen")) {
+                    System.out.println(entity.getName() + " is " + effect.getName() +
+                            " (" + effect.getDuration() + " cycles remaining)");
+                } else {
+                    effect.executeEffect(entity);
+                }
+                effect.reduceDuration();
+
+                if (effect.isExpired()) {
+                    toRemove.add(effect);
+                    System.out.println(entity.getName() + "'s " + effect.getName() + " has worn off!");
+                }
+            }
+        }
+
+        for (StatusEffect effect : toRemove) {
+            entity.removeStatusEffect(effect.getName());
+        }
+
+        if (entity.getHp() <= 0) {
+            battlePanel.setBattleMessage(entity.getName() + " has been defeated by status effects!");
+            battlePanel.repaint();
+        }
+    }
+
     /** Start player's turn - show menu and wait for input */
     private void startPlayerTurn() {
         if (!isBattleActive) return;
@@ -443,6 +555,9 @@ public class Battle {
             if (!isBattleActive) return;
 
             Move.currentTarget = player;
+            // mao ni bai
+            Move.currentBattle = this;
+            // -----
             enemyMove.execute(enemy);
             Move.currentTarget = null;
 
@@ -465,25 +580,11 @@ public class Battle {
     }
 
     /** Move to the next turn in the cycle */
+    /** Move to the next turn in the cycle */
     private void moveToNextTurn() {
         if (!isBattleActive) return;
 
         currentTurnIndex++;
-
-        if (currentTurnIndex >= currentTurnOrder.size()) {
-            deductSpeedFromAll();
-
-            currentTurnOrder.removeIf(entity -> entity.getHp() < 1);
-
-            if (shouldEndCycle()) {
-                endCycle();
-                return;
-            } else {
-                currentTurnIndex = 0;
-                calculateTurnOrder();
-            }
-        }
-
         isExecutingTurn = false;
         processNextTurn();
     }
@@ -661,6 +762,9 @@ public class Battle {
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
                     Move.currentTarget = currentTarget;
+                    // mao ni bai
+                    Move.currentBattle = this;
+                    // -----
                     move.execute(player);
                     Move.currentTarget = null;
                     battlePanel.setBattleMessage(move.getMessage());
@@ -715,6 +819,130 @@ public class Battle {
             });
             failTimer.setRepeats(false);
             failTimer.start();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // STATUS EFFECT METHODS
+    // ─────────────────────────────────────────────────────────────
+    /** Check if entity is frozen and cannot act */
+    private boolean isFrozen(Entity entity) {
+        return frozenEntities.contains(entity);
+    }
+
+    /** Apply frozen status to an entity */
+    public void applyFrozen(Entity entity) {
+        if (!frozenEntities.contains(entity)) {
+            frozenEntities.add(entity);
+            entity.addStatusEffect(new Frozen());
+            System.out.println(entity.getName() + " has been FROZEN for the rest of this cycle!");
+            battlePanel.setBattleMessage(entity.getName() + " is Frozen and cannot act this cycle!");
+            battlePanel.repaint();
+        }
+    }
+
+    /** Clear all frozen effects at the start of a new cycle */
+    private void clearAllFrozenEffects() {
+        if (!frozenEntities.isEmpty()) {
+            for (Entity entity : frozenEntities) {
+                entity.removeStatusEffect("Frozen");
+                System.out.println(entity.getName() + " is no longer Frozen!");
+                battlePanel.setBattleMessage(entity.getName() + " has thawed out!");
+                battlePanel.repaint();
+            }
+            frozenEntities.clear();
+        }
+    }
+
+    /** Process turn-based status effects for a single entity */
+    private void processTurnBasedStatusEffects(Entity entity) {
+        List<StatusEffect> effects = entity.getStatusEffects();
+        List<StatusEffect> toRemove = new ArrayList<>();
+
+        for (StatusEffect effect : effects) {
+            if (!effect.isCycleBased()) { // Turn-based effects
+                effect.executeEffect(entity);
+                effect.reduceDuration();
+
+                if (effect.isExpired()) {
+                    toRemove.add(effect);
+                    System.out.println(entity.getName() + "'s " + effect.getName() + " has worn off!");
+                    battlePanel.setBattleMessage(entity.getName() + "'s " + effect.getName() + " has worn off!");
+                    battlePanel.repaint();
+                }
+            }
+        }
+
+        for (StatusEffect effect : toRemove) {
+            entity.removeStatusEffect(effect.getName());
+        }
+    }
+
+    /** Apply stun to an entity (reduces accuracy by 10% for current cycle) */
+    public void applyStun(Entity entity) {
+        if (!stunnedEntities.contains(entity)) {
+            stunnedEntities.add(entity);
+
+            // Store original accuracy
+            originalAccuracyMap.put(entity, entity.getAccuracy());
+
+            // Apply accuracy reduction (10% of original, not flat 10%)
+            double newAccuracy = entity.getAccuracy() * (1 - ACCURACY_REDUCTION);
+            entity.setAccuracy(newAccuracy);
+
+            entity.addStatusEffect(new Stun());
+            System.out.println(entity.getName() + " has been STUNNED! Accuracy reduced by 10% for this cycle!");
+            battlePanel.setBattleMessage(entity.getName() + " is Stunned! Accuracy reduced!");
+            battlePanel.repaint();
+        }
+    }
+
+    /** Check if an entity is stunned */
+    private boolean isStunned(Entity entity) {
+        return stunnedEntities.contains(entity);
+    }
+
+    /** Clear all stun effects at the start of a new cycle (restore accuracy) */
+    private void clearAllStunEffects() {
+        if (!stunnedEntities.isEmpty()) {
+            for (Entity entity : stunnedEntities) {
+                // Restore original accuracy
+                Double originalAccuracy = originalAccuracyMap.get(entity);
+                if (originalAccuracy != null) {
+                    entity.setAccuracy(originalAccuracy);
+                }
+                entity.removeStatusEffect("Stun");
+                System.out.println(entity.getName() + "'s accuracy has been restored!");
+                battlePanel.setBattleMessage(entity.getName() + " is no longer Stunned!");
+                battlePanel.repaint();
+            }
+            stunnedEntities.clear();
+            originalAccuracyMap.clear();
+        }
+    }
+
+    /** Apply slow to an entity (prevents movement for 1 turn) */
+    public void applySlow(Entity entity) {
+        if (!slowedEntities.contains(entity)) {
+            slowedEntities.add(entity);
+            entity.addStatusEffect(new Slow(1));
+            System.out.println(entity.getName() + " has been SLOWED! Cannot move this turn!");
+            battlePanel.setBattleMessage(entity.getName() + " is Slowed and cannot move this turn!");
+            battlePanel.repaint();
+        }
+    }
+
+    /** Check if an entity is slowed */
+    private boolean isSlowed(Entity entity) {
+        return slowedEntities.contains(entity);
+    }
+
+    /** Remove slow effect from an entity after their turn */
+    private void removeSlow(Entity entity) {
+        if (slowedEntities.contains(entity)) {
+            slowedEntities.remove(entity);
+            entity.removeStatusEffect("Slow");
+            System.out.println(entity.getName() + " is no longer Slowed!");
         }
     }
 
