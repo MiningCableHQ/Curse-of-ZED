@@ -8,7 +8,7 @@ public class GreaterSoftening extends Consumable {
     protected double defenseDebuffMultiplier;
 
     public GreaterSoftening() {
-        super("Greater Softening Potion", "Reduces enemy DEF by 18%");
+        super("Greater Softening Potion", "Reduces enemy DEF by 18%", 120);
         defenseDebuffMultiplier = 0.82;
         useMessage = "Used Greater Softening Potion!";
 

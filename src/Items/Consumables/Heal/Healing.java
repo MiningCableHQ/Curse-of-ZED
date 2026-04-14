@@ -7,7 +7,7 @@ public class Healing extends Consumable {
     protected double healingAmount;
 
     public Healing(){
-        super("Healing Potion", "Restores (20% MaxHP + 500) HP");
+        super("Healing Potion", "Restores (20% MaxHP + 500) HP", 100);
         healingAmount = 0.20;
         useMessage = "Used Healing Potion!";
 

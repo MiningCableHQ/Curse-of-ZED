@@ -11,17 +11,32 @@ public abstract class Item {
     protected BufferedImage image;
     protected String useMessage;
 
+    // Shop-related fields
+    protected int price;
+    protected int sellingPrice;
+
     public enum TargetType {
         SELF,
         ENEMY,
         ALL_ENEMIES
     }
 
-    // Constructor
+    // Constructor without price (for existing items)
     public Item(String name, String description) {
         this.name = name;
         this.description = description;
         this.quantity = 0;
+        this.price = 0;
+        this.sellingPrice = 0;
+    }
+
+    // Constructor with price (for shop items)
+    public Item(String name, String description, int price) {
+        this.name = name;
+        this.description = description;
+        this.quantity = 0;
+        this.price = price;
+        this.sellingPrice = (int)(price - (price * 0.20)); // 20% less when selling
     }
 
     public TargetType getTargetType() {
@@ -98,7 +113,15 @@ public abstract class Item {
         return quantity;
     }
 
-    // Setter for quantity (if needed)
+    public int getPrice() {
+        return price;
+    }
+
+    public int getSellingPrice() {
+        return sellingPrice;
+    }
+
+    // Setters
     public void setQuantity(int quantity) {
         this.quantity = Math.max(0, quantity);
     }
@@ -113,5 +136,10 @@ public abstract class Item {
 
     public double getTier() {
         return tier;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+        this.sellingPrice = (int)(price - (price * 0.20));
     }
 }

@@ -41,6 +41,9 @@ public abstract class Player extends Entity {
     protected ArrayList<Move> moveset;
     protected Weapon weapon;
 
+    // Money for shop system
+    protected int money;
+
     // Idle animation arrays
     protected BufferedImage[] idleLeft = new BufferedImage[5];
     protected BufferedImage[] idleRight = new BufferedImage[5];
@@ -58,12 +61,14 @@ public abstract class Player extends Entity {
         setDefaultValues();
         getPlayerImage();
 
+        money = 0;  // Initialize money
+
         level = 1;
         experience = 0;
         expNeeded = 100;
         accuracy = 0.95;
         inventory = new Inventory();
-        moves =  new ArrayList<>();
+        moves = new ArrayList<>();
         moveset = new ArrayList<>();
 
         loadInventory();
@@ -78,6 +83,7 @@ public abstract class Player extends Entity {
         direction = "right";
         isMoving = false;
     }
+
     public abstract void getPlayerImage();
 
     public void update() {
@@ -216,6 +222,7 @@ public abstract class Player extends Entity {
         inventory.addItem(new Unyielding());
     }
 
+    // KEEP YOUR LEVEL UP SYSTEM (with stat increases)
     public void levelUp(){
         level++;
         experience -= expNeeded;
@@ -299,6 +306,19 @@ public abstract class Player extends Entity {
 
     public double getWeaponAttackBonus() {
         return (weapon != null) ? weapon.getAttack() : 0;
+    }
+
+    // Money methods for shop system
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
+    public void addMoney(int money) {
+        this.money += money;
     }
 
     // Getters and Setters

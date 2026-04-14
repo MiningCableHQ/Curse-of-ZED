@@ -8,7 +8,7 @@ public class Hardening extends Consumable {
     protected double defenseBuffAmount;
 
     public Hardening(){
-        super("Hardening Potion", "Increases DEF by 80");
+        super("Hardening Potion", "Increases DEF by 80", 60);
         defenseBuffAmount = 80;
         useMessage = "Used Hardening Potion!";
 

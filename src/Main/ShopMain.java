@@ -5,6 +5,7 @@ import Entities.Characters.Player;
 import Entities.Characters.Ranger;
 import Entities.Characters.Swordsman;
 import Entities.Entity;
+import Entities.NPCs.Shopkeeper;
 import Main.KeyHandler;
 
 import javax.swing.*;
@@ -37,12 +38,12 @@ public class ShopMain {
 
         GamePanel gp = new GamePanel();
 
-        // Create a dummy player (Swordsman)
+        // Create a dummy player (you can change this to any class)
         Player player = new Mage(gp, new KeyHandler());
         player.setDefaultValues();
 
-        // Create a dummy shopkeeper (simple Entity extension)
-        Entity shopkeeper = new Ranger(gp, new KeyHandler());
+        // Create a shopkeeper using the proper Shopkeeper class
+        Shopkeeper shopkeeper = new Shopkeeper("Shopkeeper");
 
         // Create the shop panel
         ShopPanel shopPanel = new ShopPanel(frame, player, shopkeeper, () -> {

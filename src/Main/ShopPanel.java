@@ -1,10 +1,12 @@
 package Main;
 
+import Entities.NPCs.Shopkeeper;
 import Entities.Characters.Player;
 import Entities.Characters.Swordsman;
 import Entities.Characters.Ranger;
 import Entities.Characters.Mage;
 import Entities.Entity;
+import Items.Item;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,8 +16,13 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ShopPanel extends JPanel {
 
@@ -32,7 +39,10 @@ public class ShopPanel extends JPanel {
     private static final Color PARCH_BORDER = new Color(80, 38, 2, 230);
     private static final Color TEXT_DARK = new Color(60, 30, 5);
     private static final Color TEXT_GOLD = new Color(252, 218, 72);
+    private static final Color TEXT_GREEN = new Color(79, 163, 32);
+    private static final Color TEXT_LIGHT_GREEN = new Color(142, 220, 91);
     private static final Color HOVER_GOLD = new Color(252, 218, 72);
+    private static final Color STAT_HP = new Color(220, 80, 80);
 
     // Gold Button Colors
     private static final Color BTN_GOLD_NORMAL = new Color(238, 190, 28);
@@ -79,8 +89,11 @@ public class ShopPanel extends JPanel {
     // Entity References
     private final JFrame parentFrame;
     private final Player player;
-    private final Entity shopkeeper;
+    private final Shopkeeper shopkeeper;
     private final Runnable onBackPressed;
+
+    // Currency tracking
+    private int playerGold = 5000;
 
     // UI Components
     private JPanel playerBox;
@@ -88,6 +101,17 @@ public class ShopPanel extends JPanel {
     private JPanel messageBox;
     private GoldButton backButton;
     private JLabel messageLabel;
+
+    // Player Inventory Grid
+    private JLabel currencyLabel;
+    private JPanel playerGrid;
+    private JScrollPane playerScrollPane;
+    private ArrayList<ItemSlot> playerItemSlots = new ArrayList<>();
+
+    // Shop Inventory Grid
+    private JPanel shopGrid;
+    private JScrollPane shopScrollPane;
+    private ArrayList<ItemSlot> shopItemSlots = new ArrayList<>();
 
     // Player Animation
     private BufferedImage[] playerIdleFrames = new BufferedImage[5];
@@ -105,7 +129,7 @@ public class ShopPanel extends JPanel {
     private BufferedImage backgroundImage;
 
     // Constructor
-    public ShopPanel(JFrame parentFrame, Player player, Entity shopkeeper, Runnable onBackPressed) {
+    public ShopPanel(JFrame parentFrame, Player player, Shopkeeper shopkeeper, Runnable onBackPressed) {
         this.parentFrame = parentFrame;
         this.player = player;
         this.shopkeeper = shopkeeper;
@@ -116,6 +140,16 @@ public class ShopPanel extends JPanel {
         setOpaque(true);
         setFocusable(true);
 
+        // Generate shop based on player level
+        shopkeeper.generateShop(player);
+
+        // Sync with player's actual money if available
+        try {
+            playerGold = player.getMoney();
+        } catch (Exception e) {
+            playerGold = 5000; // Fallback test value
+        }
+
         loadTitleFont();
         loadBackground();
         loadPlayerAnimations();
@@ -123,6 +157,11 @@ public class ShopPanel extends JPanel {
         initUI();
         startAnimations();
         startTitleAnimation();
+
+        // Refresh both grids
+        refreshPlayerShopGrid();
+        refreshShopGrid();
+        updateCurrencyDisplay();
 
         addKeyListener(new KeyAdapter() {
             @Override
@@ -287,17 +326,13 @@ public class ShopPanel extends JPanel {
                     Math.min(255, (int) (baseColor.getGreen() * brightness)),
                     Math.min(255, (int) (baseColor.getBlue() * brightness))
             );
-            playerIdleFrames[i] = createPlaceholderImage(frameColor, initial, 96);
+            playerIdleFrames[i] = createPlaceholderImage(frameColor, initial, 67);
         }
     }
 
     private void loadShopkeeperAnimations() {
-        if (shopkeeper == null) {
-            createShopkeeperPlaceholderFrames();
-            return;
-        }
-
-        String className = getShopkeeperClassName();
+        // Use archer/ranger sprites as shopkeeper placeholder
+        String className = "archer";  // Ranger uses archer folder
         boolean anyFrameLoaded = false;
 
         for (int i = 0; i < 5; i++) {
@@ -315,13 +350,6 @@ public class ShopPanel extends JPanel {
         }
     }
 
-    private String getShopkeeperClassName() {
-        if (shopkeeper instanceof Swordsman) return "swordsman";
-        if (shopkeeper instanceof Ranger) return "archer";
-        if (shopkeeper instanceof Mage) return "mage";
-        return shopkeeper.getClass().getSimpleName().toLowerCase();
-    }
-
     private void createShopkeeperPlaceholderFrames() {
         Color baseColor = new Color(139, 119, 101); // Warm brown
         String initial = "S";
@@ -333,7 +361,7 @@ public class ShopPanel extends JPanel {
                     Math.min(255, (int) (baseColor.getGreen() * brightness)),
                     Math.min(255, (int) (baseColor.getBlue() * brightness))
             );
-            shopkeeperIdleFrames[i] = createPlaceholderImage(frameColor, initial, 96);
+            shopkeeperIdleFrames[i] = createPlaceholderImage(frameColor, initial, 67);
         }
     }
 
@@ -368,7 +396,7 @@ public class ShopPanel extends JPanel {
                 currentPlayerFrame = (currentPlayerFrame + 1) % 5;
                 SwingUtilities.invokeLater(() -> {
                     if (playerSpriteLabel != null && playerIdleFrames[currentPlayerFrame] != null) {
-                        Image scaled = playerIdleFrames[currentPlayerFrame].getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+                        Image scaled = playerIdleFrames[currentPlayerFrame].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
                         playerSpriteLabel.setIcon(new ImageIcon(scaled));
                     }
                 });
@@ -383,7 +411,7 @@ public class ShopPanel extends JPanel {
                 currentShopkeeperFrame = (currentShopkeeperFrame + 1) % 5;
                 SwingUtilities.invokeLater(() -> {
                     if (shopkeeperSpriteLabel != null && shopkeeperIdleFrames[currentShopkeeperFrame] != null) {
-                        Image scaled = shopkeeperIdleFrames[currentShopkeeperFrame].getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+                        Image scaled = shopkeeperIdleFrames[currentShopkeeperFrame].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
                         shopkeeperSpriteLabel.setIcon(new ImageIcon(scaled));
                     }
                 });
@@ -462,10 +490,10 @@ public class ShopPanel extends JPanel {
         // Player sprite - LEFT side
         playerSpriteLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
-            Image scaled = playerIdleFrames[0].getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+            Image scaled = playerIdleFrames[0].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
             playerSpriteLabel.setIcon(new ImageIcon(scaled));
         }
-        playerSpriteLabel.setBounds(20, 20, 96, 96);
+        playerSpriteLabel.setBounds(20, 20, 67, 67);
         playerSpriteLabel.setHorizontalAlignment(SwingConstants.CENTER);
         playerSpriteLabel.setVerticalAlignment(SwingConstants.CENTER);
         playerBox.add(playerSpriteLabel);
@@ -476,20 +504,94 @@ public class ShopPanel extends JPanel {
         inventoryLabel.setFont(FONT_NAME);
         inventoryLabel.setForeground(TEXT_GOLD);
         inventoryLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        inventoryLabel.setBounds(130, 55, 320, 30);
+        inventoryLabel.setBounds(105, 40, 320, 30);
         playerBox.add(inventoryLabel);
 
-        // Space below reserved for future item grid
+        // ===== CURRENCY DISPLAY - TOP RIGHT =====
+        currencyLabel = new JLabel("$0", SwingConstants.RIGHT);
+        currencyLabel.setFont(FONT_NAME);
+        currencyLabel.setForeground(TEXT_LIGHT_GREEN);
+        currencyLabel.setBounds(330, 40, 120, 30);
+        currencyLabel.setOpaque(false);
+        playerBox.add(currencyLabel);
+        // ===== END CURRENCY DISPLAY =====
+
+        // ===== PLAYER INVENTORY GRID (WITH WRAPPING) =====
+        playerGrid = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                if (getLayout() instanceof FlowLayout) {
+                    FlowLayout layout = (FlowLayout) getLayout();
+                    int hgap = layout.getHgap();
+                    int vgap = layout.getVgap();
+
+                    // Available width for items (scroll pane width minus padding)
+                    int targetWidth = 430 - 20; // 430 is scroll pane width, 20 for padding
+
+                    int currentRowWidth = 0;
+                    int currentRowHeight = 0;
+                    int totalHeight = 0;
+                    int componentCount = getComponentCount();
+
+                    for (int i = 0; i < componentCount; i++) {
+                        Component comp = getComponent(i);
+                        if (!comp.isVisible()) continue;
+
+                        Dimension pref = comp.getPreferredSize();
+
+                        // Check if this component would overflow current row
+                        if (currentRowWidth + pref.width + (currentRowWidth > 0 ? hgap : 0) > targetWidth && currentRowWidth > 0) {
+                            // Move to next row
+                            totalHeight += currentRowHeight + vgap;
+                            currentRowWidth = 0;
+                            currentRowHeight = 0;
+                        }
+
+                        // Add component to current row
+                        currentRowWidth += pref.width + (currentRowWidth > 0 ? hgap : 0);
+                        currentRowHeight = Math.max(currentRowHeight, pref.height);
+                    }
+
+                    // Add last row height
+                    totalHeight += currentRowHeight;
+
+                    // Add padding
+                    totalHeight += 10;
+
+                    return new Dimension(targetWidth, Math.max(totalHeight, 50));
+                }
+                return super.getPreferredSize();
+            }
+        };
+        playerGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        playerGrid.setOpaque(false);
+
+        playerScrollPane = new JScrollPane(playerGrid);
+        playerScrollPane.setOpaque(false);
+        playerScrollPane.getViewport().setOpaque(false);
+        playerScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        playerScrollPane.setBounds(20, 100, 430, 340);
+        playerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        playerScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        // Style the vertical scrollbar
+        JScrollBar verticalBar = playerScrollPane.getVerticalScrollBar();
+        verticalBar.setBackground(new Color(60, 40, 20));
+        verticalBar.setForeground(new Color(200, 160, 100));
+        verticalBar.setUnitIncrement(85);
+        verticalBar.setBlockIncrement(255);
+
+        playerBox.add(playerScrollPane);
     }
 
     private void setupShopBox() {
         // Shopkeeper sprite - RIGHT side
         shopkeeperSpriteLabel = new JLabel();
         if (shopkeeperIdleFrames[0] != null) {
-            Image scaled = shopkeeperIdleFrames[0].getScaledInstance(96, 96, Image.SCALE_SMOOTH);
+            Image scaled = shopkeeperIdleFrames[0].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
             shopkeeperSpriteLabel.setIcon(new ImageIcon(scaled));
         }
-        shopkeeperSpriteLabel.setBounds(SHOP_BOX_W - 116, 20, 96, 96);
+        shopkeeperSpriteLabel.setBounds(SHOP_BOX_W - 86, 20, 67, 67);
         shopkeeperSpriteLabel.setHorizontalAlignment(SwingConstants.CENTER);
         shopkeeperSpriteLabel.setVerticalAlignment(SwingConstants.CENTER);
         shopBox.add(shopkeeperSpriteLabel);
@@ -500,10 +602,67 @@ public class ShopPanel extends JPanel {
         shopLabel.setFont(FONT_NAME);
         shopLabel.setForeground(TEXT_GOLD);
         shopLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        shopLabel.setBounds(20, 55, SHOP_BOX_W - 150, 30);
+        shopLabel.setBounds(45, 40, SHOP_BOX_W - 150, 30);
         shopBox.add(shopLabel);
 
-        // Space below reserved for future shop items
+        // ===== SHOP INVENTORY GRID (WITH WRAPPING) =====
+        shopGrid = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                if (getLayout() instanceof FlowLayout) {
+                    FlowLayout layout = (FlowLayout) getLayout();
+                    int hgap = layout.getHgap();
+                    int vgap = layout.getVgap();
+
+                    int targetWidth = 454 - 20;
+
+                    int currentRowWidth = 0;
+                    int currentRowHeight = 0;
+                    int totalHeight = 0;
+                    int componentCount = getComponentCount();
+
+                    for (int i = 0; i < componentCount; i++) {
+                        Component comp = getComponent(i);
+                        if (!comp.isVisible()) continue;
+
+                        Dimension pref = comp.getPreferredSize();
+
+                        if (currentRowWidth + pref.width + (currentRowWidth > 0 ? hgap : 0) > targetWidth && currentRowWidth > 0) {
+                            totalHeight += currentRowHeight + vgap;
+                            currentRowWidth = 0;
+                            currentRowHeight = 0;
+                        }
+
+                        currentRowWidth += pref.width + (currentRowWidth > 0 ? hgap : 0);
+                        currentRowHeight = Math.max(currentRowHeight, pref.height);
+                    }
+
+                    totalHeight += currentRowHeight;
+                    totalHeight += 10;
+
+                    return new Dimension(targetWidth, Math.max(totalHeight, 50));
+                }
+                return super.getPreferredSize();
+            }
+        };
+        shopGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        shopGrid.setOpaque(false);
+
+        shopScrollPane = new JScrollPane(shopGrid);
+        shopScrollPane.setOpaque(false);
+        shopScrollPane.getViewport().setOpaque(false);
+        shopScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        shopScrollPane.setBounds(20, 100, 454, 300);
+        shopScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        shopScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        JScrollBar verticalBar = shopScrollPane.getVerticalScrollBar();
+        verticalBar.setBackground(new Color(60, 40, 20));
+        verticalBar.setForeground(new Color(200, 160, 100));
+        verticalBar.setUnitIncrement(85);
+        verticalBar.setBlockIncrement(255);
+
+        shopBox.add(shopScrollPane);
     }
 
     private void setupMessageBox() {
@@ -513,6 +672,756 @@ public class ShopPanel extends JPanel {
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         messageLabel.setBounds(20, 25, MSG_BOX_W - 40, 50);
         messageBox.add(messageLabel);
+    }
+
+    /**
+     * Updates the currency display with the player's current gold.
+     */
+    private void updateCurrencyDisplay() {
+        if (currencyLabel != null) {
+            // Try to sync with player's actual money first
+            try {
+                java.lang.reflect.Method getMoney = player.getClass().getMethod("getMoney");
+                playerGold = (int) getMoney.invoke(player);
+            } catch (Exception e) {
+                // Keep using local playerGold
+            }
+            currencyLabel.setText("$" + playerGold);
+        }
+    }
+
+    /**
+     * Shows sell confirmation dialog for an item.
+     */
+    private void showSellConfirm(Item item, int defaultQty) {
+        String message = "Sell " + item.getName() + "?";
+
+        showParchmentDialog("Sell Item", message, "Yes", "No", () -> {
+            if (defaultQty > 1) {
+                showSellQuantityDialog(item, defaultQty);
+            } else {
+                executeSell(item, 1);
+            }
+        });
+    }
+
+    /**
+     * Shows quantity selection dialog for selling multiple items.
+     */
+    private void showSellQuantityDialog(Item item, int maxQty) {
+        JDialog dialog = new JDialog(parentFrame, "Sell Quantity", true);
+        dialog.setUndecorated(true);
+        dialog.setSize(400, 220);
+        dialog.setLocationRelativeTo(parentFrame);
+
+        // Make dialog draggable
+        final Point[] dragPoint = {null};
+        JPanel titleBar = new JPanel();
+        titleBar.setBackground(new Color(60, 40, 20));
+        titleBar.setBounds(0, 0, 400, 25);
+        titleBar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                dragPoint[0] = e.getPoint();
+            }
+        });
+        titleBar.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (dragPoint[0] != null) {
+                    Point p = dialog.getLocation();
+                    dialog.setLocation(p.x + e.getX() - dragPoint[0].x, p.y + e.getY() - dragPoint[0].y);
+                }
+            }
+        });
+
+        JPanel contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
+                        new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
+                        new Color[]{
+                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
+                                PARCH_WARM, PARCH_TAN, PARCH_TOP
+                        }));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+
+                g2.setColor(PARCH_BORDER);
+                g2.setStroke(new BasicStroke(3.0f));
+                g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
+
+                g2.dispose();
+            }
+        };
+        contentPane.setLayout(null);
+        contentPane.setOpaque(false);
+        contentPane.add(titleBar);
+        dialog.setContentPane(contentPane);
+
+        // Title
+        JLabel titleLabel = new JLabel("Sell " + item.getName() + "?");
+        titleLabel.setFont(FONT_DIALOG);
+        titleLabel.setForeground(TEXT_DARK);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setBounds(20, 30, 360, 25);
+        contentPane.add(titleLabel);
+
+        // ===== CENTERED CONTROL GROUP =====
+        // Total group width: 60 + 40 + 40 + 40 + 24 (gaps) = 204px
+        // Centered starting X: (400 - 204) / 2 = 98
+
+        JTextField qtyField = new JTextField("1");
+        qtyField.setFont(FONT_STAT);
+        qtyField.setHorizontalAlignment(SwingConstants.CENTER);
+        qtyField.setBounds(98, 85, 60, 40);
+        qtyField.setBackground(new Color(255, 255, 220));
+        qtyField.setForeground(TEXT_DARK);
+        qtyField.setBorder(BorderFactory.createLineBorder(PARCH_BORDER, 1));
+        contentPane.add(qtyField);
+
+        // Automatically select all text for easy overwriting
+        SwingUtilities.invokeLater(() -> qtyField.selectAll());
+
+        // Up button
+        GoldButton upBtn = new GoldButton("▲");
+        upBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        upBtn.setMargin(new Insets(0, 0, 0, 0));
+        upBtn.setBounds(166, 85, 40, 40);  // 98 + 60 + 8
+        upBtn.setContentAreaFilled(false);
+        upBtn.addActionListener(e -> {
+            try {
+                int val = Integer.parseInt(qtyField.getText());
+                if (val < maxQty) {
+                    val++;
+                    qtyField.setText(String.valueOf(val));
+                }
+            } catch (NumberFormatException ex) {
+                qtyField.setText("1");
+            }
+        });
+        contentPane.add(upBtn);
+
+        // Down button
+        GoldButton downBtn = new GoldButton("▼");
+        downBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        downBtn.setMargin(new Insets(0, 0, 0, 0));
+        downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
+        downBtn.setContentAreaFilled(false);
+        downBtn.addActionListener(e -> {
+            try {
+                int val = Integer.parseInt(qtyField.getText());
+                if (val > 1) {
+                    val--;
+                    qtyField.setText(String.valueOf(val));
+                }
+            } catch (NumberFormatException ex) {
+                qtyField.setText("1");
+            }
+        });
+        contentPane.add(downBtn);
+
+        // MAX button
+        GoldButton maxBtn = new GoldButton("MAX");
+        maxBtn.setFont(new Font("Arial", Font.BOLD, 11));
+        maxBtn.setMargin(new Insets(0, 0, 0, 0));
+        maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
+        maxBtn.setContentAreaFilled(false);
+        maxBtn.addActionListener(e -> {
+            qtyField.setText(String.valueOf(maxQty));
+        });
+        contentPane.add(maxBtn);
+
+        // Max quantity hint
+        JLabel maxLabel = new JLabel("(Max: " + maxQty + ")");
+        maxLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
+        maxLabel.setForeground(new Color(100, 70, 40));
+        maxLabel.setBounds(110, 130, 100, 15);
+        contentPane.add(maxLabel);
+
+        // Earnings label
+        JLabel earningsLabel = new JLabel();
+        earningsLabel.setFont(FONT_STAT);
+        earningsLabel.setForeground(TEXT_GREEN);
+        earningsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        earningsLabel.setBounds(45, 125, 360, 20);
+        contentPane.add(earningsLabel);
+
+        // Update earnings label function
+        Runnable updateEarnings = () -> {
+            try {
+                int qty = Integer.parseInt(qtyField.getText());
+                if (qty < 1) qty = 1;
+                if (qty > maxQty) qty = maxQty;
+                int total = item.getSellingPrice() * qty;
+                earningsLabel.setText("Earnings: $" + total);
+            } catch (NumberFormatException ex) {
+                earningsLabel.setText("Earnings: $0");
+            }
+        };
+
+        // Document listener for text field
+        qtyField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { updateEarnings.run(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { updateEarnings.run(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { updateEarnings.run(); }
+        });
+
+        // Focus listener to clamp values
+        qtyField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                try {
+                    int val = Integer.parseInt(qtyField.getText());
+                    if (val < 1) val = 1;
+                    if (val > maxQty) val = maxQty;
+                    qtyField.setText(String.valueOf(val));
+                } catch (NumberFormatException ex) {
+                    qtyField.setText("1");
+                }
+                updateEarnings.run();
+            }
+        });
+
+        updateEarnings.run();
+
+        // Sell button
+        GoldButton sellBtn = new GoldButton("Sell");
+        sellBtn.setBounds(80, 155, 100, 35);
+        sellBtn.addActionListener(e -> {
+            try {
+                int qty = Integer.parseInt(qtyField.getText());
+                if (qty < 1) qty = 1;
+                if (qty > maxQty) qty = maxQty;
+                dialog.dispose();
+                executeSell(item, qty);
+            } catch (NumberFormatException ex) {
+                dialog.dispose();
+                executeSell(item, 1);
+            }
+        });
+        contentPane.add(sellBtn);
+
+        // Cancel button
+        GoldButton cancelBtn = new GoldButton("Cancel");
+        cancelBtn.setBounds(220, 155, 100, 35);
+        cancelBtn.addActionListener(e -> dialog.dispose());
+        contentPane.add(cancelBtn);
+
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Shows quantity selection dialog for buying items.
+     */
+    private void showBuyQuantityDialog(Item item) {
+        JDialog dialog = new JDialog(parentFrame, "Buy Quantity", true);
+        dialog.setUndecorated(true);
+        dialog.setSize(400, 220);
+        dialog.setLocationRelativeTo(parentFrame);
+
+        int price = item.getPrice();
+        int maxQty = Math.min(99, playerGold / price);
+        if (maxQty < 1) maxQty = 1;
+
+        // Make dialog draggable
+        final Point[] dragPoint = {null};
+        JPanel titleBar = new JPanel();
+        titleBar.setBackground(new Color(60, 40, 20));
+        titleBar.setBounds(0, 0, 400, 25);
+        titleBar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                dragPoint[0] = e.getPoint();
+            }
+        });
+        titleBar.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (dragPoint[0] != null) {
+                    Point p = dialog.getLocation();
+                    dialog.setLocation(p.x + e.getX() - dragPoint[0].x, p.y + e.getY() - dragPoint[0].y);
+                }
+            }
+        });
+
+        JPanel contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
+                        new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
+                        new Color[]{
+                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
+                                PARCH_WARM, PARCH_TAN, PARCH_TOP
+                        }));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+
+                g2.setColor(PARCH_BORDER);
+                g2.setStroke(new BasicStroke(3.0f));
+                g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
+
+                g2.dispose();
+            }
+        };
+        contentPane.setLayout(null);
+        contentPane.setOpaque(false);
+        contentPane.add(titleBar);
+        dialog.setContentPane(contentPane);
+
+        // Title
+        JLabel titleLabel = new JLabel("Buy " + item.getName() + "?");
+        titleLabel.setFont(FONT_DIALOG);
+        titleLabel.setForeground(TEXT_DARK);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setBounds(20, 30, 360, 25);
+        contentPane.add(titleLabel);
+
+        // ===== CENTERED CONTROL GROUP =====
+        // Total group width: 60 + 40 + 40 + 40 + 24 (gaps) = 204px
+        // Centered starting X: (400 - 204) / 2 = 98
+
+        // Quantity text field
+        JTextField qtyField = new JTextField("1");
+        qtyField.setFont(FONT_STAT);
+        qtyField.setHorizontalAlignment(SwingConstants.CENTER);
+        qtyField.setBounds(98, 85, 60, 40);
+        qtyField.setBackground(new Color(255, 255, 220));
+        qtyField.setForeground(TEXT_DARK);
+        qtyField.setBorder(BorderFactory.createLineBorder(PARCH_BORDER, 1));
+        contentPane.add(qtyField);
+
+        // Up button
+        GoldButton upBtn = new GoldButton("▲");
+        upBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        upBtn.setMargin(new Insets(0, 0, 0, 0));
+        upBtn.setBounds(166, 85, 40, 40);  // 98 + 60 + 8
+        upBtn.setContentAreaFilled(false);
+        int finalMaxQty = maxQty;
+        upBtn.addActionListener(e -> {
+            try {
+                int val = Integer.parseInt(qtyField.getText());
+                if (val < finalMaxQty) {
+                    val++;
+                    qtyField.setText(String.valueOf(val));
+                }
+            } catch (NumberFormatException ex) {
+                qtyField.setText("1");
+            }
+        });
+        contentPane.add(upBtn);
+
+        // Down button
+        GoldButton downBtn = new GoldButton("▼");
+        downBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        downBtn.setMargin(new Insets(0, 0, 0, 0));
+        downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
+        downBtn.setContentAreaFilled(false);
+        downBtn.addActionListener(e -> {
+            try {
+                int val = Integer.parseInt(qtyField.getText());
+                if (val > 1) {
+                    val--;
+                    qtyField.setText(String.valueOf(val));
+                }
+            } catch (NumberFormatException ex) {
+                qtyField.setText("1");
+            }
+        });
+        contentPane.add(downBtn);
+
+        // MAX button
+        GoldButton maxBtn = new GoldButton("MAX");
+        maxBtn.setFont(new Font("Arial", Font.BOLD, 11));
+        maxBtn.setMargin(new Insets(0, 0, 0, 0));
+        maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
+        maxBtn.setContentAreaFilled(false);
+        maxBtn.addActionListener(e -> {
+            qtyField.setText(String.valueOf(finalMaxQty));
+        });
+        contentPane.add(maxBtn);
+
+        // Max quantity hint
+        JLabel maxLabel = new JLabel("(Max: " + maxQty + ")");
+        maxLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
+        maxLabel.setForeground(new Color(100, 70, 40));
+        maxLabel.setBounds(110, 130, 100, 15);
+        contentPane.add(maxLabel);
+
+        // Total cost label
+        JLabel totalLabel = new JLabel();
+        totalLabel.setFont(FONT_STAT);
+        totalLabel.setForeground(TEXT_GREEN);
+        totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        totalLabel.setBounds(45, 125, 360, 20);
+        contentPane.add(totalLabel);
+
+        // Update total label function
+        Runnable updateTotal = () -> {
+            try {
+                int qty = Integer.parseInt(qtyField.getText());
+                if (qty < 1) qty = 1;
+                if (qty > finalMaxQty) qty = finalMaxQty;
+                int total = price * qty;
+                totalLabel.setText("Total: $" + total);
+
+                // Update color based on affordability
+                if (total > playerGold) {
+                    totalLabel.setForeground(STAT_HP);
+                } else {
+                    totalLabel.setForeground(TEXT_GREEN);
+                }
+            } catch (NumberFormatException ex) {
+                totalLabel.setText("Total: $0");
+                totalLabel.setForeground(STAT_HP);
+            }
+        };
+
+        // Document listener for text field
+        qtyField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { updateTotal.run(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { updateTotal.run(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { updateTotal.run(); }
+        });
+
+        // Focus listener to clamp values
+        qtyField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                try {
+                    int val = Integer.parseInt(qtyField.getText());
+                    if (val < 1) val = 1;
+                    if (val > finalMaxQty) val = finalMaxQty;
+                    qtyField.setText(String.valueOf(val));
+                } catch (NumberFormatException ex) {
+                    qtyField.setText("1");
+                }
+                updateTotal.run();
+            }
+        });
+
+        updateTotal.run();
+
+        // Buy button
+        GoldButton buyBtn = new GoldButton("Buy");
+        buyBtn.setBounds(80, 155, 100, 35);
+        buyBtn.addActionListener(e -> {
+            try {
+                int qty = Integer.parseInt(qtyField.getText());
+                if (qty < 1) qty = 1;
+                if (qty > finalMaxQty) qty = finalMaxQty;
+
+                int totalCost = price * qty;
+                if (totalCost <= playerGold) {
+                    dialog.dispose();
+                    executeBuy(item, qty);
+                }
+            } catch (NumberFormatException ex) {
+                dialog.dispose();
+                executeBuy(item, 1);
+            }
+        });
+        contentPane.add(buyBtn);
+
+        // Cancel button
+        GoldButton cancelBtn = new GoldButton("Cancel");
+        cancelBtn.setBounds(220, 155, 100, 35);
+        cancelBtn.addActionListener(e -> dialog.dispose());
+        contentPane.add(cancelBtn);
+
+        // ESC key to close
+        dialog.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dialog.dispose();
+                }
+            }
+        });
+
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Executes the buy transaction with specified quantity.
+     */
+    private void executeBuy(Item item, int qty) {
+        int price = item.getPrice();
+        int totalCost = price * qty;
+
+        if (playerGold >= totalCost) {
+            // Deduct gold
+            playerGold -= totalCost;
+
+            // Add to player inventory
+            player.getInventory().addItem(item, qty);
+
+            // Sync with player's money method if available
+            try {
+                java.lang.reflect.Method setMoney = player.getClass().getMethod("setMoney", int.class);
+                setMoney.invoke(player, playerGold);
+            } catch (Exception ex) {
+                // Method doesn't exist, just use local tracking
+            }
+
+            // Refresh UI (shop items remain - infinite stock)
+            refreshPlayerShopGrid();
+            updateCurrencyDisplay();
+
+            messageLabel.setText("Bought " + qty + "x " + item.getName() + " for $" + totalCost + "!");
+        } else {
+            showParchmentDialog("Not Enough Gold",
+                    "You need $" + totalCost + " to buy this!\nYou have: $" + playerGold,
+                    "OK", null, null);
+        }
+    }
+
+    /**
+     * Refreshes the shop inventory grid with current items.
+     */
+    public void refreshShopGrid() {
+        if (shopGrid == null) return;
+
+        shopGrid.removeAll();
+        shopItemSlots.clear();
+
+        ArrayList<Item> items = shopkeeper.getShop().getItems();
+
+        if (items.isEmpty()) {
+            JLabel emptyLabel = new JLabel("Shop is empty");
+            emptyLabel.setFont(FONT_NAME);
+            emptyLabel.setForeground(TEXT_GOLD);
+            emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            emptyLabel.setPreferredSize(new Dimension(400, 50));
+            shopGrid.add(emptyLabel);
+        } else {
+            for (Item item : items) {
+                int quantity = shopkeeper.getShop().getQuantity(item);
+                if (quantity > 0) {
+                    ItemSlot slot = new ItemSlot();
+                    slot.setItem(item, quantity);
+                    slot.setShopItem(true);  // Flag as shop item
+
+                    slot.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseEntered(MouseEvent e) {
+                            slot.setHovered(true);
+                            String displayText = item.getName() + " - $" + item.getPrice();
+                            if (quantity > 1) {
+                                displayText += " (x" + quantity + ")";
+                            }
+                            messageLabel.setText(displayText);
+                        }
+
+                        @Override
+                        public void mouseExited(MouseEvent e) {
+                            slot.setHovered(false);
+                            messageLabel.setText("Welcome to the shop! Click on items to buy or sell.");
+                        }
+
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            int availableQty = shopkeeper.getShop().getQuantity(item);
+                            if (availableQty <= 0) {
+                                refreshShopGrid();
+                                return;
+                            }
+
+                            // Call quantity dialog instead of simple confirm
+                            showBuyQuantityDialog(item);
+                        }
+                    });
+
+                    shopGrid.add(slot);
+                    shopItemSlots.add(slot);
+                }
+            }
+        }
+
+        shopGrid.invalidate();
+        shopScrollPane.getViewport().invalidate();
+
+        SwingUtilities.invokeLater(() -> {
+            shopGrid.revalidate();
+            shopGrid.repaint();
+            shopScrollPane.getViewport().revalidate();
+            shopScrollPane.getViewport().repaint();
+            shopScrollPane.revalidate();
+            shopScrollPane.repaint();
+            shopScrollPane.getViewport().setViewPosition(new Point(0, 0));
+        });
+    }
+
+    /**
+     * Executes the sell transaction.
+     */
+    private void executeSell(Item item, int qty) {
+        int totalEarnings = item.getSellingPrice() * qty;
+
+        // Add gold to player (try multiple possible method names)
+        player.addMoney(totalEarnings);
+
+        // Remove items from inventory
+        player.getInventory().removeItem(item, qty);
+
+        // Refresh UI
+        refreshPlayerShopGrid();
+        updateCurrencyDisplay();
+
+        // Show success message
+        messageLabel.setText("Sold " + qty + "x " + item.getName() + " for $" + totalEarnings + "!");
+    }
+
+    /**
+     * Shows a parchment-styled dialog.
+     */
+    private void showParchmentDialog(String title, String message, String option1, String option2, Runnable onConfirm) {
+        JDialog dialog = new JDialog(parentFrame, title, true);
+        dialog.setUndecorated(true);
+        dialog.setSize(400, 200);
+        dialog.setLocationRelativeTo(parentFrame);
+
+        JPanel contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
+                        new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
+                        new Color[]{
+                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
+                                PARCH_WARM, PARCH_TAN, PARCH_TOP
+                        }));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+
+                g2.setColor(TEXT_GOLD);
+                g2.setStroke(new BasicStroke(3.0f));
+                g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
+
+                g2.dispose();
+            }
+        };
+        contentPane.setLayout(null);
+        contentPane.setOpaque(false);
+        dialog.setContentPane(contentPane);
+
+        JLabel messageLabel = new JLabel("<html><center>" + message + "</center></html>");
+        messageLabel.setFont(FONT_DIALOG);
+        messageLabel.setForeground(TEXT_DARK);
+        messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        messageLabel.setBounds(20, 30, 360, 80);
+        contentPane.add(messageLabel);
+
+        GoldButton btn1 = new GoldButton(option1);
+        btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
+        btn1.addActionListener(e -> {
+            dialog.dispose();
+            if (onConfirm != null) onConfirm.run();
+        });
+        contentPane.add(btn1);
+
+        if (option2 != null) {
+            GoldButton btn2 = new GoldButton(option2);
+            btn2.setBounds(220, 130, 100, 40);
+            btn2.addActionListener(e -> dialog.dispose());
+            contentPane.add(btn2);
+        }
+
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Refreshes the player inventory grid with current items.
+     */
+    public void refreshPlayerShopGrid() {
+        if (playerGrid == null) return;
+
+        playerGrid.removeAll();
+        playerItemSlots.clear();
+
+        ArrayList<Item> items = player.getInventory().getItems();
+
+        if (items.isEmpty()) {
+            JLabel emptyLabel = new JLabel("No items to display");
+            emptyLabel.setFont(FONT_NAME);
+            emptyLabel.setForeground(TEXT_GOLD);
+            emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            // Set preferred size to match grid width
+            emptyLabel.setPreferredSize(new Dimension(390, 50));
+            playerGrid.add(emptyLabel);
+        } else {
+            for (Item item : items) {
+                int quantity = player.getInventory().getQuantity(item);
+                if (quantity > 0) {
+                    ItemSlot slot = new ItemSlot();
+                    slot.setItem(item, quantity);
+
+                    // Hover and click listeners (unchanged)
+                    slot.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseEntered(MouseEvent e) {
+                            slot.setHovered(true);
+                            String displayText = item.getName() + " - $" + item.getSellingPrice();
+                            if (quantity > 1) {
+                                displayText += " (x" + quantity + ")";
+                            }
+                            messageLabel.setText(displayText + " (Click to sell)");
+                        }
+                        @Override
+                        public void mouseExited(MouseEvent e) {
+                            slot.setHovered(false);
+                            messageLabel.setText("Welcome to the shop! Click on items to buy or sell.");
+                        }
+
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            int availableQty = player.getInventory().getQuantity(item);
+                            if (availableQty <= 0) {
+                                refreshPlayerShopGrid();
+                                return;
+                            }
+
+                            if (availableQty == 1) {
+                                showSellConfirm(item, 1);
+                            } else {
+                                showSellConfirm(item, availableQty);
+                            }
+                        }
+                    });
+
+                    playerGrid.add(slot);
+                    playerItemSlots.add(slot);
+                }
+            }
+        }
+
+        // Force layout recalculation
+        playerGrid.invalidate();
+        playerScrollPane.getViewport().invalidate();
+
+        SwingUtilities.invokeLater(() -> {
+            playerGrid.revalidate();
+            playerGrid.repaint();
+            playerScrollPane.getViewport().revalidate();
+            playerScrollPane.getViewport().repaint();
+            playerScrollPane.revalidate();
+            playerScrollPane.repaint();
+            playerScrollPane.getViewport().setViewPosition(new Point(0, 0));
+        });
     }
 
     @Override
@@ -531,6 +1440,82 @@ public class ShopPanel extends JPanel {
         paintTitle(g2);
 
         g2.dispose();
+    }
+
+    // ===== ITEM SLOT INNER CLASS =====
+    private class ItemSlot extends JPanel {
+        private Item item;
+        private int quantity;
+        private BufferedImage icon;
+        private boolean hovered = false;
+        private boolean isShopItem = false;  // Flag for shop vs player inventory
+
+        public ItemSlot() {
+            setPreferredSize(new Dimension(70, 70));
+            setBackground(new Color(60, 40, 20, 180));
+            setBorder(BorderFactory.createLineBorder(new Color(80, 50, 20), 2));
+            setOpaque(false);
+        }
+
+        public void setItem(Item item, int qty) {
+            this.item = item;
+            this.quantity = qty;
+            this.icon = item.getImage();
+            this.isShopItem = false;
+            repaint();
+        }
+
+        public void setShopItem(boolean isShopItem) {
+            this.isShopItem = isShopItem;
+        }
+
+        public Item getItem() { return item; }
+        public int getQuantity() { return quantity; }
+        public void setHovered(boolean hovered) { this.hovered = hovered; repaint(); }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+            // Background
+            g2.setColor(new Color(60, 40, 20, 180));
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            if (icon != null) {
+                g2.drawImage(icon, 11, 11, 48, 48, null);
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Monospaced", Font.BOLD, 12));
+
+                if (isShopItem) {
+                    // Show price for shop items
+                    g2.drawString("$" + item.getPrice(), 35, 60);
+                } else {
+                    // Show quantity for player items
+                    g2.drawString("x" + quantity, 45, 60);
+                }
+
+                if (hovered) {
+                    g2.setColor(HOVER_GOLD);
+                    g2.setStroke(new BasicStroke(3.0f));
+                    g2.drawRect(2, 2, getWidth() - 5, getHeight() - 5);
+                }
+            } else {
+                g2.setColor(new Color(100, 70, 40));
+                g2.fillRect(19, 19, 32, 32);
+                g2.setColor(Color.GRAY);
+                g2.setFont(new Font("Serif", Font.BOLD, 20));
+                g2.drawString("?", 33, 42);
+            }
+
+            // Border
+            g2.setColor(new Color(80, 50, 20));
+            g2.setStroke(new BasicStroke(2.0f));
+            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+
+            g2.dispose();
+        }
     }
 
     // Inner class for GoldButton

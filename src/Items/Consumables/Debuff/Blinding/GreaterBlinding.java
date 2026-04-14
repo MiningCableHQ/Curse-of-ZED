@@ -8,7 +8,7 @@ public class GreaterBlinding extends Consumable {
     protected double accuracyDebuffMultiplier;
 
     public GreaterBlinding() {
-        super("Greater Blinding Potion", "Reduces enemy ACC by 15%");
+        super("Greater Blinding Potion", "Reduces enemy ACC by 15%", 90);
         accuracyDebuffMultiplier = 0.85;
         useMessage = "Used Greater Blinding Potion!";
 

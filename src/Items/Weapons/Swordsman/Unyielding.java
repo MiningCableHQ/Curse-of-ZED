@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Unyielding extends Weapon {
     public Unyielding(){
-        super("Unyielding", "Increase resistance", 10);
+        super("Unyielding", "Increase resistance", 10, 225);
     }
 
     @Override

@@ -8,7 +8,7 @@ public class LesserDulling extends Consumable {
     protected double attackDebuffMultiplier;
 
     public LesserDulling() {
-        super("Lesser Dulling Potion", "Reduces enemy ATK by 8%");
+        super("Lesser Dulling Potion", "Reduces enemy ATK by 8%", 35);
         attackDebuffMultiplier = 0.92;
         useMessage = "Used Lesser Dulling Potion!";
 

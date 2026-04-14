@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Mistwood extends Weapon {
     public Mistwood() {
-        super("Mistwood", "Increase speed", 15, "/items/archer_weapon/mistwood.png");
+        super("Mistwood", "Increase speed", 15, "/items/archer_weapon/mistwood.png", 265);
         loadImage("/items/archer_weapon/mistwood.png");
     }
 

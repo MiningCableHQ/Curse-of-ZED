@@ -8,7 +8,7 @@ public class Power extends Consumable {
     protected double attackBuffAmount;
 
     public Power() {
-        super("Power Potion", "Increases ATK by 150");
+        super("Power Potion", "Increases ATK by 150", 80);
         attackBuffAmount = 150;
         useMessage = "Used Power Potion!";
 

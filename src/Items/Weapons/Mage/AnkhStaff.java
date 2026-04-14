@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        super("Ankh Staff", "30% Chance to heal after using a move", 10, "/items/mage_weapon/ankh_staff.png");
+        super("Ankh Staff", "30% Chance to heal after using a move", 10, "/items/mage_weapon/ankh_staff.png", 225);
         loadImage("/items/mage_weapon/ankh_staff.png");
     }
 

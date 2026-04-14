@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class RazorEdge extends Weapon{
     public RazorEdge(){
-        super("RazorEdge", "30% chance to deal multiplied damage", 20, "/items/warrior_weapon/razoredge_sword.png");
+        super("RazorEdge", "30% chance to deal multiplied damage", 20, "/items/warrior_weapon/razoredge_sword.png", 300);
         loadImage("/items/warrior_weapon/razoredge_sword.png");
     }
 

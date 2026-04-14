@@ -4,7 +4,7 @@ import Items.Weapons.Weapon;
 
 public class Arcanum extends Weapon {
     public Arcanum(){
-        super("Arcanum", "30% Chance to deal multiplied damage", 20, "/items/mage_weapon/arcanum_staff.png");
+        super("Arcanum", "30% Chance to deal multiplied damage", 20, "/items/mage_weapon/arcanum_staff.png", 300);
         loadImage("/items/mage_weapon/arcanum_staff.png");
     }
 

@@ -8,7 +8,7 @@ public class LesserPower extends Consumable {
     protected double attackBuffAmount;
 
     public LesserPower() {
-        super("Lesser Power Potion", "Increases ATK by 75");
+        super("Lesser Power Potion", "Increases ATK by 75", 40);
         attackBuffAmount = 75;
         useMessage = "Used Lesser Power Potion!";
 
