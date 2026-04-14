@@ -4,12 +4,13 @@ import Items.Weapons.Weapon;
 
 public class Mistwood extends Weapon {
     public Mistwood() {
-        //TODO implement attack stats
+        super("Mistwood", "Increase speed", 15, "/items/archer_weapon/mistwood.png", 265);
+        loadImage("/items/archer_weapon/mistwood.png");
     }
 
     @Override
     public <T> void activatePassive(T Entity){
-        //TODO 10% | 20% | 30% | 40% | 50% chance to evade incoming damage
+        //TODO Increase speed by 5 | 10 | 15 | 20 | 25
     }
 
     @Override

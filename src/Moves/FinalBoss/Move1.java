@@ -1,25 +1,40 @@
 package Moves.FinalBoss;
 
-import Entities.Enemies.FinalBoss;
+import Entities.Enemies.ZED;
+import Entities.Entity;
 import Moves.Move;
+import java.util.Random;
 
 public class Move1 extends Move {
+    Random rand = new Random();
+
     public Move1(){
-        super("Move 1", 10);
+        super("WHY!?", 10);
     }
 
     @Override
     public <T> void execute(T Entity){
-        if(Entity instanceof FinalBoss){
-            FinalBoss finalBoss = (FinalBoss) Entity;
+        if(Entity instanceof ZED && Move.currentTarget != null){
+            ZED zed = (ZED) Entity;
+            Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
-            double totalATK = finalBoss.getAttack();
-            totalATK += this.attack;
+            if(rand.nextDouble() <= zed.getAccuracy()){
+                //Add total atk from enemy and this move
+                double totalATK = zed.getAttack();
+                totalATK += this.attack;
 
-            //multiply sum to multiplier
-            double damage = totalATK * 0.50;
-            //TODO 15% chance to inflict burn
+                //multiply sum to multiplier
+                double damage = totalATK * 0.50;
+
+                double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+
+                setDamageDealt(actualDamage);
+                setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+                //TODO FRANK 15% chance to inflict burn
+            } else  {
+                setDamageDealt(0);
+                setMessage(zed.getName() + " used " + this.name + " but missed!");
+            }
         }
     }
 }

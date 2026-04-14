@@ -4,12 +4,13 @@ import Items.Weapons.Weapon;
 
 public class AnkhStaff extends Weapon {
     public AnkhStaff() {
-        //TODO implement attack stats
+        super("Ankh Staff", "30% Chance to heal after using a move", 10, "/items/mage_weapon/ankh_staff.png", 225);
+        loadImage("/items/mage_weapon/ankh_staff.png");
     }
 
     @Override
     public <T> void activatePassive(T Entity){
-        //TODO 30% Chance to heal after using a move by 10% | 20% | 30% | 40% | 50%
+        //TODO 30% Chance to heal after using a move by 4% | 8% | 12% | 16% | 20%
     }
 
     @Override
@@ -17,4 +18,3 @@ public class AnkhStaff extends Weapon {
 
     }
 }
-

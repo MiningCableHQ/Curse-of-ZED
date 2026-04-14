@@ -18,7 +18,7 @@ public class OBJ_Flower extends SuperObject {
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(4 * scale, 4 * scale, 24 * scale, 24 * scale);
+        solidArea = new Rectangle(1 * scale, 1 * scale, 24 * scale, 24 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;

@@ -9,10 +9,10 @@ import Objects.*;
 public class GamePanel extends JPanel implements Runnable {
 
     // System
-    public TileManager tileM = new TileManager(this);
-    public KeyHandler keyH = new KeyHandler();
-    public CollisionChecker cChecker = new CollisionChecker(this);
-    public AssetSetter aSetter = new AssetSetter(this);
+    public TileManager tileM;
+    public KeyHandler keyH;
+    public CollisionChecker cChecker;
+    public AssetSetter aSetter;
     Thread gameThread;
 
     // Screen Settings
@@ -34,16 +34,65 @@ public class GamePanel extends JPanel implements Runnable {
     int FPS = 60;
 
     // Entities and Objects
-    public Player player = new Swordsman(this, keyH);
+    public Player player;
     public SuperObject obj[] = new SuperObject[100000];
     public int currentMap = 0;
 
+    // Inventory management
+    private InventoryPanel currentInventoryPanel;
+    private boolean inventoryOpen = false;
+    private JFrame parentFrame;
+
+    // Character management
+    private CharacterPanel currentCharacterPanel;
+    private boolean characterOpen = false;
+
+    /**
+     * No-arg constructor for compatibility.
+     * Creates a default Swordsman with a new KeyHandler.
+     * WARNING: This creates a temporary GamePanel reference that will be replaced.
+     * Use the parameterized constructor for proper initialization.
+     */
     public GamePanel() {
+        this(null, new KeyHandler());
+    }
+
+    /**
+     * Constructor that accepts a pre-selected player and a KeyHandler.
+     *
+     * @param selectedPlayer The player character to use in the game
+     * @param keyH The KeyHandler for input processing
+     */
+    public GamePanel(Player selectedPlayer, KeyHandler keyH) {
+        this.keyH = keyH;
+
+        // Initialize systems that depend on 'this'
+        this.tileM = new TileManager(this);
+        this.cChecker = new CollisionChecker(this);
+        this.aSetter = new AssetSetter(this);
+
+        // Set up the panel
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);
-        this.addKeyListener(keyH);
+        this.addKeyListener(this.keyH);
         this.setFocusable(true);
+
+        // Set the player
+        if (selectedPlayer != null) {
+            this.player = selectedPlayer;
+            // Update the player's GamePanel reference using reflection
+            try {
+                java.lang.reflect.Field gpField = this.player.getClass().getSuperclass().getDeclaredField("gp");
+                gpField.setAccessible(true);
+                gpField.set(this.player, this);
+            } catch (Exception e) {
+                System.err.println("Warning: Could not set GamePanel reference in player: " + e.getMessage());
+            }
+        } else {
+            // Create a default player with proper GamePanel reference
+            this.player = new Swordsman(this, this.keyH);
+        }
     }
 
     public void setupGame() {
@@ -76,7 +125,30 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
+        if (player != null) {
+            player.update();
+        }
+
+        // Handle inventory key press
+        if (keyH.iPressed) {
+            if (!inventoryOpen && !characterOpen) {
+                openInventory();
+            } else if (inventoryOpen) {
+                closeInventory();
+            }
+            keyH.iPressed = false; // Reset to prevent multiple toggles
+        }
+
+        // Handle character panel key press
+        if (keyH.cPressed) {
+            if (!characterOpen && !inventoryOpen) {
+                openCharacter();
+            } else if (characterOpen) {
+                closeCharacter();
+            }
+            keyH.cPressed = false;
+        }
+
         checkMapTransition();
         // ANIMATE OBJECTS
         for (int i = 0; i < obj.length; i++) {
@@ -86,33 +158,144 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    public void checkMapTransition() {
+    /**
+     * Opens the inventory panel during exploration
+     */
+    private void openInventory() {
+        if (parentFrame == null) {
+            // Get the parent frame
+            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        }
 
-        // --- MAP 0 (Starting Map) ---
+        inventoryOpen = true;
+
+        // For exploration mode, we don't need item selection callback
+        currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
+                (item, target) -> {
+                    // Item selection callback - not used in exploration mode
+                    System.out.println("Cannot use items outside of combat!");
+                },
+                () -> {
+                    // Close inventory callback
+                    closeInventory();
+                }
+        );
+
+        // Hide GamePanel and show InventoryPanel
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentInventoryPanel);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        currentInventoryPanel.requestFocusInWindow();
+    }
+
+    /**
+     * Closes the inventory and returns to GamePanel
+     */
+    public void closeInventory() {
+        inventoryOpen = false;
+        currentInventoryPanel = null;
+
+        // Restore GamePanel
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
+    /**
+     * Opens the character panel during exploration
+     */
+    private void openCharacter() {
+        if (parentFrame == null) {
+            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        }
+
+        characterOpen = true;
+
+        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
+                () -> {
+                    // Close character panel callback
+                    closeCharacter();
+                }
+        );
+
+        // Hide GamePanel and show CharacterPanel
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentCharacterPanel);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        currentCharacterPanel.requestFocusInWindow();
+    }
+
+    /**
+     * Closes the character panel and returns to GamePanel
+     */
+    public void closeCharacter() {
+        characterOpen = false;
+        currentCharacterPanel = null;
+
+        // Restore GamePanel
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate();
+        parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
+    public void checkMapTransition() {
+        if (player == null) return;
+
+        // --- MAP 1  ---
         if (currentMap == 0) {
-            // EXIT RIGHT: If player hits the right edge of Map 0
+            // EXIT RIGHT -> TO MAP 2
             if (player.worldX > worldWidth - (tileSize * 1.5)) {
                 currentMap = 1;
                 tileM.loadMap("/maps/world02.txt");
                 aSetter.setObject();
 
-                // SPAWN ON MAP 1: Move to Column 3 to stay away from the left-exit trigger
                 player.worldX = tileSize * 3;
                 player.worldY = tileSize * 10;
             }
         }
 
-        // --- MAP 1 (Middle Map) ---
+        // --- MAP 2 ---
         else if (currentMap == 1) {
-            // EXIT LEFT: Back to Map 0
-            // We check if player is at the far left (less than 1 tile in)
+            // EXIT LEFT -> TO MAP 1
             if (player.worldX < tileSize) {
                 currentMap = 0;
                 tileM.loadMap("/maps/world01.txt");
                 aSetter.setObject();
 
-                // SPAWN ON MAP 0: Move them back to the right side
-                // (worldWidth minus 3 tiles keeps you away from the right-exit trigger)
+                player.worldX = worldWidth - (tileSize * 3);
+                player.worldY = tileSize * 10;
+            }
+
+            // EXIT RIGHT -> TO MAP 3
+            if (player.worldX > worldWidth - (tileSize * 1.5)) {
+                currentMap = 2;
+                tileM.loadMap("/maps/world03.txt");
+                aSetter.setObject();
+
+                // SPAWN ON MAP 3: Top-Left Corner
+                player.worldX = tileSize * 2;
+                player.worldY = tileSize * 2;
+            }
+        }
+
+        // --- MAP 3  ---
+        else if (currentMap == 2) {
+            // EXIT LEFT -> TO MAP 2
+            if (player.worldX < tileSize) {
+                currentMap = 1;
+                tileM.loadMap("/maps/world02.txt");
+                aSetter.setObject();
+
                 player.worldX = worldWidth - (tileSize * 3);
                 player.worldY = tileSize * 10;
             }
@@ -122,6 +305,8 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        if (player == null) return;
+
         Graphics2D g2 = (Graphics2D) g;
 
         // 1. TILE LAYER
@@ -162,7 +347,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         // 4. FALLBACK: Draw player if they are in front of EVERYTHING
-        if (!playerDrawn) {
+        if (!playerDrawn && player != null) {
             player.draw(g2);
         }
 

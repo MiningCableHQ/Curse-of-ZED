@@ -4,7 +4,8 @@ import Items.Weapons.Weapon;
 
 public class Slowstring extends Weapon {
     public Slowstring() {
-        //TODO implement attack stats
+        super("Slowstring", "Chance to apply a slow debuff on an enemy", 10, "/items/archer_weapon/slowstring.png", 225);
+        loadImage("/items/archer_weapon/slowstring.png");
     }
 
     @Override

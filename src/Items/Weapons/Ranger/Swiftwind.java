@@ -4,7 +4,8 @@ import Items.Weapons.Weapon;
 
 public class Swiftwind extends Weapon {
     public Swiftwind() {
-        //TODO implement attack stats
+        super("Swiftwind", "30% Chance to deal multiplied damage", 20, "/items/archer_weapon/swiftwind.png", 300);
+        loadImage("/items/archer_weapon/swiftwind.png");
     }
 
     @Override

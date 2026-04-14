@@ -1,12 +1,19 @@
 package Combat.StatusEffects;
 
-public class Frozen extends StatusEffect{
-    public Frozen(){
-        super("Frozen");
+import Entities.Entity;
+
+public class Frozen extends StatusEffect {
+
+    public Frozen() {
+        super("Frozen", true);
     }
 
     @Override
-    public <T> void executeEffect(T Entity){
-        //TODO Skips a turn and removes the status
+    public <T> void executeEffect(T Entity) {
+        if (Entity instanceof Entity) {
+            Entity target = (Entity) Entity;
+
+            System.out.println(target.getName() + " is Frozen and cannot act this cycle!");
+        }
     }
 }

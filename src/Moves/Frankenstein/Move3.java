@@ -1,25 +1,39 @@
 package Moves.Frankenstein;
 
 import Entities.Enemies.Frankenstein;
+import Entities.Entity;
 import Moves.Move;
+import java.util.Random;
 
 public class Move3 extends Move {
+    Random rand = new Random();
+
     public Move3(){
-        super("Move 3", 10);
+        super("LAMI", 10);
     }
 
     @Override
     public <T> void execute(T Entity){
-        if(Entity instanceof Frankenstein){
+        if(Entity instanceof Frankenstein && Move.currentTarget != null){
             Frankenstein frankenstein = (Frankenstein) Entity;
+            Entity target = Move.currentTarget;
 
-            //Add total atk from enemy and this move
-            double totalATK = frankenstein.getAttack();
-            totalATK += this.attack;
+            if(rand.nextDouble() <= frankenstein.getAccuracy()){
+                //Add total atk from enemy and this move
+                double totalATK = frankenstein.getAttack();
+                totalATK += this.attack;
 
-            //multiply sum to multiplier
-            double damage = totalATK * 2;
-            //TODO 30% chance to inflict stun, not stackable, no cooldown
+                //multiply sum to multiplier
+                double damage = totalATK * 2;
+                double actualDamage = target.takeDamage(damage, target.getDefense(), target.getDmgResistance());
+
+                setDamageDealt(actualDamage);
+                setMessage(frankenstein.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+            } else {
+                setDamageDealt(0);
+                setMessage(frankenstein.getName() + " used " + this.name + " but missed!");
+            }
         }
     }
 }
+//TODO FRANK 30% chance to inflict stun, not stackable

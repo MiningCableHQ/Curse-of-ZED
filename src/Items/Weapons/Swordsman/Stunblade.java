@@ -4,7 +4,8 @@ import Items.Weapons.Weapon;
 
 public class Stunblade extends Weapon {
     public Stunblade(){
-        //TODO implement attack stats
+        super("Stunblade", "Chance to apply a stun debuff on an enemy", 15, "/items/warrior_weapon/stunblade_sword.png", 265);
+        loadImage("/items/warrior_weapon/stunblade_sword.png");
     }
 
     @Override

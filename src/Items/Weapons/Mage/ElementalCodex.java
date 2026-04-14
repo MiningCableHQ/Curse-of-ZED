@@ -4,7 +4,8 @@ import Items.Weapons.Weapon;
 
 public class ElementalCodex extends Weapon {
     public ElementalCodex(){
-        //TODO implement attack stats
+        super("ElementalCodex", "Chance to apply poison/burn/frozen debuff on an enemy", 15, "/items/mage_weapon/elemental_codex.png", 265);
+        loadImage("/items/mage_weapon/elemental_codex.png");
     }
 
     @Override
