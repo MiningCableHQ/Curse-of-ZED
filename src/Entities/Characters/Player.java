@@ -295,10 +295,18 @@ public abstract class Player extends Entity {
     }
 
     public void setWeapon(Weapon weapon) {
+        // Call onUnequip for the current weapon before removing it
+        if (this.weapon != null) {
+            this.weapon.onUnequip(this);
+        }
+
         this.weapon = weapon;
+
         // Recalculate attack (original attack + weapon bonus)
         if (weapon != null) {
             this.attack = this.maxAttack + weapon.getAttack();
+            // Call onEquip for the new weapon
+            weapon.onEquip(this);
         } else {
             this.attack = this.maxAttack;
         }

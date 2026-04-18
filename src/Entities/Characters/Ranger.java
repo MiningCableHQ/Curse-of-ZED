@@ -164,7 +164,7 @@ public class Ranger extends Player {
         }
     }
 
-    // Methods to add flat bonuses (from potions)
+    // Methods to add flat bonuses
     public void addFlatAttackBonus(double bonus) {
         flatAttackBonus += bonus;
         recalculateStats();
@@ -192,15 +192,9 @@ public class Ranger extends Player {
     private void recalculateStats() {
         // Recalculate attack
         this.attack = attack + flatAttackBonus;
-        if (this.attack > maxAttack * 2) {
-            this.attack = maxAttack * 2;
-        }
 
         // Recalculate defense
         this.defense = defense + flatDefenseBonus;
-        if (this.defense > maxDefense * 4) {
-            this.defense = maxDefense * 4;
-        }
     }
 
     // Getters

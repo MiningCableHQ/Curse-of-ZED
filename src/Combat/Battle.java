@@ -733,18 +733,48 @@ public class Battle {
                 Move.currentTarget = player;
                 move.execute(player);
                 Move.currentTarget = null;
+
+                // Activate after-move passive
+                if (player.getWeapon() != null) {
+                    player.getWeapon().onAfterMove(player, move, null);
+                }
+
                 battlePanel.setBattleMessage(move.getMessage());
                 battlePanel.repaint();
 
             } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
+                StringBuilder combinedMessage = new StringBuilder();
+                double totalDamageDealt = 0;
+
                 for (Enemy enemy : enemies) {
                     if (enemy.getHp() > 0) {
                         Move.currentTarget = enemy;
                         move.execute(player);
+                        totalDamageDealt += move.getLastDamageDealt();
+
+                        // Activate after-damage passive for each enemy
+                        if (player.getWeapon() != null) {
+                            player.getWeapon().onAfterDamage(player, move, enemy, move.getLastDamageDealt());
+                        }
+
+                        if (move.getMessage() != null && !move.getMessage().isEmpty()) {
+                            if (combinedMessage.length() > 0) combinedMessage.append(" ");
+                            combinedMessage.append(move.getMessage());
+                        }
                     }
                 }
                 Move.currentTarget = null;
-                battlePanel.setBattleMessage(move.getMessage());
+
+                // Activate after-move passive once after all enemies
+                if (player.getWeapon() != null) {
+                    player.getWeapon().onAfterMove(player, move, null);
+                }
+
+                if (combinedMessage.length() > 0) {
+                    battlePanel.setBattleMessage(combinedMessage.toString());
+                } else {
+                    battlePanel.setBattleMessage(move.getMessage());
+                }
                 battlePanel.repaint();
                 battlePanel.updateTargetButtonStates();
 
@@ -762,10 +792,15 @@ public class Battle {
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
                     Move.currentTarget = currentTarget;
-                    // mao ni bai
                     Move.currentBattle = this;
-                    // -----
                     move.execute(player);
+
+                    // Activate after-damage passive
+                    if (player.getWeapon() != null) {
+                        player.getWeapon().onAfterDamage(player, move, currentTarget, move.getLastDamageDealt());
+                        player.getWeapon().onAfterMove(player, move, currentTarget);
+                    }
+
                     Move.currentTarget = null;
                     battlePanel.setBattleMessage(move.getMessage());
                     battlePanel.repaint();

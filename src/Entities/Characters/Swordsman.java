@@ -142,8 +142,8 @@ public class Swordsman extends Player {
     public void addIronStanceStack() {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
-            // Increase defense by flat 15 per stack
-            flatDefenseBonus = 15 * ironStanceStacks;
+            // Increase defense by flat 20 per stack
+            flatDefenseBonus = 20 * ironStanceStacks;
             recalculateDefense();
         }
     }
@@ -176,10 +176,6 @@ public class Swordsman extends Player {
     // Recalculate total defense based on original defense + flat bonuses
     private void recalculateDefense() {
         this.defense = defense + flatDefenseBonus;
-        // Cap at maxDefense * 4 (as you had before)
-        if (this.defense > maxDefense * 4) {
-            this.defense = maxDefense * 4;
-        }
     }
 
     @Override

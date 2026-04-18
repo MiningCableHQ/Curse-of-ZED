@@ -13,7 +13,7 @@ public abstract class Move {
     // Current target type shi
     public static Entity currentTarget;
 
-    // For frozen
+    // For frozen and weapon passives
     public static Combat.Battle currentBattle;
 
     // Target type for this move
@@ -25,6 +25,9 @@ public abstract class Move {
     protected double lastHealAmount = 0;
     protected double lastBuffAmount = 0;
     protected String lastStatBuffed = "";
+
+    // Store weapon multiplier for this move
+    protected double weaponMultiplier = 1.0;
 
     public Move(String name, int attack){
         this.name = name;
@@ -58,6 +61,15 @@ public abstract class Move {
     // Method to get the heal amount (for healing moves)
     public double getLastHealAmount() {
         return lastHealAmount;
+    }
+
+    // Weapon multiplier methods
+    public double getWeaponMultiplier() {
+        return weaponMultiplier;
+    }
+
+    public void setWeaponMultiplier(double multiplier) {
+        this.weaponMultiplier = multiplier;
     }
 
     // Protected methods for subclasses to set message

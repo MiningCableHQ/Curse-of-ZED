@@ -160,7 +160,7 @@ public class Mage extends Player {
         }
     }
 
-    // Method to add a flat attack bonus (from potions)
+    // Method to add a flat attack bonus
     public void addFlatAttackBonus(double bonus) {
         flatAttackBonus += bonus;
         recalculateAttack();
@@ -176,10 +176,6 @@ public class Mage extends Player {
     // Recalculate total attack based on original attack + flat bonuses
     private void recalculateAttack() {
         this.attack = attack + flatAttackBonus;
-        // Cap at maxAttack * 2
-        if (this.attack > maxAttack * 2) {
-            this.attack = maxAttack * 2;
-        }
     }
 
     @Override
