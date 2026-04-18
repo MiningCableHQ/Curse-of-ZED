@@ -2529,13 +2529,11 @@ public class Map2Setter {
         gp.obj[639].worldY = 25 * gp.tileSize; // Row 25
 
         //sign post
-        gp.obj[640] = new OBJ_Post();
-        gp.obj[640].worldX = 47 * gp.tileSize; // Col 47
-        gp.obj[640].worldY = 19 * gp.tileSize; // Row 19
+
 
         gp.obj[641] = new OBJ_Post();
         gp.obj[641].worldX = 47 * gp.tileSize; // Col 47
-        gp.obj[641].worldY = 26 * gp.tileSize; // Row 28
+        gp.obj[641].worldY = 28 * gp.tileSize; // Row 28
 
         gp.obj[642] = new OBJ_Post();
         gp.obj[642].worldX = 16 * gp.tileSize; // Col 16
