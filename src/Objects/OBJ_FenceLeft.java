@@ -4,21 +4,21 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.awt.Rectangle;
 
-public class OBJ_S9 extends SuperObject {
-    public OBJ_S9() {
-        name = "S9";
+public class OBJ_FenceLeft extends SuperObject {
+    public OBJ_FenceLeft() {
+        name = "FenceLeft";
         try {
             // Path matches your sidebar: /map2assets/tree_64x96.png
-            image = ImageIO.read(getClass().getResourceAsStream("/map3tiles/sunset_9_32x32.png"));
+            image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/map1_fenceleft.png"));
         } catch (IOException e) {
-            System.out.println("Could not find the s9 image!");
+            System.out.println("Could not find the fenceleft image!");
             e.printStackTrace();
         }
 
         collision = true;
 
         int scale = 2; // Or gp.scale if you pass it in
-        solidArea = new Rectangle(1 * scale, 1 * scale, 24 * scale, 28 * scale);
+        solidArea = new Rectangle(1 * scale, 1 * scale, 24 * scale, 24 * scale);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
