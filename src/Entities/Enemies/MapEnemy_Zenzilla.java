@@ -16,8 +16,8 @@ public class MapEnemy_Zenzilla extends EnemyEntity {
     @Override
     public void loadFrames() {
         for (int i = 0; i < 4; i++) {
-            walkLeft[i]  = loadFrame("/enemies/zenzilla/idle_left"  + (i + 1) + ".png");
-            walkRight[i] = loadFrame("/enemies/zenzilla/idle_right" + (i + 1) + ".png");
+            walkLeft[i]  = loadFrame("/enemies/zenzilla/walking_left"  + (i + 1) + ".png");
+            walkRight[i] = loadFrame("/enemies/zenzilla/walking_right" + (i + 1) + ".png");
         }
         image = walkRight[0] != null ? walkRight[0] : null;
     }

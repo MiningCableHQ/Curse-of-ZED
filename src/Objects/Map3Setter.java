@@ -1,6 +1,7 @@
 package Objects;
 
 import Main.GamePanel;
+import Main.GameStateManager;
 import Objects.*;
 public class Map3Setter {
     GamePanel gp;
@@ -4290,9 +4291,227 @@ public class Map3Setter {
 
     }
     public void setObjectsPart3() {
-//continue here for 997
+        GameStateManager gsm = GameStateManager.get();
+
+        // ── Bukog always present on Map 3 ─────────────────────────
+        Entities.Characters.NPC_Bukog bukog =
+                new Entities.Characters.NPC_Bukog(gp);
+        bukog.worldX = 17 * gp.tileSize; // adjust position as needed
+        bukog.worldY = 35 * gp.tileSize;
+        gp.obj[10] = bukog;
+
+        // Spawn Reyven if not defeated
+        if (!gsm.map3EnemyDefeated) {
+            Entities.Enemies.MapEnemy_Reyven reyven =
+                    new Entities.Enemies.MapEnemy_Reyven(gp);
+            reyven.worldX = 20 * gp.tileSize;
+            reyven.worldY = 15 * gp.tileSize;
+            reyven.setOnBattleTrigger(() -> {
+                if (gp.battleTransition.isRunning()) return;
+                gp.battleTransition.start(() -> launchMap3EnemyBattle(reyven));
+            });
+            gp.obj[20] = reyven;
+        }
+
+        // Spawn Zed boss if unlocked but not yet defeated
+        if (gsm.map3BossSpawned && !gsm.map3BossDefeated) {
+            Entities.Enemies.MapBoss_Zed zed =
+                    new Entities.Enemies.MapBoss_Zed(gp);
+            zed.worldX = 27 * gp.tileSize;
+            zed.worldY = 40 * gp.tileSize;
+            zed.setOnBattleTrigger(() -> {
+                if (gp.battleTransition.isRunning()) return;
+                gp.battleTransition.start(() -> launchMap3BossBattle(zed));
+            });
+            gp.obj[30] = zed;
+        }
+    }
+    // ── Reyven normal enemy battle ────────────────────────────
+    private void launchMap3EnemyBattle(
+            Entities.Enemies.MapEnemy_Reyven reyven) {
+
+        Entities.Enemies.Enemy battleEnemy = reyven.createBattleEnemy();
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities
+                        .getWindowAncestor(gp);
+        if (frame == null) return;
+
+        Combat.BattlePanel bp =
+                new Combat.BattlePanel(gp.player, battleEnemy);
+        final GamePanel gpRef = gp;
+
+        bp.setOnBattleEnd(() -> {
+            boolean won = battleEnemy.getHp() <= 0;
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gp.battleTransition = new Main.BattleTransition();
+            });
+
+            if (won) {
+                reyven.defeated = true;
+                reyven.available = false;
+                GameStateManager.get().map3EnemyDefeated = true;
+
+                javax.swing.Timer t = new javax.swing.Timer(200, e -> {
+                    gp.objectivesHUD.setObjective("Defeat the Boss", 0, 1);
+                    gp.screenMessage.show(
+                            "Enemy Defeated!",
+                            "The Boss: Zed the Sorcerer has Spawned!",
+                            180, false);
+
+                    GameStateManager.get().map3BossSpawned = true;
+
+                    Entities.Enemies.MapBoss_Zed zed =
+                            new Entities.Enemies.MapBoss_Zed(gp);
+                    zed.worldX = 27 * gp.tileSize;
+                    zed.worldY = 40 * gp.tileSize;
+                    zed.setOnBattleTrigger(() -> {
+                        if (gp.battleTransition.isRunning()) return;
+                        gp.battleTransition.start(() -> launchMap3BossBattle(zed));
+                    });
+                    gp.obj[30] = zed;
+                });
+                t.setRepeats(false);
+                t.start();
+
+            } else {
+                gameOver(frame, gpRef);
+            }
+        });
+
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void launchMap3BossBattle(Entities.Enemies.MapBoss_Zed zed) {
+
+        Entities.Enemies.Enemy bossEnemy = zed.createBattleEnemy();
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities
+                        .getWindowAncestor(gp);
+        if (frame == null) return;
+
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
+        final GamePanel gpRef = gp;
+
+        bp.setOnBattleEnd(() -> {
+            boolean won = bossEnemy.getHp() <= 0;
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.revalidate();
+                frame.repaint();
+
+                if (won) {
+                    zed.defeated = true;
+                    zed.available = false;
+                    GameStateManager.get().map3BossDefeated = true;
+                    GameStateManager.get().gameWon = true;
+
+                    javax.swing.Timer t = new javax.swing.Timer(500, e -> {
+                        StoryLine.VictoryCutscene victory =
+                                new StoryLine.VictoryCutscene(() -> {
+                                    Main.GameStateManager.reset();
+                                    javax.swing.SwingUtilities.invokeLater(() -> {
+                                        if (frame instanceof Main.CurseOfZed) {
+                                            Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
+                                            Main.TitlePanel tp = new Main.TitlePanel();
+                                            tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                                            cozFrame.getContentPane().removeAll();
+                                            cozFrame.add(tp);
+                                            cozFrame.revalidate();
+                                            cozFrame.repaint();
+                                        } else {
+                                            Main.CurseOfZed coz = new Main.CurseOfZed();
+                                            coz.setVisible(true);
+                                            frame.dispose();
+                                        }
+                                    });
+                                });
+                        frame.getContentPane().removeAll();
+                        frame.add(victory);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                    t.setRepeats(false);
+                    t.start();
+
+                } else {
+                    javax.swing.Timer t = new javax.swing.Timer(500, e -> {
+                        StoryLine.DefeatCutscene defeat =
+                                new StoryLine.DefeatCutscene(() -> {
+                                    Main.GameStateManager.reset();
+                                    javax.swing.SwingUtilities.invokeLater(() -> {
+                                        if (frame instanceof Main.CurseOfZed) {
+                                            Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
+                                            Main.TitlePanel tp = new Main.TitlePanel();
+                                            tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                                            cozFrame.getContentPane().removeAll();
+                                            cozFrame.add(tp);
+                                            cozFrame.revalidate();
+                                            cozFrame.repaint();
+                                        } else {
+                                            Main.CurseOfZed coz = new Main.CurseOfZed();
+                                            coz.setVisible(true);
+                                            frame.dispose();
+                                        }
+                                    });
+                                });
+                        frame.getContentPane().removeAll();
+                        frame.add(defeat);
+                        frame.revalidate();
+                        frame.repaint();
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+            });
+        });
+
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void gameOver(javax.swing.JFrame frame, GamePanel gpRef) {
+        javax.swing.SwingUtilities.invokeLater(() ->
+                gp.screenMessage.show("Game Over", null, 120, false));
+
+        javax.swing.Timer t = new javax.swing.Timer(2500, ev -> {
+            Main.GameStateManager.reset();
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (frame instanceof Main.CurseOfZed) {
+                    Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
+                    Main.TitlePanel tp = new Main.TitlePanel();
+                    tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                    cozFrame.getContentPane().removeAll();
+                    cozFrame.add(tp);
+                    cozFrame.revalidate();
+                    cozFrame.repaint();
+                } else {
+                    Main.CurseOfZed coz = new Main.CurseOfZed();
+                    coz.setVisible(true);
+                    frame.dispose();
+                }
+            });
+        });
+        t.setRepeats(false);
+        t.start();
     }
 }
+
+
+
 
 
 
