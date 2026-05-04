@@ -1,7 +1,6 @@
 package Objects;
 
-import Main.*;
-import Main.GameStateManager;
+import Main.GamePanel;
 import Objects.*;
 public class Map3Setter {
     GamePanel gp;
@@ -31,9 +30,6 @@ public class Map3Setter {
         gp.obj[4].worldX = 4 * gp.tileSize; // Col 4
         gp.obj[4].worldY = 16 * gp.tileSize; // Row 16
 
-        gp.obj[5] = new OBJ_Tree();
-        gp.obj[5].worldX = 8 * gp.tileSize; // Col 8
-        gp.obj[5].worldY = 16 * gp.tileSize; // Row 16
 
         gp.obj[6] = new OBJ_Tree();
         gp.obj[6].worldX = 8 * gp.tileSize; // Col 8
@@ -41,15 +37,12 @@ public class Map3Setter {
 
         gp.obj[7] = new OBJ_Tree();
         gp.obj[7].worldX = 8 * gp.tileSize; // Col 8
-        gp.obj[7].worldY = 3 * gp.tileSize; // Row 3
+        gp.obj[7].worldY = 1 * gp.tileSize; // Row 3
 
         gp.obj[8] = new OBJ_Tree();
         gp.obj[8].worldX = 8 * gp.tileSize; // Col 8
-        gp.obj[8].worldY = 1 * gp.tileSize; // Row 1
+        gp.obj[8].worldY = 3 * gp.tileSize; // Row 1
 
-        gp.obj[9] = new OBJ_Tree();
-        gp.obj[9].worldX = 5 * gp.tileSize; // Col 5
-        gp.obj[9].worldY = 1 * gp.tileSize; // Row 1
 
         gp.obj[10] = new OBJ_Tree();
         gp.obj[10].worldX = 1 * gp.tileSize; // Col 1
@@ -95,17 +88,6 @@ public class Map3Setter {
         gp.obj[20].worldX = 35 * gp.tileSize; // Col 35
         gp.obj[20].worldY = 6 * gp.tileSize; // Row 6
 
-        gp.obj[21] = new OBJ_Tree();
-        gp.obj[21].worldX = 39 * gp.tileSize; // Col 39
-        gp.obj[21].worldY = 9 * gp.tileSize; // Row 9
-
-        gp.obj[22] = new OBJ_Tree();
-        gp.obj[22].worldX = 39 * gp.tileSize; // Col 39
-        gp.obj[22].worldY = 6 * gp.tileSize; // Row 6
-
-        gp.obj[23] = new OBJ_Tree();
-        gp.obj[23].worldX = 45 * gp.tileSize; // Col 45
-        gp.obj[23].worldY = 6 * gp.tileSize; // Row 6
 
         gp.obj[24] = new OBJ_Tree();
         gp.obj[24].worldX = 47 * gp.tileSize; // Col 47
@@ -147,37 +129,11 @@ public class Map3Setter {
         gp.obj[33].worldX = 8 * gp.tileSize; // Col 8
         gp.obj[33].worldY = 34 * gp.tileSize; // Row 34
 
-        gp.obj[34] = new OBJ_Tree();
-        gp.obj[34].worldX = 0 * gp.tileSize; // Col 0
-        gp.obj[34].worldY = 33 * gp.tileSize; // Row 33
-
-        gp.obj[35] = new OBJ_Tree();
-        gp.obj[35].worldX = 0 * gp.tileSize; // Col 0
-        gp.obj[35].worldY = 39 * gp.tileSize; // Row 39
-
-        gp.obj[36] = new OBJ_Tree();
-        gp.obj[36].worldX = 0 * gp.tileSize; // Col 0
-        gp.obj[36].worldY = 36 * gp.tileSize; // Row 36
-
-        gp.obj[37] = new OBJ_Tree();
-        gp.obj[37].worldX = 48 * gp.tileSize; // Col 48
-        gp.obj[37].worldY = 32 * gp.tileSize; // Row 32
 
         gp.obj[38] = new OBJ_Tree();
         gp.obj[38].worldX = 44 * gp.tileSize; // Col 44
-        gp.obj[38].worldY = 36 * gp.tileSize; // Row 36
+        gp.obj[38].worldY = 35 * gp.tileSize; // Row 36
 
-        gp.obj[39] = new OBJ_Tree();
-        gp.obj[39].worldX = 48 * gp.tileSize; // Col 48
-        gp.obj[39].worldY = 42 * gp.tileSize; // Row 42
-
-        gp.obj[40] = new OBJ_Tree();
-        gp.obj[40].worldX = 48 * gp.tileSize; // Col 48
-        gp.obj[40].worldY = 37 * gp.tileSize; // Row 37
-
-        gp.obj[41] = new OBJ_Tree();
-        gp.obj[41].worldX = 44 * gp.tileSize; // Col 44
-        gp.obj[41].worldY = 42 * gp.tileSize; // Row 42
 
         gp.obj[42] = new OBJ_Tree();
         gp.obj[42].worldX = 32 * gp.tileSize; // Col 32
@@ -197,7 +153,7 @@ public class Map3Setter {
 
         gp.obj[46] = new OBJ_Tree();
         gp.obj[46].worldX = 33 * gp.tileSize; // Col 33
-        gp.obj[46].worldY = 34 * gp.tileSize; // Row 34
+        gp.obj[46].worldY = 33 * gp.tileSize; // Row 34
 
         gp.obj[47] = new OBJ_Tree();
         gp.obj[47].worldX = 32 * gp.tileSize; // Col 32
@@ -213,7 +169,7 @@ public class Map3Setter {
 
         gp.obj[50] = new OBJ_Tree();
         gp.obj[50].worldX = 32 * gp.tileSize; // Col 32
-        gp.obj[50].worldY = 9 * gp.tileSize; // Row 9
+        gp.obj[50].worldY = 8 * gp.tileSize; // Row 9
 
         gp.obj[51] = new OBJ_Tree();
         gp.obj[51].worldX = 39 * gp.tileSize; // Col 39
@@ -240,17 +196,18 @@ public class Map3Setter {
         gp.obj[56].worldY = 38 * gp.tileSize; // Row 38
 
 
+
         gp.obj[58] = new OBJ_Tree();
         gp.obj[58].worldX = 15 * gp.tileSize; // Col 15
         gp.obj[58].worldY = 33 * gp.tileSize; // Row 33
 
         gp.obj[59] = new OBJ_Tree();
         gp.obj[59].worldX = 15 * gp.tileSize; // Col 15
-        gp.obj[59].worldY = 42 * gp.tileSize; // Row 42
+        gp.obj[59].worldY = 41 * gp.tileSize; // Row 42
 
         gp.obj[60] = new OBJ_Tree();
         gp.obj[60].worldX = 8 * gp.tileSize; // Col 8
-        gp.obj[60].worldY = 40 * gp.tileSize; // Row 40
+        gp.obj[60].worldY = 39 * gp.tileSize; // Row 40
 
         //BUSH
         gp.obj[61] = new OBJ_Bush();
@@ -1037,9 +994,7 @@ public class Map3Setter {
         gp.obj[256].worldX = 15 * gp.tileSize; // Col 15
         gp.obj[256].worldY = 31 * gp.tileSize; // Row 31
 
-        gp.obj[257] = new OBJ_Bush();
-        gp.obj[257].worldX = 31 * gp.tileSize; // Col 31
-        gp.obj[257].worldY = 31 * gp.tileSize; // Row 31
+
 
         gp.obj[258] = new OBJ_Bush();
         gp.obj[258].worldX = 31 * gp.tileSize; // Col 31
@@ -1783,21 +1738,25 @@ public class Map3Setter {
         gp.obj[442].worldX = 28 * gp.tileSize; // Col 28
         gp.obj[442].worldY = 24 * gp.tileSize; // Row 24
 
-        gp.obj[443] = new OBJ_BridgeVertical();
-        gp.obj[443].worldX = 45 * gp.tileSize; // Col 45
-        gp.obj[443].worldY = 20 * gp.tileSize; // Row 20
+        gp.obj[443] = new OBJ_BridgeHorizontal();
+        gp.obj[443].worldX = 46 * gp.tileSize; // Col 45
+        gp.obj[443].worldY = 22 * gp.tileSize; // Row 20
 
-        gp.obj[444] = new OBJ_BridgeVertical();
-        gp.obj[444].worldX = 45 * gp.tileSize; // Col 45
-        gp.obj[444].worldY = 24 * gp.tileSize; // Row 24
+        gp.obj[444] = new OBJ_BridgeHorizontal();
+        gp.obj[444].worldX = 46 * gp.tileSize; // Col 45
+        gp.obj[444].worldY = 24 * gp.tileSize; // Row 20
 
-        gp.obj[445] = new OBJ_BridgeVertical();
-        gp.obj[445].worldX = 46 * gp.tileSize; // Col 46
-        gp.obj[445].worldY = 20 * gp.tileSize; // Row 20
+        gp.obj[445] = new OBJ_W1();
+        gp.obj[445].worldX = 47 * gp.tileSize; // Col 45
+        gp.obj[445].worldY = 21 * gp.tileSize; // Row 24
 
-        gp.obj[446] = new OBJ_BridgeVertical();
-        gp.obj[446].worldX = 46 * gp.tileSize; // Col 46
-        gp.obj[446].worldY = 24 * gp.tileSize; // Row 24
+        gp.obj[446] = new OBJ_W1();
+        gp.obj[446].worldX = 46 * gp.tileSize; // Col 45
+        gp.obj[446].worldY = 21 * gp.tileSize; // Row 24
+
+
+
+
 
         //WOOD FENCE
         gp.obj[447] = new OBJ_WoodFence();
@@ -1991,7 +1950,7 @@ public class Map3Setter {
 
     public void setObjectsPart2() {
 
-        gp.obj[494] = new OBJ_WoodFence();
+     gp.obj[494] = new OBJ_WoodFence();
         gp.obj[494].worldX = 35 * gp.tileSize; // Col 35
         gp.obj[494].worldY = 26 * gp.tileSize; // Row 26
 
@@ -2578,9 +2537,6 @@ public class Map3Setter {
         gp.obj[639].worldY = 25 * gp.tileSize; // Row 25
 
         //sign post
-        gp.obj[640] = new OBJ_Post();
-        gp.obj[640].worldX = 47 * gp.tileSize; // Col 47
-        gp.obj[640].worldY = 19 * gp.tileSize; // Row 19
 
         gp.obj[641] = new OBJ_Post();
         gp.obj[641].worldX = 47 * gp.tileSize; // Col 47
@@ -2860,17 +2816,12 @@ public class Map3Setter {
         gp.obj[705].worldX = 41 * gp.tileSize; // Col 41
         gp.obj[705].worldY = 5 * gp.tileSize; // Row 5
 
-        gp.obj[706] = new OBJ_Well();
-        gp.obj[706].worldX = 48 * gp.tileSize; // Col 48
-        gp.obj[706].worldY = 7 * gp.tileSize; // Row 7
 
         gp.obj[707] = new OBJ_Well();
         gp.obj[707].worldX = 33 * gp.tileSize; // Col 33
         gp.obj[707].worldY = 42 * gp.tileSize; // Row 42
 
-        gp.obj[708] = new OBJ_Well();
-        gp.obj[708].worldX = 48 * gp.tileSize; // Col 48
-        gp.obj[708].worldY = 34 * gp.tileSize; // Row 34
+
 
         //Barrel
         gp.obj[709] = new OBJ_Barrel();
@@ -2938,16 +2889,13 @@ public class Map3Setter {
         gp.obj[724].worldX = 34 * gp.tileSize; // Col 34
         gp.obj[724].worldY = 1 * gp.tileSize; // Row 1
 
-        gp.obj[725] = new OBJ_Wood();
-        gp.obj[725].worldX = 0 * gp.tileSize; // Col 0
-        gp.obj[725].worldY = 42 * gp.tileSize; // Row 42
 
         gp.obj[726] = new OBJ_Wood();
-        gp.obj[726].worldX = 40 * gp.tileSize; // Col 40
-        gp.obj[726].worldY = 36 * gp.tileSize; // Row 36
+        gp.obj[726].worldX = 39 * gp.tileSize; // Col 40
+        gp.obj[726].worldY = 34 * gp.tileSize; // Row 36
 
         gp.obj[727] = new OBJ_Wood();
-        gp.obj[727].worldX = 48 * gp.tileSize; // Col 48
+        gp.obj[727].worldX = 47 * gp.tileSize; // Col 48
         gp.obj[727].worldY = 40 * gp.tileSize; // Row 40
 
         gp.obj[728] = new OBJ_Wood();
@@ -2974,9 +2922,6 @@ public class Map3Setter {
         gp.obj[733].worldX = 30 * gp.tileSize; // Col 30
         gp.obj[733].worldY = 41 * gp.tileSize; // Row 41
 
-        gp.obj[734] = new OBJ_Wood();
-        gp.obj[734].worldX = 30 * gp.tileSize; // Col 30
-        gp.obj[734].worldY = 31 * gp.tileSize; // Row 31
 
         gp.obj[735] = new OBJ_Wood();
         gp.obj[735].worldX = 30 * gp.tileSize; // Col 30
@@ -3035,25 +2980,7 @@ public class Map3Setter {
         gp.obj[748].worldX = 45 * gp.tileSize; // Col 45
         gp.obj[748].worldY = 37 * gp.tileSize; // Row 37
 
-        gp.obj[749] = new OBJ_BigRock();
-        gp.obj[749].worldX = 33 * gp.tileSize; // Col 33
-        gp.obj[749].worldY = 31 * gp.tileSize; // Row 31
 
-        gp.obj[750] = new OBJ_BigRock();
-        gp.obj[750].worldX = 36 * gp.tileSize; // Col 36
-        gp.obj[750].worldY = 31 * gp.tileSize; // Row 31
-
-        gp.obj[751] = new OBJ_BigRock();
-        gp.obj[751].worldX = 35 * gp.tileSize; // Col 35
-        gp.obj[751].worldY = 31 * gp.tileSize; // Row 31
-
-        gp.obj[752] = new OBJ_BigRock();
-        gp.obj[752].worldX = 42 * gp.tileSize; // Col 42
-        gp.obj[752].worldY = 31 * gp.tileSize; // Row 31
-
-        gp.obj[753] = new OBJ_BigRock();
-        gp.obj[753].worldX = 41 * gp.tileSize; // Col 41
-        gp.obj[753].worldY = 31 * gp.tileSize; // Row 31
 
         gp.obj[754] = new OBJ_BigRock();
         gp.obj[754].worldX = 14 * gp.tileSize; // Col 14
@@ -3333,6 +3260,7 @@ public class Map3Setter {
         gp.obj[822] = new OBJ_Torch();
         gp.obj[822].worldX = 41 * gp.tileSize; // Col 41
         gp.obj[822].worldY = 44 * gp.tileSize; // Row 44
+
 
 
         //AURA
@@ -3791,6 +3719,7 @@ public class Map3Setter {
         gp.obj[938].worldY = 20 * gp.tileSize; // Row 36
 
 
+
         gp.obj[939] = new OBJ_Bvines();
         gp.obj[939].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[939].worldY = 21 * gp.tileSize; // Row 36
@@ -4118,6 +4047,23 @@ public class Map3Setter {
         gp.obj[987].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[987].worldY = 44 * gp.tileSize; // Row 36
 
+        gp.obj[988] = new OBJ_Bvines();
+        gp.obj[988].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[988].worldY = 45 * gp.tileSize; // Row 36
+
+        gp.obj[989] = new OBJ_Bvines();
+        gp.obj[989].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[989].worldY = 46 * gp.tileSize; // Row 36
+
+        gp.obj[990] = new OBJ_Bvines();
+        gp.obj[990].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[990].worldY = 47 * gp.tileSize; // Row 36
+
+        gp.obj[991] = new OBJ_Bvines();
+        gp.obj[991].worldX = 49 * gp.tileSize; // Col 13
+        gp.obj[991].worldY = 48 * gp.tileSize; // Row 36
+
+
 
         gp.obj[992] = new OBJ_Bvines();
         gp.obj[992].worldX = 49 * gp.tileSize; // Col 13
@@ -4335,227 +4281,16 @@ public class Map3Setter {
         gp.obj[1044].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[1044].worldY = 49 * gp.tileSize; // Row 36
 
+        gp.obj[1045] = new OBJ_W1();
+        gp.obj[1045].worldX = 48 * gp.tileSize; // Col 45
+        gp.obj[1045].worldY = 21 * gp.tileSize; // Row 24
+
+
+
 
     }
-
     public void setObjectsPart3() {
-        GameStateManager gsm = GameStateManager.get();
-
-        // ── Bukog always present on Map 3 ─────────────────────────
-        Entities.Characters.NPC_Bukog bukog =
-                new Entities.Characters.NPC_Bukog(gp);
-        bukog.worldX = 17 * gp.tileSize; // adjust position as needed
-        bukog.worldY = 35 * gp.tileSize;
-        gp.obj[10] = bukog;
-
-        // Spawn Reyven if not defeated
-        if (!gsm.map3EnemyDefeated) {
-            Entities.Enemies.MapEnemy_Reyven reyven =
-                    new Entities.Enemies.MapEnemy_Reyven(gp);
-            reyven.worldX = 20 * gp.tileSize;
-            reyven.worldY = 15 * gp.tileSize;
-            reyven.setOnBattleTrigger(() -> {
-                if (gp.battleTransition.isRunning()) return;
-                gp.battleTransition.start(() -> launchMap3EnemyBattle(reyven));
-            });
-            gp.obj[20] = reyven;
-        }
-
-        // Spawn Zed boss if unlocked but not yet defeated
-        if (gsm.map3BossSpawned && !gsm.map3BossDefeated) {
-            Entities.Enemies.MapBoss_Zed zed =
-                    new Entities.Enemies.MapBoss_Zed(gp);
-            zed.worldX = 27 * gp.tileSize;
-            zed.worldY = 40 * gp.tileSize;
-            zed.setOnBattleTrigger(() -> {
-                if (gp.battleTransition.isRunning()) return;
-                gp.battleTransition.start(() -> launchMap3BossBattle(zed));
-            });
-            gp.obj[30] = zed;
-        }
-    }
-
-    // ── Reyven normal enemy battle ────────────────────────────
-    private void launchMap3EnemyBattle(
-            Entities.Enemies.MapEnemy_Reyven reyven) {
-
-        Entities.Enemies.Enemy battleEnemy = reyven.createBattleEnemy();
-
-        javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities
-                        .getWindowAncestor(gp);
-        if (frame == null) return;
-
-        Combat.BattlePanel bp =
-                new Combat.BattlePanel(gp.player, battleEnemy);
-        final GamePanel gpRef = gp;
-
-        bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
-
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().removeAll();
-                frame.add(gpRef);
-                frame.revalidate();
-                frame.repaint();
-                gpRef.requestFocusInWindow();
-                gp.battleTransition = new Main.BattleTransition();
-            });
-
-            if (won) {
-                reyven.defeated = true;
-                reyven.available = false;
-                GameStateManager.get().map3EnemyDefeated = true;
-
-                javax.swing.Timer t = new javax.swing.Timer(200, e -> {
-                    gp.objectivesHUD.setObjective("Defeat the Boss", 0, 1);
-                    gp.screenMessage.show(
-                            "Enemy Defeated!",
-                            "The Boss: Zed the Sorcerer has Spawned!",
-                            180, false);
-
-                    GameStateManager.get().map3BossSpawned = true;
-
-                    Entities.Enemies.MapBoss_Zed zed =
-                            new Entities.Enemies.MapBoss_Zed(gp);
-                    zed.worldX = 27 * gp.tileSize;
-                    zed.worldY = 40 * gp.tileSize;
-                    zed.setOnBattleTrigger(() -> {
-                        if (gp.battleTransition.isRunning()) return;
-                        gp.battleTransition.start(() -> launchMap3BossBattle(zed));
-                    });
-                    gp.obj[30] = zed;
-                });
-                t.setRepeats(false);
-                t.start();
-
-            } else {
-                gameOver(frame, gpRef);
-            }
-        });
-
-        frame.getContentPane().removeAll();
-        frame.add(bp);
-        frame.revalidate();
-        frame.repaint();
-    }
-
-    private void launchMap3BossBattle(Entities.Enemies.MapBoss_Zed zed) {
-
-        Entities.Enemies.Enemy bossEnemy = zed.createBattleEnemy();
-
-        javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities
-                        .getWindowAncestor(gp);
-        if (frame == null) return;
-
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
-        final GamePanel gpRef = gp;
-
-        bp.setOnBattleEnd(() -> {
-            boolean won = bossEnemy.getHp() <= 0;
-
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().removeAll();
-                frame.revalidate();
-                frame.repaint();
-
-                if (won) {
-                    zed.defeated = true;
-                    zed.available = false;
-                    GameStateManager.get().map3BossDefeated = true;
-                    GameStateManager.get().gameWon = true;
-
-                    javax.swing.Timer t = new javax.swing.Timer(500, e -> {
-                        StoryLine.VictoryCutscene victory =
-                                new StoryLine.VictoryCutscene(() -> {
-                                    Main.GameStateManager.reset();
-                                    javax.swing.SwingUtilities.invokeLater(() -> {
-                                        if (frame instanceof Main.CurseOfZed) {
-                                            Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
-                                            Main.TitlePanel tp = new Main.TitlePanel();
-                                            tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
-                                            cozFrame.getContentPane().removeAll();
-                                            cozFrame.add(tp);
-                                            cozFrame.revalidate();
-                                            cozFrame.repaint();
-                                        } else {
-                                            Main.CurseOfZed coz = new Main.CurseOfZed();
-                                            coz.setVisible(true);
-                                            frame.dispose();
-                                        }
-                                    });
-                                });
-                        frame.getContentPane().removeAll();
-                        frame.add(victory);
-                        frame.revalidate();
-                        frame.repaint();
-                    });
-                    t.setRepeats(false);
-                    t.start();
-
-                } else {
-                    javax.swing.Timer t = new javax.swing.Timer(500, e -> {
-                        StoryLine.DefeatCutscene defeat =
-                                new StoryLine.DefeatCutscene(() -> {
-                                    Main.GameStateManager.reset();
-                                    javax.swing.SwingUtilities.invokeLater(() -> {
-                                        if (frame instanceof Main.CurseOfZed) {
-                                            Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
-                                            Main.TitlePanel tp = new Main.TitlePanel();
-                                            tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
-                                            cozFrame.getContentPane().removeAll();
-                                            cozFrame.add(tp);
-                                            cozFrame.revalidate();
-                                            cozFrame.repaint();
-                                        } else {
-                                            Main.CurseOfZed coz = new Main.CurseOfZed();
-                                            coz.setVisible(true);
-                                            frame.dispose();
-                                        }
-                                    });
-                                });
-                        frame.getContentPane().removeAll();
-                        frame.add(defeat);
-                        frame.revalidate();
-                        frame.repaint();
-                    });
-                    t.setRepeats(false);
-                    t.start();
-                }
-            });
-        });
-
-        frame.getContentPane().removeAll();
-        frame.add(bp);
-        frame.revalidate();
-        frame.repaint();
-    }
-
-    private void gameOver(javax.swing.JFrame frame, GamePanel gpRef) {
-        javax.swing.SwingUtilities.invokeLater(() ->
-                gp.screenMessage.show("Game Over", null, 120, false));
-
-        javax.swing.Timer t = new javax.swing.Timer(2500, ev -> {
-            Main.GameStateManager.reset();
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                if (frame instanceof Main.CurseOfZed) {
-                    Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
-                    Main.TitlePanel tp = new Main.TitlePanel();
-                    tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
-                    cozFrame.getContentPane().removeAll();
-                    cozFrame.add(tp);
-                    cozFrame.revalidate();
-                    cozFrame.repaint();
-                } else {
-                    Main.CurseOfZed coz = new Main.CurseOfZed();
-                    coz.setVisible(true);
-                    frame.dispose();
-                }
-            });
-        });
-        t.setRepeats(false);
-        t.start();
+//continue here for 997
     }
 }
 
