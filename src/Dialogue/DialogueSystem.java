@@ -5,10 +5,24 @@ import Entities.Characters.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import Main.*;
+
 
 public class DialogueSystem {
+
     private BufferedImage playerPortrait;
     public void setPlayerPortrait(BufferedImage img) { this.playerPortrait = img;}
+    private Runnable weaponPopupCallback;
+    public void setWeaponPopupCallback(Runnable r) { this.weaponPopupCallback = r; }
+    private Runnable onPhaseChangeCallback;
+    private java.util.function.Consumer<String> onEssenceGranted;
+    public void setOnEssenceGranted(
+            java.util.function.Consumer<String> cb) {
+        this.onEssenceGranted = cb;
+    }
+    public void setOnPhaseChangeCallback(Runnable r) {
+        this.onPhaseChangeCallback = r;
+    }
         // ── Layout ────────────────────────────────────────────────────
     private static final int BOX_X      = 30;
     private static final int BOX_Y      = 490;
@@ -67,7 +81,11 @@ public class DialogueSystem {
             choiceBtns[i] = new Rectangle();
         }
     }
+    private Runnable onMap2MonologueDone;
 
+    public void setOnMap2MonologueDone(Runnable r) {
+        this.onMap2MonologueDone = r;
+    }
     // ── Fonts ─────────────────────────────────────────────────────
     private void loadFonts() {
         Font base = null;
@@ -149,6 +167,8 @@ public class DialogueSystem {
                         close();
                         if (onOpenShop != null) onOpenShop.run();
                     } else if (choice.jumpToPage == -1) {
+                        // ── Closing via choice — check if we should fire end callbacks ──
+                        onDialogueEndViaChoice();
                         close();
                     } else {
                         startPage(choice.jumpToPage);
@@ -156,7 +176,7 @@ public class DialogueSystem {
                     return;
                 }
             }
-            return; // must click a choice
+            return;
         }
 
         // Next button
@@ -200,9 +220,99 @@ public class DialogueSystem {
     // ── Called when last page is done ─────────────────────────────
     private void onDialogueEnd() {
         if (currentNPC != null) {
-            currentNPC.interacted = true;
+            //currentNPC.interacted = true;
+
+            // Chief dialogue done (ONLY during first visit)
+            if (currentNPC.npcName.equals("Chief")
+                    && GameStateManager.get().map1Phase
+                    != GameStateManager.Map1Phase.COLLECT_ESSENCE) {
+
+                GameStateManager.get().map1Phase =
+                        GameStateManager.Map1Phase.TALK_TO_RANGER;
+
+                if (onPhaseChangeCallback != null) onPhaseChangeCallback.run();
+            }
+
+            if (currentNPC.npcName.equals("Ranger")
+                    && GameStateManager.get().map1Phase
+                    == GameStateManager.Map1Phase.TALK_TO_RANGER) {
+
+                GameStateManager.get().map1Phase =
+                        GameStateManager.Map1Phase.RECEIVE_WEAPON;
+
+                if (weaponPopupCallback != null) weaponPopupCallback.run();
+            }
+
+            // Frankenstein fight — page 4 is the fight confirmation page
+            if (currentNPC.npcName.equals("Frankenstein")
+                    && currentPage == 4) {
+                if (currentNPC instanceof NPC_Frankenstein) {
+                    Runnable fightCb =
+                            ((NPC_Frankenstein) currentNPC).getOnFightChosen();
+                    if (fightCb != null) fightCb.run();
+                }
+            }
+        }
+        // Essence NPCs — grant essence when dialogue ends
+        if (currentNPC != null) {
+            String n = currentNPC.npcName;
+
+            if ((n.equals("Healer") || n.equals("Farmer")
+                    || n.equals("Woman Villager") || n.equals("Ranger")
+                    || n.equals("Chief"))
+                    && GameStateManager.get().map1Phase
+                    == GameStateManager.Map1Phase.COLLECT_ESSENCE) {
+
+                if (!currentNPC.interacted) {
+                    currentNPC.interacted = true;
+
+                    if (onEssenceGranted != null) {
+                        onEssenceGranted.accept(n);
+                    }
+                }
+            }
+        }
+        // Map 2 monologue done
+        if (onMap2MonologueDone != null) {
+            Runnable cb = onMap2MonologueDone;
+            onMap2MonologueDone = null; // clear so it doesn't fire again
+            cb.run();
         }
         close();
+    }
+    /** Called when dialogue closes via a choice button (jumpToPage == -1) */
+    private void onDialogueEndViaChoice() {
+        if (currentNPC == null) return;
+
+        if (currentNPC.npcName.equals("Ranger")
+                && currentPage == 3
+                && GameStateManager.get().map1Phase
+                == GameStateManager.Map1Phase.TALK_TO_RANGER) {
+            GameStateManager.get().map1Phase =
+                    GameStateManager.Map1Phase.RECEIVE_WEAPON;
+            if (weaponPopupCallback != null) weaponPopupCallback.run();
+        }
+
+        if (currentNPC != null) {
+            String n = currentNPC.npcName;
+            if ((n.equals("Healer") || n.equals("Farmer")
+                    || n.equals("Woman Villager"))
+                    && GameStateManager.get().map1Phase
+                    == GameStateManager.Map1Phase.COLLECT_ESSENCE
+                    && !currentNPC.interacted) {
+                currentNPC.interacted = true;
+                if (onEssenceGranted != null) {
+                    onEssenceGranted.accept(n);
+                }
+            }
+        }
+
+        // ADD THIS — fires the explore button callback
+        if (onMap2MonologueDone != null) {
+            Runnable cb = onMap2MonologueDone;
+            onMap2MonologueDone = null;
+            cb.run();
+        }
     }
 
     // ── Start a specific page ─────────────────────────────────────
@@ -406,24 +516,56 @@ public class DialogueSystem {
 
     // ── Choice buttons ────────────────────────────────────────────
     private void drawChoiceButtons(Graphics2D g2, DialogueTree.Page page, Color accent) {
-        int count  = Math.min(page.choices.size(), choiceBtns.length);
-        int btnH   = 36;
-        int btnW   = (BOX_W - 60 - (count - 1) * 12) / count;
-        int totalW = count * btnW + (count - 1) * 12;
-        int startX = BOX_X + (BOX_W - totalW) / 2;
-        int btnY   = BOX_Y + BOX_H - 52;
+        int count = Math.min(page.choices.size(), choiceBtns.length);
+
+        int btnW = 340;
+        int btnH = 38;
+        int gap  = 10;
+
+        int startX = BOX_X + 270;
+
+        int totalH = count * btnH + (count - 1) * gap;
+        int startY = BOX_Y + (BOX_H - totalH) / 2 + 10;
 
         for (int i = 0; i < count; i++) {
-            int bx = startX + i * (btnW + 12);
-            choiceBtns[i].setBounds(bx, btnY, btnW, btnH);
-            boolean hov = (hoveredChoice == i);
+            int bx = startX;
+            int by = startY + i * (btnH + gap);
 
-            // Alternate colors for player choices
-            Color c = (i == 0) ? new Color(60, 100, 160) : new Color(90, 60, 140);
-            drawStyledButton(g2, choiceBtns[i], page.choices.get(i).label, c, hov);
+            choiceBtns[i].setBounds(bx, by, btnW, btnH);
+
+            boolean hovered = (hoveredChoice == i);
+
+            // Background colors
+            Color bg = hovered ? new Color(100, 180, 255, 220)
+                    : new Color(20, 40, 70, 200);
+
+            // Border colors
+            Color border = hovered ? new Color(0, 150, 255)
+                    : new Color(50, 100, 180, 180);
+
+            // Background
+            g2.setColor(bg);
+            g2.fillRoundRect(bx, by, btnW, btnH, 10, 10);
+
+            // Border
+            g2.setColor(new Color(0, 102, 204));
+            g2.setStroke(new BasicStroke(1.8f));
+            g2.drawRoundRect(bx, by, btnW, btnH, 10, 10);
+
+            // Text
+            g2.setFont(new Font("Serif", Font.PLAIN, 14));
+            g2.setColor(hovered ? new Color(40, 10, 0)
+                    : new Color(230, 210, 170));
+
+            FontMetrics fm = g2.getFontMetrics();
+            String text = page.choices.get(i).label;
+
+            int tx = bx + 14;
+            int ty = by + btnH / 2 + fm.getAscent() / 2 - 2;
+
+            g2.drawString(text, tx, ty);
         }
     }
-
     // ── Styled button renderer ────────────────────────────────────
     private void drawStyledButton(Graphics2D g2, Rectangle r,
                                   String label, Color accent, boolean hovered) {
@@ -552,14 +694,21 @@ public class DialogueSystem {
         }
     }
 
-    // ── Accent color lookup ───────────────────────────────────────
     private Color getAccentColor(String speaker) {
         if (speaker == null) return COLOR_DEFAULT;
         String s = speaker.toLowerCase();
-        if (s.startsWith("khai")) return COLOR_PLAYER;
-        if (s.contains("chief"))  return COLOR_CHIEF;
-        if (s.contains("ranger")) return COLOR_RANGER;
-        if (s.contains("frank"))  return COLOR_FRANK;
+        if (s.startsWith("khai"))         return COLOR_PLAYER;
+        if (s.contains("chief"))          return COLOR_CHIEF;
+        if (s.contains("ranger"))         return COLOR_RANGER;
+        if (s.contains("frank")
+                && !s.contains("stein"))  return COLOR_FRANK;
+        if (s.contains("bukog"))          return new Color(102, 51, 153); // purple
+        if (s.contains("frankenstein"))   return new Color(60, 160, 80);  // green
+        if (s.contains("zed"))            return new Color(100, 20, 180); // dark purple
+        if (s.contains("healer"))         return new Color(80, 180, 200); // teal
+        if (s.contains("farmer"))         return new Color(120, 160, 40); // olive
+        if (s.contains("woman")
+                || s.contains("villager"))return new Color(200, 80, 120); // pink
         return COLOR_DEFAULT;
     }
 }

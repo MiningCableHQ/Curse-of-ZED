@@ -1,8 +1,10 @@
 package Objects;
 
-import Main.GamePanel;
 import Entities.Characters.*;
-import Objects.*;
+import Entities.Enemies.*;
+import Main.GamePanel;
+import Main.GameStateManager;
+
 public class Map1Setter {
     GamePanel gp;
 
@@ -11,7 +13,7 @@ public class Map1Setter {
     }
 
     public void setObjects() {
-
+        GameStateManager.Map1Phase phase = GameStateManager.get().map1Phase;
         gp.obj[0] = new OBJ_BlueFlower();
         gp.obj[0].worldX = 7 * gp.tileSize; // Column 10
         gp.obj[0].worldY = 6 * gp.tileSize; // Row 10
@@ -49,7 +51,7 @@ public class Map1Setter {
         gp.obj[8].worldY = 10 * gp.tileSize; // Row 10
 
         gp.obj[9] = new OBJ_BlueFlower();
-        gp.obj[9].worldX = 7* gp.tileSize; // Column 10
+        gp.obj[9].worldX = 7 * gp.tileSize; // Column 10
         gp.obj[9].worldY = 12 * gp.tileSize; // Row 10
 
         gp.obj[10] = new OBJ_BlueFlower();
@@ -92,13 +94,13 @@ public class Map1Setter {
         gp.obj[19].worldX = 8 * gp.tileSize; // Column 10
         gp.obj[19].worldY = 18 * gp.tileSize; // Row 10
 
-        gp.obj[20] = new OBJ_BlueFlower();
-        gp.obj[20].worldX = 9 * gp.tileSize; // Column 10
-        gp.obj[20].worldY = 18 * gp.tileSize; // Row 10
+        gp.obj[700] = new OBJ_BlueFlower();
+        gp.obj[700].worldX = 9 * gp.tileSize; // Column 10
+        gp.obj[700].worldY = 18 * gp.tileSize; // Row 10
 
-        gp.obj[21] = new OBJ_Flower();
-        gp.obj[21].worldX = 7 * gp.tileSize; // Column 10
-        gp.obj[21].worldY = 20 * gp.tileSize; // Row 10
+        gp.obj[701] = new OBJ_Flower();
+        gp.obj[701].worldX = 7 * gp.tileSize; // Column 10
+        gp.obj[701].worldY = 20 * gp.tileSize; // Row 10
 
         gp.obj[22] = new OBJ_Flower();
         gp.obj[22].worldX = 8 * gp.tileSize; // Column 10
@@ -722,39 +724,39 @@ public class Map1Setter {
 
         gp.obj[177] = new OBJ_Water();
         gp.obj[177].worldX = 29 * gp.tileSize; // Col 13
-        gp.obj[177].worldY = 45* gp.tileSize; // Row 36
+        gp.obj[177].worldY = 45 * gp.tileSize; // Row 36
 
         gp.obj[178] = new OBJ_Water();
         gp.obj[178].worldX = 30 * gp.tileSize; // Col 13
-        gp.obj[178].worldY = 44* gp.tileSize; // Row 36
+        gp.obj[178].worldY = 44 * gp.tileSize; // Row 36
 
         gp.obj[179] = new OBJ_Water();
         gp.obj[179].worldX = 31 * gp.tileSize; // Col 13
-        gp.obj[179].worldY = 43* gp.tileSize; // Row 36
+        gp.obj[179].worldY = 43 * gp.tileSize; // Row 36
 
         gp.obj[180] = new OBJ_Water();
         gp.obj[180].worldX = 31 * gp.tileSize; // Col 13
-        gp.obj[180].worldY = 43* gp.tileSize; // Row 36
+        gp.obj[180].worldY = 43 * gp.tileSize; // Row 36
 
         gp.obj[181] = new OBJ_Water();
         gp.obj[181].worldX = 32 * gp.tileSize; // Col 13
-        gp.obj[181].worldY = 42* gp.tileSize; // Row 36
+        gp.obj[181].worldY = 42 * gp.tileSize; // Row 36
 
         gp.obj[182] = new OBJ_Water();
         gp.obj[182].worldX = 33 * gp.tileSize; // Col 13
-        gp.obj[182].worldY = 41* gp.tileSize; // Row 36
+        gp.obj[182].worldY = 41 * gp.tileSize; // Row 36
 
         gp.obj[183] = new OBJ_Water();
         gp.obj[183].worldX = 34 * gp.tileSize; // Col 13
-        gp.obj[183].worldY = 40* gp.tileSize; // Row 36
+        gp.obj[183].worldY = 40 * gp.tileSize; // Row 36
 
         gp.obj[184] = new OBJ_Water();
         gp.obj[184].worldX = 35 * gp.tileSize; // Col 13
-        gp.obj[184].worldY = 39* gp.tileSize; // Row 36
+        gp.obj[184].worldY = 39 * gp.tileSize; // Row 36
 
         gp.obj[185] = new OBJ_Water();
         gp.obj[185].worldX = 36 * gp.tileSize; // Col 13
-        gp.obj[185].worldY = 39* gp.tileSize; // Row 36
+        gp.obj[185].worldY = 39 * gp.tileSize; // Row 36
 
         gp.obj[186] = new OBJ_Fences();
         gp.obj[186].worldX = 0 * gp.tileSize; // Col 13
@@ -1030,7 +1032,7 @@ public class Map1Setter {
 
         gp.obj[253] = new OBJ_Water();
         gp.obj[253].worldX = 48 * gp.tileSize; // Col 13
-        gp.obj[253].worldY = 30* gp.tileSize; // Row 36
+        gp.obj[253].worldY = 30 * gp.tileSize; // Row 36
 
         gp.obj[254] = new OBJ_Water();
         gp.obj[254].worldX = 48 * gp.tileSize; // Col 13
@@ -2579,7 +2581,7 @@ public class Map1Setter {
         gp.obj[10] = chief;
 
         NPC_Ranger ranger = new NPC_Ranger(gp);
-        ranger.worldX = 8  * gp.tileSize; // <-- adjust as needed
+        ranger.worldX = 8 * gp.tileSize; // <-- adjust as needed
         ranger.worldY = 29 * gp.tileSize;
         gp.obj[11] = ranger;
 
@@ -2587,6 +2589,49 @@ public class Map1Setter {
         frank.worldX = 14 * gp.tileSize;  // <-- adjust as needed
         frank.worldY = 36 * gp.tileSize;
         gp.obj[12] = frank;
+
+
+        // ── Lock chief/ranger after weapon received ───────────
+        if (phase == GameStateManager.Map1Phase.FIGHT_ENEMIES
+                || phase == GameStateManager.Map1Phase.FIGHT_BOSS
+                || phase == GameStateManager.Map1Phase.COMPLETE) {
+            chief.interacted  = true;
+            ranger.interacted = true;
+        }
+
+        // ── Second visit NPCs (COLLECT_ESSENCE phase only) ────
+        if (phase == GameStateManager.Map1Phase.COLLECT_ESSENCE) {
+            // Healer
+            NPC_Healer healer = new NPC_Healer(gp);
+            healer.worldX = 31 * gp.tileSize;
+            healer.worldY = 8 * gp.tileSize;
+            gp.obj[14] = healer;
+
+            // Farmer
+            NPC_Farmer farmer = new NPC_Farmer(gp);
+            farmer.worldX = 47 * gp.tileSize;
+            farmer.worldY = 10 * gp.tileSize;
+            gp.obj[15] = farmer;
+
+            // Woman Villager
+            NPC_WomanVillager woman = new NPC_WomanVillager(gp);
+            woman.worldX = 31* gp.tileSize;
+            woman.worldY = 13 * gp.tileSize;
+            gp.obj[16] = woman;
+
+            // Chief and Ranger get new second-visit dialogue
+            chief.interacted = false;  // re-enable for new dialogue
+            ranger.interacted = false;
+        }
+
+        // ── Spawn enemies only after weapon phase ─────────────
+        if (phase == GameStateManager.Map1Phase.FIGHT_ENEMIES
+                || phase == GameStateManager.Map1Phase.FIGHT_BOSS
+                || phase == GameStateManager.Map1Phase.COMPLETE) {
+            gp.spawnMap1Enemies();
+        }
+
+
 
 
         gp.obj[617] = new OBJ_W1();
@@ -2868,17 +2913,168 @@ public class Map1Setter {
         gp.obj[686] = new OBJ_Portal();
         gp.obj[686].worldX = 44 * gp.tileSize; // Col 13
         gp.obj[686].worldY = 35 * gp.tileSize; // Row 36
+/*
+        // ── Roaming Enemies ───────────────────────────────────
+        // Only spawn if not yet defeated
+        if (!Main.GameStateManager.get().map1EnemiesDefeated_masklet) {
+            MapEnemy_Masklet masklet = new MapEnemy_Masklet(gp);
+            masklet.worldX = 30 * gp.tileSize;  // adjust to your map
+            masklet.worldY = 15 * gp.tileSize;
+            setupEnemyCallbacks(masklet, 0);
+            gp.obj[20] = masklet;
+        }
 
+        if (!Main.GameStateManager.get().map1EnemiesDefeated_zenzilla) {
+            MapEnemy_Zenzilla zenzilla = new MapEnemy_Zenzilla(gp);
+            zenzilla.worldX = 35 * gp.tileSize; // adjust to your map
+            zenzilla.worldY = 20 * gp.tileSize;
+            setupEnemyCallbacks(zenzilla, 1);
+            gp.obj[21] = zenzilla;
+        }
+    }
 
+    private void setupEnemyCallbacks(
+            Entities.Enemies.EnemyEntity enemy, int enemySlot) {
+        enemy.setOnBattleTrigger(() -> {
+            // Trigger battle transition then launch battle
+            gp.battleTransition.start(() -> {
+                launchBattle(enemy, enemySlot);
+            });
+        });
+    }
 
+    private void launchBattle(
+            Entities.Enemies.EnemyEntity mapEnemy, int slot) {
 
+        Entities.Enemies.Enemy battleEnemy = mapEnemy.createBattleEnemy();
 
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame)
+                        javax.swing.SwingUtilities.getWindowAncestor(gp);
+        if (frame == null) return;
 
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, battleEnemy);
 
+        bp.setOnBattleEnd(() -> {
+            // Check win/lose
+            boolean won = battleEnemy.getHp() <= 0;
 
+            if (won) {
+                // Mark enemy as defeated
+                mapEnemy.defeated = true;
+                mapEnemy.available = false;
 
+                // Update objective counter
+                Main.GameStateManager.get().map1EnemiesDefeated++;
 
+                int count = Main.GameStateManager.get().map1EnemiesDefeated;
+                gp.objectivesHUD.updateProgress(count);
 
+                // Both enemies defeated — trigger boss spawn message
+                if (count >= 2 && !Main.GameStateManager.get().map1BossSpawned) {
+                    Main.GameStateManager.get().map1BossSpawned = true;
+                    gp.screenMessage.show(
+                            "The Boss Has Spawned!",
+                            "Find and defeat Zed the Sorcerer!",
+                            180, false);
+                    gp.objectivesHUD.setObjective("Defeat the Boss", 0, 1);
+                    spawnMap1Boss();
+                }
+            } else {
+                // Player lost — game over
+                gp.screenMessage.show("Game Over", null, 120, false);
+                javax.swing.Timer t = new javax.swing.Timer(2500, e -> {
+                    // Return to title panel
+                    Main.CurseOfZed coz = new Main.CurseOfZed();
+                    coz.setVisible(true);
+                    frame.dispose();
+                });
+                t.setRepeats(false);
+                t.start();
+            }
 
+            // Return to game
+            frame.getContentPane().removeAll();
+            frame.add(gp);
+            frame.revalidate();
+            frame.repaint();
+            gp.requestFocusInWindow();
+        });
+
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void spawnMap1Boss() {
+        Entities.Enemies.MapBoss_Thorncrusher boss =
+                new Entities.Enemies.MapBoss_Thorncrusher(gp);
+        boss.worldX = 40 * gp.tileSize; // adjust to your map
+        boss.worldY = 25 * gp.tileSize;
+
+        boss.setOnBattleTrigger(() -> {
+            gp.battleTransition.start(() -> {
+                launchBossBattle(boss);
+            });
+        });
+
+        gp.obj[30] = boss;
+    }
+
+    private void launchBossBattle(MapBoss_Thorncrusher mapBoss) {
+        Enemy bossEnemy = mapBoss.createBattleEnemy();
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame)
+                        javax.swing.SwingUtilities.getWindowAncestor(gp);
+        if (frame == null) return;
+
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
+
+        bp.setOnBattleEnd(() -> {
+            boolean won = bossEnemy.getHp() <= 0;
+
+            if (won) {
+                mapBoss.defeated = true;
+                mapBoss.available = false;
+                Main.GameStateManager.get().map1BossDefeated = true;
+                gp.objectivesHUD.updateProgress(1);
+                gp.screenMessage.show(
+                        "The Bridge to the Next Map Is Now Open!",
+                        null, 180, true);
+            } else {
+                // Game over — return to title
+                javax.swing.Timer t = new javax.swing.Timer(2500, e -> {
+                    Main.CurseOfZed coz = new Main.CurseOfZed();
+                    coz.setVisible(true);
+                    frame.dispose();
+                });
+                t.setRepeats(false);
+                t.start();
+            }
+
+            frame.getContentPane().removeAll();
+            frame.add(gp);
+            frame.revalidate();
+            frame.repaint();
+            gp.requestFocusInWindow();
+        });
+
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+
+ */
+    }
 }
-}
+
+
+
+
+
+
+
+
+

@@ -279,7 +279,7 @@ public class BattlePanel extends JPanel {
         animationTimer.start();
     }
 
-    private void stopAnimationTimer() {
+    public void stopAnimationTimer() {
         if (animationTimer != null) {
             animationTimer.stop();
             animationTimer = null;
@@ -375,30 +375,32 @@ public class BattlePanel extends JPanel {
         btnBag.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
 
-            // Create callback for item selection
             itemSelectionCallback = (item, target) -> {
-                System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
-                battle.setPendingItem(item, target);
+                System.out.println("Item selected: " + item.getName()
+                        + ", target: " + (target != null ? target.getName() : "null"));
 
-                // Close inventory and return to battle
+                // Restore the battle panel first
                 parentFrame.getContentPane().removeAll();
                 parentFrame.add(BattlePanel.this);
                 parentFrame.revalidate();
                 parentFrame.repaint();
 
-                // Execute the item as a turn action
-                battle.executeItemTurn();
+                // Then execute item as a turn — DO NOT call battle.startBattle()
+                battle.setPendingItem(item, target);
             };
 
-            InventoryPanel invPanel = new InventoryPanel(parentFrame, playerEntity, true,
+            InventoryPanel invPanel = new InventoryPanel(
+                    parentFrame,
+                    playerEntity,
+                    true,
                     itemSelectionCallback,
                     () -> {
-                        // Back button callback - just return to battle
+                        // Back button: just restore panel, battle is still mid-turn
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
                         parentFrame.repaint();
-                        battle.startBattle();
+                        // DO NOT call battle.startBattle() here
                     }
             );
             invPanel.setBattle(battle);
@@ -409,6 +411,7 @@ public class BattlePanel extends JPanel {
             parentFrame.repaint();
         });
         add(btnBag);
+
 
         btnRun = new BattleButton("Run");
         btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);

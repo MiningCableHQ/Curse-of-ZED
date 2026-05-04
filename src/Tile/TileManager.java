@@ -112,6 +112,12 @@ public class TileManager {
             tile[39] = new Tile();
             tile[39].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/water32x32.png"));
 
+            tile[2].collision = true;   // water.png
+            tile[13].collision = false;  // water_tile_32x32.png
+            tile[14].collision = false;  // animated water frame
+            tile[15].collision = true;  // map1 water
+            tile[16].collision = true;  // waterfall
+            tile[19].collision = true;  // splash
             System.out.println("Image loaded finished");
         } catch (IOException e) {
             e.printStackTrace();

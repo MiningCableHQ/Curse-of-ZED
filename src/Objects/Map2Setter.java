@@ -1,15 +1,19 @@
 package Objects;
 
+import Entities.Characters.*;
 import Main.GamePanel;
 import Objects.*;
 public class Map2Setter {
     GamePanel gp;
-
+    Main.GameStateManager gsm;
     public Map2Setter(GamePanel gp) {
-        this.gp = gp;
+        this.gp = gp; this.gsm = Main.GameStateManager.get();
     }
 
     public void setObjectsPart1() {
+
+
+
         gp.obj[0] = new OBJ_Tree();
         gp.obj[0].worldX = 1 * gp.tileSize; // Col 1
         gp.obj[0].worldY = 8 * gp.tileSize; // Row 8
@@ -3440,12 +3444,40 @@ public class Map2Setter {
         gp.obj[851].worldX = 13 * gp.tileSize; // Col 13
         gp.obj[851].worldY = 36 * gp.tileSize; // Row 36
 
+        // ── Shop NPC: Bukog ───────────────────────────────────
+        NPC_Bukog bukog = new NPC_Bukog(gp);
+        bukog.worldX = 19 * gp.tileSize; // adjust to your map
+        bukog.worldY = 35 * gp.tileSize;
+        gp.obj[1050] = bukog;
 
-
-
+        // Map 2 ALWAYS has Frankenstein (available=false until enemies defeated)
+// Frankenstein — hidden until first-run enemies are defeated + easter egg active
+        NPC_Frankenstein frank = new NPC_Frankenstein(gp);
+        frank.worldX = 35 * gp.tileSize;  // tucked in a corner, adjust to taste
+        frank.worldY = 5 * gp.tileSize;
+        frank.available = false;
+        frank.setVisible(false);
+        frank.showOnMinimap = false;
+        gp.obj[1051] = frank;
 
     }
     public void setObjectsPart2() {
+        if (!gsm.isMap2Revisit) {
+            if (!gsm.map2EnemiesDefeated_run1) {
+                gp.spawnMap2Enemies();
+            }
+        } else {
+            // Second visit — spawn fresh enemies, no easter egg/boss
+            if (gsm.map2RevisitEnemiesDefeated < 2) {
+                gp.spawnMap2RevisitEnemies();
+            }
+        }
+
+        // ── Spawn Zed boss if triggered but not yet defeated ──
+        if (gsm.map2BossSpawned && !gsm.map2BossDefeated
+                && !gsm.isMap2Revisit) {
+            gp.spawnMap2Boss();
+        }
 //continue here for 997
         //added
         gp.obj[852] = new OBJ_Grey();
@@ -4338,6 +4370,8 @@ public class Map2Setter {
         gp.obj[1044] = new OBJ_Grey();
         gp.obj[1044].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[1044].worldY = 49 * gp.tileSize; // Row 36
+
+
 
 
     }

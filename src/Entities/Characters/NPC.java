@@ -13,7 +13,7 @@ public abstract class NPC extends SuperObject {
     public String npcName;
     public boolean interacted = false; // set true after first full dialogue
     public boolean available  = true;  // can be toggled off after story events
-
+    public boolean showOnMinimap = true;
     // Portrait image shown in dialogue box (250x250)
     protected BufferedImage portrait;
 

@@ -29,7 +29,7 @@ public class PreciseShot extends Move {
             totalATK += this.attack; // this move's atk
 
             // Multiply sum to damage multiplier
-            double damage = totalATK * 1.50;
+            double damage = totalATK * 100; /** Ako gi op**/
             double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
             setDamageDealt(actualDamage);
