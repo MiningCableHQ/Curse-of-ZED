@@ -1,6 +1,7 @@
 package Entities.Characters;
 
 import Items.Consumables.Heal.Healing;
+import Items.Weapons.Ranger.*;
 import Main.*;
 import Moves.Ranger.*;
 
@@ -26,6 +27,7 @@ public class Ranger extends Player {
         speed = 50;
         dmgResistance = 0.10;
         loadMoves();
+        //setWeapon(new Swiftwind(5));
     }
 
     @Override
@@ -195,6 +197,24 @@ public class Ranger extends Player {
 
         // Recalculate defense
         this.defense = defense + flatDefenseBonus;
+    }
+
+    //For mistwood weapon passive
+    private double flatSpeedBonus = 0;
+
+    public void addFlatSpeedBonus(double bonus) {
+        flatSpeedBonus += bonus;
+        recalculateSpeed();
+    }
+
+    public void removeFlatSpeedBonus(double bonus) {
+        flatSpeedBonus -= bonus;
+        if (flatSpeedBonus < 0) flatSpeedBonus = 0;
+        recalculateSpeed();
+    }
+
+    private void recalculateSpeed() {
+        this.speed = speed + flatSpeedBonus;
     }
 
     // Getters

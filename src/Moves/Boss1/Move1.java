@@ -1,5 +1,6 @@
 package Moves.Boss1;
 
+import Combat.StatusEffects.Poison;
 import Entities.Enemies.Thorncrusher;
 import Entities.Entity;
 import Moves.Move;
@@ -29,6 +30,9 @@ public class Move1 extends Move {
                 setDamageDealt(actualDamage);
                 setMessage(thorncrusher.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
 
+                if(rand.nextDouble() <= 0.20){
+                    target.addStatusEffect(new Poison(5));
+                }
             } else {
                 setDamageDealt(0);
                 setMessage(thorncrusher.getName() + " used " + this.name + " but it missed!");
@@ -36,4 +40,3 @@ public class Move1 extends Move {
         }
     }
 }
-//TODO FRANK 20% chance to inflict poison

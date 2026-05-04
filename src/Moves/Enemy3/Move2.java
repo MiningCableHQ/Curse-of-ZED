@@ -1,5 +1,6 @@
 package Moves.Enemy3;
 
+import Combat.StatusEffects.Burn;
 import Entities.Enemies.Sanjveil;
 import Entities.Entity;
 import Moves.Move;
@@ -28,7 +29,8 @@ public class Move2 extends Move {
 
                 setDamageDealt(actualDamage);
                 setMessage(sanjveil.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
-                //TODO FRANK guaranteed inflict burn
+
+                target.addStatusEffect(new Burn(1));
             } else {
                 setDamageDealt(0);
                 setMessage(sanjveil.getName() + " used " + this.name + " but missed!");

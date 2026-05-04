@@ -29,6 +29,10 @@ public class Move3 extends Move {
 
                 setDamageDealt(actualDamage);
                 setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+
+                if(rand.nextDouble() <= 0.30){
+                    Move.currentBattle.applyFrozen(target);
+                }
             } else {
                 setDamageDealt(0);
                 setMessage(zed.getName() + " used " + this.name + " but missed!");
@@ -36,4 +40,3 @@ public class Move3 extends Move {
         }
     }
 }
-//TODO FRANK 30% chance to inflict frozen
