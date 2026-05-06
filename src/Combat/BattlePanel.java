@@ -283,7 +283,7 @@ public class BattlePanel extends JPanel {
         animationTimer.start();
     }
 
-    private void stopAnimationTimer() {
+    public void stopAnimationTimer() {
         if (animationTimer != null) {
             animationTimer.stop();
             animationTimer = null;

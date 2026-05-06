@@ -48,6 +48,15 @@ public class GamePanel extends JPanel implements Runnable {
 
     private EssenceParticle essenceParticle = new EssenceParticle();
 
+    // Inventory management
+    private InventoryPanel currentInventoryPanel;
+    private boolean inventoryOpen = false;
+    private JFrame parentFrame;
+
+    // Character management
+    private CharacterPanel currentCharacterPanel;
+    private boolean characterOpen = false;
+
     // ── Screen settings ───────────────────────────────────────────
     public final int originalTileSize = 32;
     public final int scale            = 2;
@@ -336,6 +345,26 @@ public class GamePanel extends JPanel implements Runnable {
             player.update();
         }
 
+        // ── Inventory key press ───────────────────────────────────
+        if (keyH.iPressed) {
+            if (!inventoryOpen && !characterOpen) {
+                openInventory();
+            } else if (inventoryOpen) {
+                closeInventory();
+            }
+            keyH.iPressed = false;
+        }
+
+        // ── Character panel key press ─────────────────────────────
+        if (keyH.cPressed) {
+            if (!characterOpen && !inventoryOpen) {
+                openCharacter();
+            } else if (characterOpen) {
+                closeCharacter();
+            }
+            keyH.cPressed = false;
+        }
+
         // ── E key interactions ────────────────────────────────────
         if (keyH.ePressed && !ePressedLastFrame && !dialogueSystem.isActive()) {
 
@@ -398,9 +427,6 @@ public class GamePanel extends JPanel implements Runnable {
                     }
 
                 } else if (nearbyNPC.npcName.equals("Frankenstein")) {
-                    // Frankenstein is only interactable during Map 2 first run,
-                    // after the boss has spawned and Frank is available.
-                    // Block in ALL other situations (Map 1, Map 2 revisit, Map 3).
                     if (currentMap == 1
                             && !GameStateManager.get().isMap2Revisit
                             && nearbyNPC.available
@@ -435,6 +461,56 @@ public class GamePanel extends JPanel implements Runnable {
                     220, false);
             objectivesHUD.markEggCodeUnlocked();
         }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  INVENTORY & CHARACTER PANEL
+    // ═════════════════════════════════════════════════════════════
+    private void openInventory() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        inventoryOpen = true;
+        currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
+                (item, target) -> System.out.println("Cannot use items outside of combat!"),
+                () -> closeInventory()
+        );
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentInventoryPanel);
+        parentFrame.revalidate(); parentFrame.repaint();
+        currentInventoryPanel.requestFocusInWindow();
+    }
+
+    public void closeInventory() {
+        inventoryOpen = false;
+        currentInventoryPanel = null;
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate(); parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
+    private void openCharacter() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        characterOpen = true;
+        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
+                () -> closeCharacter()
+        );
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentCharacterPanel);
+        parentFrame.revalidate(); parentFrame.repaint();
+        currentCharacterPanel.requestFocusInWindow();
+    }
+
+    public void closeCharacter() {
+        characterOpen = false;
+        currentCharacterPanel = null;
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate(); parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -918,7 +994,6 @@ public class GamePanel extends JPanel implements Runnable {
                         screenMessage.show("Objectives Cleared!",
                                 "Final Fight Unlocked — Proceed to Map 3", 180, false);
                         objectivesHUD.setSimpleObjective("Proceed to Map 3");
-
                     }
                 });
                 t.setRepeats(false); t.start();
@@ -936,8 +1011,6 @@ public class GamePanel extends JPanel implements Runnable {
         frame.revalidate(); frame.repaint();
     }
 
-
-
     // ═════════════════════════════════════════════════════════════
     //  MAP 2 BOSS
     // ═════════════════════════════════════════════════════════════
@@ -952,17 +1025,11 @@ public class GamePanel extends JPanel implements Runnable {
         obj[30] = zed;
     }
 
-    /**
-     * Schedules Frankenstein to become visible after the easter-egg
-     * spawn message has finished showing (3.5 s delay).
-     * Called only during the FIRST Map 2 run after both enemies are defeated.
-     */
     public void enableFrankenstein() {
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] instanceof NPC_Frankenstein) {
                 NPC_Frankenstein frank = (NPC_Frankenstein) obj[i];
 
-                // Start fully hidden and unavailable
                 frank.available     = false;
                 frank.setVisible(false);
                 frank.showOnMinimap = false;
@@ -974,11 +1041,9 @@ public class GamePanel extends JPanel implements Runnable {
                     battleTransition.start(() -> launchFrankensteinBattle(frank));
                 });
 
-                // Reveal AFTER the easter-egg screen message window (~3.5 s)
                 javax.swing.Timer revealTimer = new javax.swing.Timer(3500, e -> {
                     frank.available     = true;
                     frank.setVisible(true);
-                    // Keep off minimap until player finds him via exploration
                     frank.showOnMinimap = false;
                     System.out.println("✅ Frankenstein NOW VISIBLE (first run) at "
                             + frank.worldX / tileSize + "," + frank.worldY / tileSize);
@@ -1044,7 +1109,6 @@ public class GamePanel extends JPanel implements Runnable {
             boolean won = battleEnemy.getHp() <= 0;
             bp.stopAnimationTimer();
 
-            // ── Panel swap — identical pattern to all other battles ──
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
                 frame.add(gpRef);
@@ -1055,7 +1119,6 @@ public class GamePanel extends JPanel implements Runnable {
                 gpRef.map2PlayerFrozen = false;
             });
 
-            // ── Win/lose logic outside invokeLater — same as other battles ──
             if (won) {
                 frankNPC.defeated  = true;
                 frankNPC.available = false;
@@ -1123,7 +1186,6 @@ public class GamePanel extends JPanel implements Runnable {
         player.worldY = tileSize * 27;
 
         objectivesHUD.setObjective("Collect 5 Essence", 0, 5);
-        // Clear Map 2 challenge and egg objectives — they don't belong in Map 1 revisit
         objectivesHUD.clearChallengeObjective();
         objectivesHUD.clearEggCodeObjective();
 
