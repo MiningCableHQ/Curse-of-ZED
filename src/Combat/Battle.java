@@ -996,7 +996,6 @@ public class Battle {
         return alive;
     }
 
-    /** End the battle */
     private void endBattle(boolean playerWon) {
         if (!isBattleActive) return;
 
@@ -1004,8 +1003,9 @@ public class Battle {
         isWaitingForPlayerInput = false;
         isExecutingTurn = false;
 
-        String endMessage = playerWon ? "All enemies have been defeated! You win!" :
-                player.getName() + " has been defeated! Game Over!";
+        String endMessage = playerWon
+                ? "All enemies defeated! Victory!"
+                : player.getName() + " has been defeated! Game Over!";
         battlePanel.setBattleMessage(endMessage);
         battlePanel.repaint();
 
@@ -1018,12 +1018,15 @@ public class Battle {
             ((Mage) player).resetBattleBuffs();
         }
 
-        Timer endTimer = new Timer(2000, e -> {
+        int delay = playerWon ? 1500 : 2500;
+
+        Timer endTimer = new Timer(delay, e -> {
             if (onBattleEnd != null) {
-                onBattleEnd.run();
+                onBattleEnd.run(); // This handles BOTH win and lose — GamePanel decides
             }
+            // Only dispose if no callback handled it
             Window window = SwingUtilities.getWindowAncestor(battlePanel);
-            if (window != null) {
+            if (window != null && onBattleEnd == null) {
                 window.dispose();
             }
         });

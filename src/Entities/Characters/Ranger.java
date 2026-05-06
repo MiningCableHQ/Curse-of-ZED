@@ -17,8 +17,8 @@ public class Ranger extends Player {
 
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
-        name = "Ranger";
-        hp = 880;
+        name = "Archer";
+        hp = 10000; /** Ako gi op**/
         maxHp = hp;
         attack = 240;
         maxAttack = attack;

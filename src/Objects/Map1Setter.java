@@ -1,7 +1,9 @@
 package Objects;
 
+import Entities.Characters.*;
+import Entities.Enemies.*;
 import Main.GamePanel;
-import Objects.*;
+import Main.GameStateManager;
 public class Map1Setter {
     GamePanel gp;
 
@@ -10,6 +12,7 @@ public class Map1Setter {
     }
 
     public void setObjects() {
+        GameStateManager.Map1Phase phase = GameStateManager.get().map1Phase;
 
         gp.obj[0] = new OBJ_BlueFlower();
         gp.obj[0].worldX = 7 * gp.tileSize; // Column 10
@@ -3197,7 +3200,61 @@ public class Map1Setter {
         gp.obj[943].worldX = 36 * gp.tileSize; // Column 10
         gp.obj[943].worldY = 5 * gp.tileSize; // Row 10
 
+        NPC_Chief chief = new NPC_Chief(gp);
+        chief.worldX = 34 * gp.tileSize;  // <-- set to wherever Chief stands
+        chief.worldY = 20 * gp.tileSize;
+        gp.obj[10] = chief;
 
+        NPC_Ranger ranger = new NPC_Ranger(gp);
+        ranger.worldX = 8 * gp.tileSize; // <-- adjust as needed
+        ranger.worldY = 29 * gp.tileSize;
+        gp.obj[11] = ranger;
+
+        NPC_Frank frank = new NPC_Frank(gp);
+        frank.worldX = 14 * gp.tileSize;  // <-- adjust as needed
+        frank.worldY = 36 * gp.tileSize;
+        gp.obj[12] = frank;
+
+
+        // ── Lock chief/ranger after weapon received ───────────
+        if (phase == GameStateManager.Map1Phase.FIGHT_ENEMIES
+                || phase == GameStateManager.Map1Phase.FIGHT_BOSS
+                || phase == GameStateManager.Map1Phase.COMPLETE) {
+            chief.interacted  = true;
+            ranger.interacted = true;
+        }
+
+        // ── Second visit NPCs (COLLECT_ESSENCE phase only) ────
+        if (phase == GameStateManager.Map1Phase.COLLECT_ESSENCE) {
+            // Healer
+            NPC_Healer healer = new NPC_Healer(gp);
+            healer.worldX = 31 * gp.tileSize;
+            healer.worldY = 8 * gp.tileSize;
+            gp.obj[14] = healer;
+
+            // Farmer
+            NPC_Farmer farmer = new NPC_Farmer(gp);
+            farmer.worldX = 47 * gp.tileSize;
+            farmer.worldY = 10 * gp.tileSize;
+            gp.obj[15] = farmer;
+
+            // Woman Villager
+            NPC_WomanVillager woman = new NPC_WomanVillager(gp);
+            woman.worldX = 31* gp.tileSize;
+            woman.worldY = 13 * gp.tileSize;
+            gp.obj[16] = woman;
+
+            // Chief and Ranger get new second-visit dialogue
+            chief.interacted = false;  // re-enable for new dialogue
+            ranger.interacted = false;
+        }
+
+        // ── Spawn enemies only after weapon phase ─────────────
+        if (phase == GameStateManager.Map1Phase.FIGHT_ENEMIES
+                || phase == GameStateManager.Map1Phase.FIGHT_BOSS
+                || phase == GameStateManager.Map1Phase.COMPLETE) {
+            gp.spawnMap1Enemies();
+        }
 
 
 

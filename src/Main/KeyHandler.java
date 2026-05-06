@@ -5,8 +5,7 @@ import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed, shiftPressed;
-    public boolean iPressed;  // Inventory key
-    public boolean cPressed;  // Character panel key
+    public boolean ePressed;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -31,15 +30,7 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_SHIFT){
             shiftPressed = true;
         }
-        if(code == KeyEvent.VK_I){
-            iPressed = true;
-        }
-        if(code == KeyEvent.VK_C){
-            cPressed = true;
-        }
-        if(code == KeyEvent.VK_ESCAPE){
-            // ESC handled separately in panels
-        }
+        if (code == KeyEvent.VK_E) { ePressed = true; }
     }
 
     @Override
@@ -61,11 +52,7 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_SHIFT){
             shiftPressed = false;
         }
-        if(code == KeyEvent.VK_I){
-            iPressed = false;
-        }
-        if(code == KeyEvent.VK_C){
-            cPressed = false;
-        }
+        if (code == KeyEvent.VK_E) { ePressed = false; }
+
     }
 }

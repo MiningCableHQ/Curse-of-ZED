@@ -218,7 +218,7 @@ public class CharacterSelectionPanel extends JPanel {
     private Timer titleAnimTimer;
 
     // ── Background ────────────────────────────────────────────────
-    private BufferedImage bgImage;
+    private Image  bgImage;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructors
@@ -277,11 +277,27 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void loadImages() {
-        try {
-            bgImage = ImageIO.read(new java.io.File("background.jpg"));
-        } catch (Exception e) {
-            bgImage = null;
+        // Try loading from the file system first (same folder as the .jar / project root)
+        java.io.File f = new java.io.File("backgroundd.gif");
+        if (f.exists()) {
+            // ImageIcon uses Java's Toolkit which supports animated GIFs natively
+            ImageIcon icon = new ImageIcon(f.getAbsolutePath());
+            // Register this panel as the observer so repaints fire on each GIF frame
+            icon.setImageObserver(this);
+            bgImage = icon.getImage();
+            return;
         }
+
+        // Fallback: try loading from classpath resources
+        java.net.URL url = getClass().getResource("/backgroundd.gif");
+        if (url != null) {
+            ImageIcon icon = new ImageIcon(url);
+            icon.setImageObserver(this);
+            bgImage = icon.getImage();
+            return;
+        }
+
+        bgImage = null; // will use gradient fallback in paintBackground()
     }
 
     private void initAnimations() {
@@ -459,7 +475,7 @@ public class CharacterSelectionPanel extends JPanel {
     // ── Background ────────────────────────────────────────────────
     private void paintBackground(Graphics2D g2) {
         if (bgImage != null) {
-            double ia = (double) bgImage.getWidth() / bgImage.getHeight();
+            double ia = (double) bgImage.getWidth(this) / bgImage.getHeight(this);
             double pa = (double) W / H;
             int bw, bh;
             if (ia > pa) { bh = H; bw = (int)(H * ia); }
