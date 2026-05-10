@@ -1,5 +1,6 @@
 package Objects;
 
+import Entities.Enemies.ZED;
 import Main.GamePanel;
 import Main.GameStateManager;
 import Objects.*;
@@ -4333,6 +4334,7 @@ public class Map3Setter {
     private void launchMap3EnemyBattle(Entities.Enemies.MapEnemy_Reyven reyven) {
         final double atkBeforeBattle = gp.player.getAttack();
         final double defBeforeBattle = gp.player.getDefense();
+        final double spdBeforeBattle = gp.player.getSpeed();
 
         // Randomize number of enemies between 1 and 3
         int enemyCount = 1 + new Random().nextInt(3);
@@ -4349,16 +4351,16 @@ public class Map3Setter {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(gp.player, enemiesInBattle.get(0));
+            bp = new Combat.BattlePanel(gp.player, enemiesInBattle.get(0), 3);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(gp.player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1));
+                    enemiesInBattle.get(1), 3);
         } else {
             bp = new Combat.BattlePanel(gp.player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2));
+                    enemiesInBattle.get(2), 3);
         }
 
         final GamePanel gpRef = gp;
@@ -4381,6 +4383,7 @@ public class Map3Setter {
             // Reset all buffs and restore stats after battle
             gp.player.setAttack(atkBeforeBattle);
             gp.player.setDefense(defBeforeBattle);
+            gp.player.setSpeed(spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -4449,12 +4452,13 @@ public class Map3Setter {
     private void launchMap3BossBattle(Entities.Enemies.MapBoss_Zed zed) {
         final double atkBeforeBattle = gp.player.getAttack();
         final double defBeforeBattle = gp.player.getDefense();
+        final double spdBeforeBattle = gp.player.getSpeed();
 
         javax.swing.JFrame frame =
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy, 3);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, new ZED(), 3);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
@@ -4463,6 +4467,7 @@ public class Map3Setter {
             // Reset all buffs and restore stats after battle
             gp.player.setAttack(atkBeforeBattle);
             gp.player.setDefense(defBeforeBattle);
+            gp.player.setSpeed(spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();

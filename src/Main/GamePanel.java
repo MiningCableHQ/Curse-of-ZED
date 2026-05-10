@@ -751,16 +751,16 @@ public class GamePanel extends JPanel implements Runnable {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0));
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 1);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1));
+                    enemiesInBattle.get(1), 1);
         } else {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2));
+                    enemiesInBattle.get(2), 1);
         }
 
         final GamePanel gpRef = this;
@@ -1010,16 +1010,16 @@ public class GamePanel extends JPanel implements Runnable {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0));
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 2);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1));
+                    enemiesInBattle.get(1), 2);
         } else {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2));
+                    enemiesInBattle.get(2), 2);
         }
 
         final GamePanel gpRef = this;
@@ -1151,28 +1151,86 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void launchMap2RevisitEnemyBattle(Entities.Enemies.EnemyEntity mapEnemy,
                                               boolean isSanjveil) {
-        Entities.Enemies.Enemy battleEnemy = mapEnemy.createBattleEnemy();
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
+
         javax.swing.JFrame frame =
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(mapEnemy.createBattleEnemy());
+        }
+
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 2);
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1), 2);
+        } else {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1),
+                    enemiesInBattle.get(2), 2);
+        }
+
         final GamePanel gpRef = this;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
 
         bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
+            boolean playerWon = player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
                 frame.add(gpRef);
-                frame.revalidate(); frame.repaint();
+                frame.revalidate();
+                frame.repaint();
                 gpRef.requestFocusInWindow();
                 battleTransition = new BattleTransition();
                 map2PlayerFrozen = false;
             });
 
             if (won) {
+                int totalExp = 0;
+                for (Entities.Enemies.Enemy e : finalEnemies) {
+                    totalExp += e.getExpYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
+                }
+
+                player.gainExp(totalExp, 3);
+
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+
+                // Show EXP gained message
+                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+
                 mapEnemy.defeated = true;
                 mapEnemy.available = false;
+
                 GameStateManager.get().map2RevisitEnemiesDefeated++;
                 int count = GameStateManager.get().map2RevisitEnemiesDefeated;
 
@@ -1185,11 +1243,13 @@ public class GamePanel extends JPanel implements Runnable {
                         objectivesHUD.setSimpleObjective("Proceed to Map 3");
                     }
                 });
-                t.setRepeats(false); t.start();
+                t.setRepeats(false);
+                t.start();
             } else {
-                javax.swing.Timer t = new javax.swing.Timer(2500,
+                javax.swing.Timer gameOverTimer = new javax.swing.Timer(2500,
                         ev -> returnToTitleScreen(frame));
-                t.setRepeats(false); t.start();
+                gameOverTimer.setRepeats(false);
+                gameOverTimer.start();
                 javax.swing.SwingUtilities.invokeLater(() ->
                         screenMessage.show("Game Over", null, 120, false));
             }
@@ -1197,9 +1257,9 @@ public class GamePanel extends JPanel implements Runnable {
 
         frame.getContentPane().removeAll();
         frame.add(bp);
-        frame.revalidate(); frame.repaint();
+        frame.revalidate();
+        frame.repaint();
     }
-
     // ═════════════════════════════════════════════════════════════
     //  MAP 2 BOSS
     // ═════════════════════════════════════════════════════════════
