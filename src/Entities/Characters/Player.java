@@ -1,13 +1,15 @@
 package Entities.Characters;
 
 import Entities.Entity;
+import Items.Consumables.Buff.*;
 import Items.Inventory;
 import Items.Weapons.Mage.ElementalCodex;
+import Items.Weapons.Ranger.Mistwood;
+import Items.Weapons.Ranger.Slowstring;
+import Items.Weapons.Swordsman.RazorEdge;
+import Items.Weapons.Swordsman.Stunblade;
 import Main.*;
 import Moves.Move;
-import Items.Consumables.Buff.LesserHardening;
-import Items.Consumables.Buff.LesserPower;
-import Items.Consumables.Buff.Power;
 import Items.Consumables.Heal.GreaterHealing;
 import Items.Consumables.Heal.LesserHealing;
 import Items.Weapons.Mage.AnkhStaff;
@@ -221,6 +223,14 @@ public abstract class Player extends Entity {
         inventory.addItem(new ElementalCodex());
         inventory.addItem(new Swiftwind());
         inventory.addItem(new Unyielding());
+
+        //I delete lang if tiwason ang duwa
+        inventory.addItem(new Arcanum());
+        inventory.addItem(new AnkhStaff());
+        inventory.addItem(new Slowstring());
+        inventory.addItem(new Mistwood());
+        inventory.addItem(new Stunblade());
+        inventory.addItem(new RazorEdge());
     }
 
     // KEEP YOUR LEVEL UP SYSTEM (with stat increases)
@@ -229,18 +239,18 @@ public abstract class Player extends Entity {
         experience -= expNeeded;
 
         // Base stat increases (flat amounts)
-        double hpIncrease = 110;
-        double attackIncrease = 5;
-        double defenseIncrease = 3;
-        double speedIncrease = 3;
+        double hpIncrease = 220;
+        double attackIncrease = 15;
+        double defenseIncrease = 6;
+        double speedIncrease = 5;
 
         // For unique class level up
         if (this instanceof Swordsman){
-            hpIncrease = 300;
+            hpIncrease = 600;
         } else if (this instanceof Ranger) {
             speedIncrease = 6;
         } else if (this instanceof Mage){
-            attackIncrease = 10;
+            attackIncrease = 20;
         }
 
         // Apply stat increases

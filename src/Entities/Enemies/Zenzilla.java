@@ -17,6 +17,7 @@ public class Zenzilla extends Enemy{
         maxDefense = defense;
         speed = 25;
         dmgResistance = 0.07;
+        expYield = 150;
         loadMoves();
         loadSprite();
     }

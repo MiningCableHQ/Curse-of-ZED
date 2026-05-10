@@ -127,7 +127,8 @@ public class Mage extends Player {
         moves.add(new ArcaneBolt());
         moves.add(new ArcaneExplosion());
         moves.add(new Empower());
-        moves.add(new Revitalize());
+        //moves.add(new Revitalize());
+        moves.add(new ChillingGamble()); //Added ult for playtest purposes
     }
 
     // --- For move: Empower -------------------------------------------------------------------------------------------

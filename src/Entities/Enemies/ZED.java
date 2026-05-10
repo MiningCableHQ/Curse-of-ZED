@@ -13,7 +13,8 @@ public class ZED extends Boss{
     public ZED(){
         name = "Zed";
         level = 999;
-        hp = 10000;
+        //hp = 10000;
+        hp = 5000; //halved for playtest purposes
         maxHp = hp;
         attack = 320;
         maxAttack = attack;
@@ -24,6 +25,7 @@ public class ZED extends Boss{
 
         originalDefense = defense;
 
+        expYield = 300;
         loadMoves();
         loadSprite();
     }

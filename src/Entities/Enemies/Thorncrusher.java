@@ -18,6 +18,7 @@ public class Thorncrusher extends Boss{
         maxDefense = defense;
         speed = 28;
         dmgResistance = 0.10;
+        expYield = 300;
         loadMoves();
         loadSprite();
     }
