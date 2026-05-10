@@ -41,6 +41,8 @@ public class GamePanel extends JPanel implements Runnable {
     private NPC              nearbyNPC   = null;
     private OBJ_NoticeBoard  nearbyBoard = null;
     private boolean ePressedLastFrame    = false;
+    private String lastInteractedNPCName = "Frank";
+
 
     // Map 2 intro
     private boolean map2PlayerFrozen = false;
@@ -203,13 +205,7 @@ public class GamePanel extends JPanel implements Runnable {
             if (parentFrame == null)
                 parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
 
-            // Use the nearby NPC's name to determine shopkeeper
-            String shopName = "Frank"; // default
-            if (nearbyNPC != null) {
-                shopName = nearbyNPC.npcName; // "Frank" or "Bukog"
-            }
-
-            final Entities.NPCs.Shopkeeper sk = new Entities.NPCs.Shopkeeper(shopName);
+            final Entities.NPCs.Shopkeeper sk = new Entities.NPCs.Shopkeeper(lastInteractedNPCName);
             final GamePanel gpRef = this;
 
             ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
@@ -472,6 +468,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 if (canInteract) {
+                    lastInteractedNPCName = nearbyNPC.npcName;
                     dialogueSystem.open(nearbyNPC, getPlayerDisplayClass());
                 } else if (shouldShowLockedMessage) {
                     screenMessage.show("Cannot Interact.",
