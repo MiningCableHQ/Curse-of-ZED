@@ -242,13 +242,14 @@ public abstract class Player extends Entity {
         double hpIncrease = 220;
         double attackIncrease = 15;
         double defenseIncrease = 6;
-        double speedIncrease = 6;
+        double speedIncrease = 4;
 
         // For unique class level up
         if (this instanceof Swordsman){
-            hpIncrease = 600;
+            hpIncrease = 400;
+            defenseIncrease = 12;
         } else if (this instanceof Ranger) {
-            speedIncrease = 15;
+            speedIncrease = 10;
         } else if (this instanceof Mage){
             attackIncrease = 20;
         }

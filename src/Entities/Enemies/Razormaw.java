@@ -17,7 +17,7 @@ public class Razormaw extends Enemy{
         defense = 15;
         maxDefense = defense;
         speed = 32;
-        dmgResistance = 0.12;
+        dmgResistance = 0.24;
         expYield = 150;
         loadMoves();
         loadSprite();
