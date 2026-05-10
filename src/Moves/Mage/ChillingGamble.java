@@ -27,7 +27,6 @@ public class ChillingGamble extends Move {
         if(Entity instanceof Mage && Move.currentTarget != null){
             Mage mage = (Mage) Entity;
             Entity enemy = Move.currentTarget;
-            Mage target = (Mage) Entity;
 
             if(rand.nextDouble() <= mage.getAccuracy()){
                 // All 3 needed ATK stats
@@ -44,7 +43,7 @@ public class ChillingGamble extends Move {
                 double damage = totalATK * 3;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
-                Move.currentBattle.applyFrozen(target);
+                Move.currentBattle.applyFrozen(mage);
 
                 // Set message for battle display
                 setDamageDealt(actualDamage);
