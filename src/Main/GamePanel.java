@@ -753,14 +753,9 @@ public class GamePanel extends JPanel implements Runnable {
         if (enemyCount == 1) {
             bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 1);
         } else if (enemyCount == 2) {
-            bp = new Combat.BattlePanel(player,
-                    enemiesInBattle.get(0),
-                    enemiesInBattle.get(1), 1);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), 1);
         } else {
-            bp = new Combat.BattlePanel(player,
-                    enemiesInBattle.get(0),
-                    enemiesInBattle.get(1),
-                    enemiesInBattle.get(2), 1);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), enemiesInBattle.get(2), 1);
         }
 
         final GamePanel gpRef = this;
@@ -888,6 +883,7 @@ public class GamePanel extends JPanel implements Runnable {
         if (frame == null) return;
 
         Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 1);
+
         final GamePanel gpRef = this;
         final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -960,6 +956,7 @@ public class GamePanel extends JPanel implements Runnable {
         frame.revalidate();
         frame.repaint();
     }
+
     // ═════════════════════════════════════════════════════════════
     //  ENEMY SPAWNS & BATTLES — MAP 2
     // ═════════════════════════════════════════════════════════════
@@ -1260,6 +1257,7 @@ public class GamePanel extends JPanel implements Runnable {
         frame.revalidate();
         frame.repaint();
     }
+
     // ═════════════════════════════════════════════════════════════
     //  MAP 2 BOSS
     // ═════════════════════════════════════════════════════════════
@@ -1317,7 +1315,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         StoryLine.ThroneRoomCutscene cutscene =
                 new StoryLine.ThroneRoomCutscene(() -> {
-                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this.currentMap + 1);
+                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 2);
                     final GamePanel gpRef = this;
                     final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -1384,7 +1382,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 2);
         final GamePanel gpRef = this;
 
         GameStateManager.get().easterEggFound = true;

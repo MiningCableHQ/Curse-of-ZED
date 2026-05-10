@@ -1,6 +1,3 @@
-
-
-
 package Combat;
 
 import Entities.Characters.*;
@@ -23,13 +20,13 @@ public class BattleMain {
         SwingUtilities.invokeLater(() -> {
 
             // ── Create dummy entities for testing ──────────────
-            GamePanel  gp   = new GamePanel();
+            GamePanel  gp = new GamePanel();
             KeyHandler keyH = new KeyHandler();
 
             Player testPlayer = new Ranger(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new Frankenstein(), 1);
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Thorncrusher(), 1);
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->
