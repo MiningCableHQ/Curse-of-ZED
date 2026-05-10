@@ -41,6 +41,8 @@ public class GamePanel extends JPanel implements Runnable {
     private NPC              nearbyNPC   = null;
     private OBJ_NoticeBoard  nearbyBoard = null;
     private boolean ePressedLastFrame    = false;
+    private String lastInteractedNPCName = "Frank";
+
 
     // Map 2 intro
     private boolean map2PlayerFrozen = false;
@@ -199,7 +201,31 @@ public class GamePanel extends JPanel implements Runnable {
         });
 
         // ── Shop callback ─────────────────────────────────────────
-        dialogueSystem.setOnOpenShop(() -> System.out.println("OPEN SHOP UI HERE"));
+        dialogueSystem.setOnOpenShop(() -> {
+            if (parentFrame == null)
+                parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            final Entities.NPCs.Shopkeeper sk = new Entities.NPCs.Shopkeeper(lastInteractedNPCName);
+            final GamePanel gpRef = this;
+
+            ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
+                SwingUtilities.invokeLater(() -> {
+                    parentFrame.getContentPane().removeAll();
+                    parentFrame.add(gpRef);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                    gpRef.setVisible(true);
+                    gpRef.requestFocusInWindow();
+                });
+            });
+
+            this.setVisible(false);
+            parentFrame.getContentPane().removeAll();
+            parentFrame.add(shopPanel);
+            parentFrame.revalidate();
+            parentFrame.repaint();
+            shopPanel.requestPanelFocus();
+        });
 
         // ── Other systems ─────────────────────────────────────────
         this.gsm            = GameStateManager.get();
@@ -442,6 +468,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 if (canInteract) {
+                    lastInteractedNPCName = nearbyNPC.npcName;
                     dialogueSystem.open(nearbyNPC, getPlayerDisplayClass());
                 } else if (shouldShowLockedMessage) {
                     screenMessage.show("Cannot Interact.",
