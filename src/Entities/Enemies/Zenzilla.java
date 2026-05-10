@@ -18,6 +18,7 @@ public class Zenzilla extends Enemy{
         speed = 25;
         dmgResistance = 0.07;
         loadMoves();
+        loadSprite();
     }
 
     @Override

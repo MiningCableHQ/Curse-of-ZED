@@ -19,6 +19,7 @@ public class Razormaw extends Enemy{
         speed = 32;
         dmgResistance = 0.12;
         loadMoves();
+        loadSprite();
     }
 
     @Override

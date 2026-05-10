@@ -25,6 +25,6 @@ public class MapEnemy_Masklet extends EnemyEntity {
 
     @Override
     public Enemy createBattleEnemy() {
-        return new Masklet(); // your existing Masklet enemy class
+        return new Masklet();
     }
 }

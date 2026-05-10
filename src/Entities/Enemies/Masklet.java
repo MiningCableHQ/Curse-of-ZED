@@ -18,6 +18,7 @@ public class Masklet extends Enemy{
         speed = 20;
         dmgResistance = 0.05;
         loadMoves();
+        loadSprite();
     }
 
     @Override

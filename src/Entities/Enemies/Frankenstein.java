@@ -18,6 +18,7 @@ public class Frankenstein extends Boss{
         speed = 60;
         dmgResistance = 0.10;
         loadMoves();
+        loadSprite();
     }
 
     @Override

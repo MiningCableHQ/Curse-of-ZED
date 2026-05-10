@@ -25,6 +25,7 @@ public class ZED extends Boss{
         originalDefense = defense;
 
         loadMoves();
+        loadSprite();
     }
 
     @Override

@@ -19,6 +19,7 @@ public class Thorncrusher extends Boss{
         speed = 28;
         dmgResistance = 0.10;
         loadMoves();
+        loadSprite();
     }
 
     @Override

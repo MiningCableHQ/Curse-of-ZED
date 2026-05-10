@@ -19,6 +19,7 @@ public class Reyven extends Enemy{
         speed = 40;
         dmgResistance = 0.05;
         loadMoves();
+        loadSprite();
     }
 
     @Override

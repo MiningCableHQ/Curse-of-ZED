@@ -19,6 +19,7 @@ public class Sanjveil extends Enemy{
         speed = 26;
         dmgResistance = 0.10;
         loadMoves();
+        loadSprite();
     }
 
     @Override

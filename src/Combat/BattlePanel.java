@@ -80,7 +80,8 @@ public class BattlePanel extends JPanel {
     private int currentPlayerFrame = 0;
     private Timer animationTimer;
 
-    // ── GIF placeholder labels (enemies only) ─────────────────────
+    // ── Enemy Animation ───────────────────────────────────────────
+    private Timer enemyAnimationTimer;
     private final List<JLabel> enemyGifLabels = new ArrayList<>();
 
     // ── Buttons ───────────────────────────────────────────────────
@@ -136,15 +137,18 @@ public class BattlePanel extends JPanel {
 
         computeLayout();
         loadPlayerAnimations();
+        loadEnemySprites();
         buildEnemyLabels();
         buildButtons();
         loadBackgroundImage();
         startAnimationTimer();
+        startEnemyAnimationTimer();
 
         // Initialize battle system
         this.battle = new Battle(this, playerEntity, this.enemies);
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
+            stopEnemyAnimationTimer();
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
@@ -187,7 +191,6 @@ public class BattlePanel extends JPanel {
         String className = getCharacterClassName();
         boolean anyFrameLoaded = false;
 
-        // Try to load 5 idle frames
         for (int i = 0; i < 5; i++) {
             try {
                 playerIdleFrames[i] = ImageIO.read(getClass().getResourceAsStream("/" + className + "/"+className+"_idle/idle_right" + (i + 1) + ".png"));
@@ -197,7 +200,6 @@ public class BattlePanel extends JPanel {
             }
         }
 
-        // Create fallback placeholders if images not found
         if (!anyFrameLoaded) {
             createPlaceholderFrames();
         }
@@ -225,7 +227,6 @@ public class BattlePanel extends JPanel {
             initial = "M";
         }
 
-        // Create slightly different colors for each frame to simulate animation
         for (int i = 0; i < 5; i++) {
             float brightness = 0.7f + (i * 0.06f);
             Color frameColor = new Color(
@@ -242,15 +243,12 @@ public class BattlePanel extends JPanel {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
 
-        // Background
         g2.setColor(color);
         g2.fillRect(0, 0, w, h);
 
-        // Add subtle movement effect
         int offsetX = (frame % 2 == 0) ? 0 : (frame - 2) * 2;
         int offsetY = (frame % 3 == 0) ? 2 : 0;
 
-        // Large initial letter
         Font bigFont = new Font("Serif", Font.BOLD, 60);
         g2.setFont(bigFont);
         FontMetrics fm = g2.getFontMetrics();
@@ -259,11 +257,9 @@ public class BattlePanel extends JPanel {
 
         g2.setColor(new Color(0, 0, 0, 80));
         g2.drawString(initial, lx + 2, ly + 2);
-
         g2.setColor(new Color(255, 245, 200));
         g2.drawString(initial, lx, ly);
 
-        // Silhouette border
         g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 120));
         g2.setStroke(new BasicStroke(2f));
         g2.drawOval(w/2 - 30, h/2 - 30, 60, 60);
@@ -291,6 +287,61 @@ public class BattlePanel extends JPanel {
     }
 
     // ─────────────────────────────────────────────────────────────
+    //  Enemy Sprite Loading & Animation
+    // ─────────────────────────────────────────────────────────────
+    private void loadEnemySprites() {
+        for (Enemy enemy : enemies) {
+            enemy.loadSprite(); // Each enemy loads its own sprite
+        }
+    }
+
+    private void startEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) {
+            enemyAnimationTimer.stop();
+        }
+        enemyAnimationTimer = new Timer(100, e -> {
+            for (Enemy enemy : enemies) {
+                if (enemy.getHp() > 0) {
+                    enemy.updateAnimation();
+                }
+            }
+            repaint();
+        });
+        enemyAnimationTimer.start();
+    }
+
+    private void stopEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) {
+            enemyAnimationTimer.stop();
+            enemyAnimationTimer = null;
+        }
+    }
+
+    private void paintEnemySprite(Graphics2D g2, int index, Enemy enemy) {
+        Rectangle rect = enemyImgRects.get(index);
+
+        if (enemy.hasSprite()) {
+            BufferedImage currentFrame = enemy.getCurrentFrame();
+            if (currentFrame != null) {
+                g2.drawImage(currentFrame, rect.x, rect.y, rect.width, rect.height, null);
+            } else {
+                drawEnemyTextFallback(g2, rect, enemy.getName());
+            }
+        } else {
+            drawEnemyTextFallback(g2, rect, enemy.getName());
+        }
+    }
+
+    private void drawEnemyTextFallback(Graphics2D g2, Rectangle rect, String name) {
+        g2.setColor(Color.GRAY);
+        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Serif", Font.BOLD, 20));
+        String display = name.length() > 2 ? name.substring(0, 2) : name;
+        g2.drawString(display, rect.x + rect.width/2 - 15, rect.y + rect.height/2 + 10);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     //  Layout
     // ─────────────────────────────────────────────────────────────
     private void computeLayout() {
@@ -303,24 +354,18 @@ public class BattlePanel extends JPanel {
 
         int enemyCount = enemies.size();
 
-        // Calculate total width needed for all entities
         int enemySpacing = 50;
         int totalEnemyWidth = enemyCount * (imgW + enemySpacing) - enemySpacing;
         int totalWidth = imgW + 100 + totalEnemyWidth;
 
-        // Calculate starting X position to center everything
         int startX = (WIDTH - totalWidth) / 2;
-
-        // Y position - place entities above UI box
         int entityY = uiY - imgH - statH - 40;
 
-        // Player on left side
         int pX = startX;
         int pY = entityY;
         playerImgRect = new Rectangle(pX, pY, imgW, imgH);
         playerStatRect = new Rectangle(pX - 8, pY + imgH + 8, statW + 15, statH + 8);
 
-        // Position enemies horizontally to the right of player
         int enemyStartX = startX + imgW + 100;
 
         for (int i = 0; i < enemyCount; i++) {
@@ -331,13 +376,10 @@ public class BattlePanel extends JPanel {
             enemyStatRects.add(new Rectangle(eX - 8, eY + imgH + 8, statW, statH));
         }
 
-        // UI box
         uiBoxRect = new Rectangle(10, uiY, WIDTH - 20, uiH);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Enemy Labels
-    // ─────────────────────────────────────────────────────────────
+    // ── Enemy Labels (Fallback) ─────────────────────────────────────────────
     private void buildEnemyLabels() {
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
@@ -349,6 +391,7 @@ public class BattlePanel extends JPanel {
             enemyGifLabel.setBounds(enemyImgRects.get(i));
             add(enemyGifLabel);
             enemyGifLabels.add(enemyGifLabel);
+            enemyGifLabel.setVisible(false); // Hide by default, will show only if no sprite
         }
     }
 
@@ -364,7 +407,6 @@ public class BattlePanel extends JPanel {
     //  Button construction
     // ─────────────────────────────────────────────────────────────
     private void buildButtons() {
-        // Main menu buttons
         int btnW = 140, btnH = 46, gap = 18;
         int rowY = uiBoxRect.y + uiBoxRect.height - btnH - 20;
         int startX = uiBoxRect.x + 20;
@@ -392,7 +434,6 @@ public class BattlePanel extends JPanel {
                         battle.executeItemTurn();
                     },
                     () -> {
-                        // Back button callback - return to battle
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
@@ -406,8 +447,6 @@ public class BattlePanel extends JPanel {
             parentFrame.add(invPanel);
             parentFrame.revalidate();
             parentFrame.repaint();
-
-            // CRITICAL: Request focus for the inventory panel after it's added to the frame
             invPanel.requestPanelFocus();
         });
         add(btnBag);
@@ -417,7 +456,6 @@ public class BattlePanel extends JPanel {
         btnRun.addActionListener(e -> battle.handleRunAway());
         add(btnRun);
 
-        // Fight sub-menu moves
         ArrayList<Move> moves = playerEntity.getMoves();
         String[] moveNames = {"Move 1", "Move 2", "Move 3", "Move 4"};
         for (int i = 0; i < moves.size() && i < 4; i++) {
@@ -447,7 +485,6 @@ public class BattlePanel extends JPanel {
         btnBack.addActionListener(e -> showMainMenu());
         add(btnBack);
 
-        // Target selection buttons
         buildTargetButtons();
     }
 
@@ -507,21 +544,12 @@ public class BattlePanel extends JPanel {
         System.out.println("showMainMenu() called");
 
         uiState = UIState.MAIN;
-
-        // Show main menu buttons
         btnFight.setVisible(true);
         btnBag.setVisible(true);
         btnRun.setVisible(true);
-
-        // Hide move buttons
         for (BattleButton mb : moveBtns) mb.setVisible(false);
-
-        // Hide fight menu back button
         btnBack.setVisible(false);
-
-        // Hide all target selection UI
         hideTargetButtons();
-
         repaint();
     }
 
@@ -535,59 +563,35 @@ public class BattlePanel extends JPanel {
 
     public void showFightMenu() {
         System.out.println("showFightMenu() called - resetting to fight menu");
-
         uiState = UIState.FIGHT;
-
-        // Hide main menu buttons
         btnFight.setVisible(false);
         btnBag.setVisible(false);
         btnRun.setVisible(false);
-
-        // Show move buttons and Back button
         for (BattleButton mb : moveBtns) mb.setVisible(true);
         btnBack.setVisible(true);
-
-        // Hide target selection UI completely
         hideTargetButtons();
-
-        // Clear any pending battle message
         battleMessage = "";
-
-        // Ensure all buttons are enabled
         setButtonsEnabled(true);
-
         repaint();
     }
 
     public void showTargetSelection(Move move) {
         System.out.println("showTargetSelection() called for move: " + move.getName());
-
         uiState = UIState.TARGET_SELECT;
-
-        // Hide move buttons and fight menu back button
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
-
-        // Update target button states based on enemy HP
         updateTargetButtonStates();
-
-        // Show target selection buttons for each alive enemy
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(true);
         }
-
-        // Ensure Back button is visible during target selection
         if (btnBackTarget != null) {
             btnBackTarget.setVisible(true);
             btnBackTarget.setEnabled(true);
-
             setComponentZOrder(btnBackTarget, 0);
             btnBackTarget.revalidate();
             btnBackTarget.repaint();
         }
-
         battleMessage = "Choose a target for " + move.getName() + "!";
-
         this.revalidate();
         this.repaint();
     }
@@ -676,7 +680,6 @@ public class BattlePanel extends JPanel {
         if (btnBackTarget != null) {
             btnBackTarget.setEnabled(enabled);
         }
-
         updateTargetButtonStates();
     }
 
@@ -711,7 +714,6 @@ public class BattlePanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Draw background
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, this);
         } else {
@@ -723,9 +725,14 @@ public class BattlePanel extends JPanel {
             g2.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
-        // Enemy stat boxes
+        // Draw enemy sprites and stat boxes
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
+
+            // Draw enemy sprite
+            paintEnemySprite(g2, i, enemy);
+
+            // Draw enemy stat box
             if (enemy.getHp() > 0) {
                 paintStatBox(g2, enemyStatRects.get(i),
                         enemy.getName() != null ? enemy.getName() : "Enemy " + (i + 1),
@@ -745,25 +752,19 @@ public class BattlePanel extends JPanel {
                 "EXP: " + playerEntity.getExperience() + " / " + playerEntity.getExpNeeded(),
                 true);
 
-        // Draw player animated sprite (without frame/border)
         paintPlayerSprite(g2);
-
         paintUIBox(g2);
         g2.dispose();
     }
 
     private void paintPlayerSprite(Graphics2D g2) {
         if (playerImgRect == null) return;
-
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-
-        // Draw current animation frame directly without any frame/border
         BufferedImage currentFrame = playerIdleFrames[currentPlayerFrame];
         if (currentFrame != null) {
             g2.drawImage(currentFrame, playerImgRect.x, playerImgRect.y,
                     playerImgRect.width, playerImgRect.height, null);
         } else {
-            // Fallback - draw placeholder without frame
             g2.setColor(Color.GRAY);
             g2.fillRect(playerImgRect.x, playerImgRect.y, playerImgRect.width, playerImgRect.height);
             g2.setColor(Color.WHITE);
@@ -779,7 +780,6 @@ public class BattlePanel extends JPanel {
         g2.setColor(Color.GRAY);
         g2.setStroke(new BasicStroke(2f));
         g2.draw(new RoundRectangle2D.Float(r.x, r.y, r.width, r.height, 12, 12));
-
         g2.setFont(FONT_NAME);
         g2.setColor(Color.GREEN);
         int tx = r.x + 12;
@@ -844,11 +844,8 @@ public class BattlePanel extends JPanel {
             g2.drawString(expLine, tx, ty);
         }
 
-        // Player buffs and status effects
         if (showExp) {
             int tyOffset = 0;
-
-            // Player class buffs
             if (playerEntity instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) playerEntity;
                 int stacks = swordsman.getIronStanceStacks();
@@ -880,12 +877,11 @@ public class BattlePanel extends JPanel {
                 }
             }
 
-            // Player status effects
-            List<Combat.StatusEffects.StatusEffect> playerEffects = playerEntity.getStatusEffects();
+            List<StatusEffect> playerEffects = playerEntity.getStatusEffects();
             if (!playerEffects.isEmpty()) {
                 tyOffset += 12;
                 g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                for (Combat.StatusEffects.StatusEffect effect : playerEffects) {
+                for (StatusEffect effect : playerEffects) {
                     g2.setColor(new Color(255, 100, 100));
                     g2.drawString(effect.toString(), tx, ty + tyOffset);
                     tyOffset += 10;
@@ -893,14 +889,12 @@ public class BattlePanel extends JPanel {
             }
         }
 
-        // Enemy buffs and status effects
         if (!showExp && enemies.size() > 0) {
             for (int i = 0; i < enemies.size(); i++) {
                 if (enemies.get(i).getName().equals(name)) {
                     Enemy enemy = enemies.get(i);
                     int tyOffset = 0;
 
-                    // DEF buffs for Final Boss
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();
@@ -912,12 +906,11 @@ public class BattlePanel extends JPanel {
                         }
                     }
 
-                    // Enemy status effects
-                    List<Combat.StatusEffects.StatusEffect> enemyEffects = enemy.getStatusEffects();
+                    List<StatusEffect> enemyEffects = enemy.getStatusEffects();
                     if (!enemyEffects.isEmpty()) {
                         tyOffset += 12;
                         g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                        for (Combat.StatusEffects.StatusEffect effect : enemyEffects) {
+                        for (StatusEffect effect : enemyEffects) {
                             g2.setColor(new Color(255, 100, 100));
                             g2.drawString(effect.toString(), tx, ty + tyOffset);
                             tyOffset += 10;
@@ -936,7 +929,6 @@ public class BattlePanel extends JPanel {
         int sw = r.width;
         int sh = r.height;
 
-        // ── 1. Outer worn shadow ──
         for (int i = 8; i >= 1; i--) {
             float a = 0.06f * (9 - i);
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a));
@@ -945,22 +937,17 @@ public class BattlePanel extends JPanel {
         }
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
-        // ── 2. Main parchment body ──
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + sh,
                 new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
                 new Color[]{
-                        new Color(148, 108, 44),
-                        new Color(192, 152, 78),
-                        new Color(220, 186, 118),
-                        new Color(238, 212, 152),
-                        new Color(220, 186, 118),
-                        new Color(192, 152, 78),
+                        new Color(148, 108, 44), new Color(192, 152, 78),
+                        new Color(220, 186, 118), new Color(238, 212, 152),
+                        new Color(220, 186, 118), new Color(192, 152, 78),
                         new Color(148, 108, 44)
                 }));
         Shape body = new RoundRectangle2D.Float(sx, sy, sw, sh, 18, 18);
         g2.fill(body);
 
-        // ── 3. Horizontal paper fibre / grain ──
         g2.setStroke(new BasicStroke(0.5f));
         for (int ly = sy + 16; ly < sy + sh - 14; ly += 6) {
             int a = 14 + (int)(6 * Math.sin((ly - sy) * 0.4));
@@ -968,7 +955,6 @@ public class BattlePanel extends JPanel {
             g2.drawLine(sx + 16, ly, sx + sw - 16, ly);
         }
 
-        // ── 4. Subtle vertical vein lines ──
         g2.setStroke(new BasicStroke(0.4f));
         java.util.Random vr = new java.util.Random(77);
         for (int i = 0; i < 6; i++) {
@@ -979,7 +965,6 @@ public class BattlePanel extends JPanel {
             g2.drawLine(vx, vy, vx + vr.nextInt(6) - 3, vy + vlen);
         }
 
-        // ── 5. Age spots ──
         java.util.Random sr = new java.util.Random(42);
         for (int i = 0; i < 20; i++) {
             int ax = sx + 40 + sr.nextInt(sw - 80);
@@ -989,7 +974,6 @@ public class BattlePanel extends JPanel {
             g2.fillOval(ax, ay, ar, ar);
         }
 
-        // ── 6. Warm inner glow ──
         g2.setPaint(new RadialGradientPaint(
                 new Point2D.Float(sx + sw / 2f, sy + sh / 2f),
                 sw * 0.46f,
@@ -997,7 +981,6 @@ public class BattlePanel extends JPanel {
                 new Color[]{new Color(255, 230, 140, 38), new Color(255, 200, 80, 0)}));
         g2.fill(body);
 
-        // ── 7. Rolled-edge curl: top ──
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + 28,
                 new float[]{0f, 0.4f, 1f},
                 new Color[]{
@@ -1007,7 +990,6 @@ public class BattlePanel extends JPanel {
                 }));
         g2.fill(new RoundRectangle2D.Float(sx, sy, sw, 28, 18, 18));
 
-        // ── 8. Rolled-edge curl: bottom ──
         g2.setPaint(new LinearGradientPaint(sx, sy + sh - 28, sx, sy + sh,
                 new float[]{0f, 0.6f, 1f},
                 new Color[]{
@@ -1017,32 +999,27 @@ public class BattlePanel extends JPanel {
                 }));
         g2.fill(new RoundRectangle2D.Float(sx, sy + sh - 28, sw, 28, 18, 18));
 
-        // ── 9. Inner shadow rings ──
         g2.setStroke(new BasicStroke(0.9f));
         for (int i = 1; i <= 7; i++) {
             g2.setColor(new Color(55, 22, 2, 48 - i * 6));
             g2.draw(new RoundRectangle2D.Float(sx + i, sy + i, sw - i * 2, sh - i * 2, 18 - i, 18 - i));
         }
 
-        // ── 10. Decorative border ──
         g2.setStroke(new BasicStroke(1.0f));
         g2.setColor(new Color(115, 68, 14, 105));
         g2.draw(new RoundRectangle2D.Float(sx + 11, sy + 11, sw - 22, sh - 22, 10, 10));
         g2.setColor(new Color(115, 68, 14, 55));
         g2.draw(new RoundRectangle2D.Float(sx + 14, sy + 14, sw - 28, sh - 28, 8, 8));
 
-        // ── 11. Outer hard border ──
         g2.setStroke(new BasicStroke(2.5f));
         g2.setColor(SCROLL_BORDER);
         g2.draw(body);
 
-        // ── 12. Wax seal ornaments ──
         paintWaxSeal(g2, sx + 18, sy + 18);
         paintWaxSeal(g2, sx + sw - 36, sy + 18);
         paintWaxSeal(g2, sx + 18, sy + sh - 36);
         paintWaxSeal(g2, sx + sw - 36, sy + sh - 36);
 
-        // ── 13. Message text ──
         g2.setFont(FONT_TITLE);
         if (!battleMessage.isEmpty()) {
             g2.setColor(new Color(60, 30, 5, 220));
@@ -1084,19 +1061,13 @@ public class BattlePanel extends JPanel {
         g2.fillOval(cx - 2, cy - 2, 5, 5);
     }
 
-    /**
-     * Shows or hides all UI buttons (menus, move buttons, target buttons)
-     * Used during message display to prevent button clicks while messages are showing
-     */
     public void setUIVisible(boolean visible) {
         if (visible) {
-            // When showing UI, only show the appropriate buttons based on current state
             if (uiState == UIState.MAIN) {
                 showMainMenu();
             } else if (uiState == UIState.FIGHT) {
                 showFightMenu();
             } else if (uiState == UIState.TARGET_SELECT) {
-                // For target selection, show target buttons and back button
                 for (BattleButton targetBtn : targetButtons) {
                     targetBtn.setVisible(true);
                 }
@@ -1105,16 +1076,13 @@ public class BattlePanel extends JPanel {
                 }
             }
         } else {
-            // Hide all buttons
             btnFight.setVisible(false);
             btnBag.setVisible(false);
             btnRun.setVisible(false);
-
             for (BattleButton mb : moveBtns) {
                 mb.setVisible(false);
             }
             btnBack.setVisible(false);
-
             for (BattleButton targetBtn : targetButtons) {
                 targetBtn.setVisible(false);
             }
@@ -1122,7 +1090,6 @@ public class BattlePanel extends JPanel {
                 btnBackTarget.setVisible(false);
             }
         }
-
         if (visible) {
             revalidate();
             repaint();
@@ -1187,7 +1154,6 @@ public class BattlePanel extends JPanel {
                 g2.setColor(new Color(100, 80, 50));
                 g2.setStroke(new BasicStroke(1.8f));
                 g2.draw(oct);
-
                 FontMetrics fm = g2.getFontMetrics(getFont());
                 int tx = (w - fm.stringWidth(getText())) / 2;
                 int ty = (h + fm.getAscent() - fm.getDescent()) / 2;
@@ -1198,17 +1164,14 @@ public class BattlePanel extends JPanel {
                 Color fill = pressed ? BTN_GOLD_PRESS : hovered ? BTN_GOLD_HOVER : BTN_GOLD_NORMAL;
                 g2.setColor(fill);
                 g2.fill(oct);
-
                 if (hovered && !pressed) {
                     g2.setColor(new Color(255, 255, 255, 40));
                     Polygon topOct = makeOctagon(0, 0, w, h / 2, c);
                     g2.fill(topOct);
                 }
-
                 g2.setColor(BTN_BORDER_CLR);
                 g2.setStroke(new BasicStroke(2.0f));
                 g2.draw(oct);
-
                 FontMetrics fm = g2.getFontMetrics(getFont());
                 int tx = (w - fm.stringWidth(getText())) / 2;
                 int ty = (h + fm.getAscent() - fm.getDescent()) / 2;
@@ -1218,7 +1181,6 @@ public class BattlePanel extends JPanel {
                 g2.setColor(getForeground());
                 g2.drawString(getText(), tx, ty);
             }
-
             g2.dispose();
         }
 
