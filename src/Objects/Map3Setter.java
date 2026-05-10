@@ -1951,7 +1951,7 @@ public class Map3Setter {
 
     public void setObjectsPart2() {
 
-     gp.obj[494] = new OBJ_WoodFence();
+        gp.obj[494] = new OBJ_WoodFence();
         gp.obj[494].worldX = 35 * gp.tileSize; // Col 35
         gp.obj[494].worldY = 26 * gp.tileSize; // Row 26
 
@@ -4337,8 +4337,7 @@ public class Map3Setter {
                         .getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp =
-                new Combat.BattlePanel(gp.player, battleEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, battleEnemy, 3);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
@@ -4400,7 +4399,7 @@ public class Map3Setter {
                         .getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy, 3);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
