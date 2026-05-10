@@ -3,6 +3,9 @@ package Objects;
 import Main.GamePanel;
 import Main.GameStateManager;
 import Objects.*;
+
+import java.util.Random;
+
 public class Map3Setter {
     GamePanel gp;
 
@@ -4327,22 +4330,57 @@ public class Map3Setter {
         }
     }
     // ── Reyven normal enemy battle ────────────────────────────
-    private void launchMap3EnemyBattle(
-            Entities.Enemies.MapEnemy_Reyven reyven) {
+    private void launchMap3EnemyBattle(Entities.Enemies.MapEnemy_Reyven reyven) {
+        final double atkBeforeBattle = gp.player.getAttack();
+        final double defBeforeBattle = gp.player.getDefense();
 
-        Entities.Enemies.Enemy battleEnemy = reyven.createBattleEnemy();
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
 
         javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities
-                        .getWindowAncestor(gp);
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp =
-                new Combat.BattlePanel(gp.player, battleEnemy);
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(reyven.createBattleEnemy());
+        }
+
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(gp.player, enemiesInBattle.get(0));
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(gp.player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1));
+        } else {
+            bp = new Combat.BattlePanel(gp.player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1),
+                    enemiesInBattle.get(2));
+        }
+
         final GamePanel gpRef = gp;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
 
         bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
+            boolean playerWon = gp.player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            // Reset all buffs and restore stats after battle
+            gp.player.setAttack(atkBeforeBattle);
+            gp.player.setDefense(defBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -4354,6 +4392,23 @@ public class Map3Setter {
             });
 
             if (won) {
+                // Calculate total EXP from all defeated enemies
+                int totalExp = 0;
+                for (Entities.Enemies.Enemy e : finalEnemies) {
+                    totalExp += e.getExpYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
+                }
+
+                // Grant EXP to player (Map 3 = Chapter 3)
+                gp.player.gainExp(totalExp, 3);
+
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Player Level: " + gp.player.getLevel());
+                System.out.println("Player EXP: " + gp.player.getExperience() + "/" + gp.player.getExpNeeded());
+
+                // Show EXP gained message
+                gp.screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+
                 reyven.defeated = true;
                 reyven.available = false;
                 GameStateManager.get().map3EnemyDefeated = true;
@@ -4392,19 +4447,22 @@ public class Map3Setter {
     }
 
     private void launchMap3BossBattle(Entities.Enemies.MapBoss_Zed zed) {
-
-        Entities.Enemies.Enemy bossEnemy = zed.createBattleEnemy();
+        final double atkBeforeBattle = gp.player.getAttack();
+        final double defBeforeBattle = gp.player.getDefense();
 
         javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities
-                        .getWindowAncestor(gp);
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, zed.createBattleEnemy());
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
-            boolean won = bossEnemy.getHp() <= 0;
+            boolean won = gp.player.getHp() > 0;
+
+            // Reset all buffs and restore stats after battle
+            gp.player.setAttack(atkBeforeBattle);
+            gp.player.setDefense(defBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -4412,6 +4470,17 @@ public class Map3Setter {
                 frame.repaint();
 
                 if (won) {
+                    // Boss EXP yield
+                    int totalExp = 300;
+                    gp.player.gainExp(totalExp, 3);
+
+                    System.out.println("Total EXP gained from boss: " + totalExp);
+                    System.out.println("Player Level: " + gp.player.getLevel());
+                    System.out.println("Player EXP: " + gp.player.getExperience() + "/" + gp.player.getExpNeeded());
+
+                    gp.screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                    gp.screenMessage.show("Victory!", "You have defeated Zed the Sorcerer!", 180, false);
+
                     zed.defeated = true;
                     zed.available = false;
                     GameStateManager.get().map3BossDefeated = true;
@@ -4509,9 +4578,3 @@ public class Map3Setter {
         t.start();
     }
 }
-
-
-
-
-
-

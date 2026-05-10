@@ -734,6 +734,7 @@ public class GamePanel extends JPanel implements Runnable {
                                    boolean isMasklet) {
         final double atkBeforeBattle = player.getAttack();
         final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
 
         // Randomize number of enemies between 1 and 3
         int enemyCount = 1 + new Random().nextInt(3);
@@ -780,7 +781,7 @@ public class GamePanel extends JPanel implements Runnable {
             boolean won = playerWon && allEnemiesDefeated;
 
             //Reset all buffs after battle
-            restorePlayerStats(atkBeforeBattle, defBeforeBattle);
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -849,7 +850,7 @@ public class GamePanel extends JPanel implements Runnable {
         frame.repaint();
     }
 
-    private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle) {
+    private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle, double spdBeforeBattle) {
         if (player instanceof Swordsman) {
             ((Swordsman) player).resetBattleBuffs();
         } else if (player instanceof Ranger) {
@@ -860,6 +861,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         player.setAttack(atkBeforeBattle);
         player.setDefense(defBeforeBattle);
+        player.setSpeed(spdBeforeBattle);
     }
 
     private void spawnMap1Boss() {
@@ -877,6 +879,7 @@ public class GamePanel extends JPanel implements Runnable {
     private void launchBossBattle(Entities.Enemies.MapBoss_Thorncrusher mapBoss) {
         final double atkBeforeBattle = player.getAttack();
         final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
 
         Entities.Enemies.Enemy bossEnemy = mapBoss.createBattleEnemy();
         javax.swing.JFrame frame =
@@ -893,7 +896,7 @@ public class GamePanel extends JPanel implements Runnable {
             boolean won = playerWon && bossDefeated;
 
             // Reset all buffs and restore stats after battle
-            restorePlayerStats(atkBeforeBattle, defBeforeBattle);
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -989,6 +992,7 @@ public class GamePanel extends JPanel implements Runnable {
                                        boolean isSanjveil) {
         final double atkBeforeBattle = player.getAttack();
         final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
 
         // Randomize number of enemies between 1 and 3
         int enemyCount = 1 + new Random().nextInt(3);
@@ -1035,7 +1039,7 @@ public class GamePanel extends JPanel implements Runnable {
             boolean won = playerWon && allEnemiesDefeated;
 
             // Reset all buffs and restore stats after battle
-            restorePlayerStats(atkBeforeBattle, defBeforeBattle);
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -1241,6 +1245,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void launchMap2BossBattle(Entities.Enemies.MapBoss_Zed mapBoss) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
         Entities.Enemies.Enemy bossEnemy = mapBoss.createBattleEnemy();
         javax.swing.JFrame frame =
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
@@ -1250,31 +1258,63 @@ public class GamePanel extends JPanel implements Runnable {
                 new StoryLine.ThroneRoomCutscene(() -> {
                     Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy);
                     final GamePanel gpRef = this;
+                    final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
                     bp.setOnBattleEnd(() -> {
+                        boolean playerWon = player.getHp() > 0;
+                        boolean bossDefeated = finalBoss.getHp() <= 0;
+                        boolean won = playerWon && bossDefeated;
+
+                        // Reset all buffs and restore stats after battle
+                        restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
                         javax.swing.SwingUtilities.invokeLater(() -> {
                             frame.getContentPane().removeAll();
-                            frame.revalidate(); frame.repaint();
+                            frame.revalidate();
+                            frame.repaint();
 
-                            StoryLine.PostDefeatCutscene postCutscene =
-                                    new StoryLine.PostDefeatCutscene(() -> {
-                                        returnToMap1SecondVisit(frame, gpRef);
-                                        map2PlayerFrozen = false;
-                                    });
-                            frame.getContentPane().removeAll();
-                            frame.add(postCutscene);
-                            frame.revalidate(); frame.repaint();
+                            if (won) {
+                                int totalExp = finalBoss.getExpYield();
+                                player.gainExp(totalExp, 2);
+
+                                System.out.println("BOSS DEFEATED!");
+                                System.out.println("Total EXP gained: " + totalExp);
+                                System.out.println("Player Level: " + player.getLevel());
+                                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+
+                                // Show EXP gained message
+                                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+
+                                StoryLine.PostDefeatCutscene postCutscene =
+                                        new StoryLine.PostDefeatCutscene(() -> {
+                                            returnToMap1SecondVisit(frame, gpRef);
+                                            map2PlayerFrozen = false;
+                                        });
+                                frame.getContentPane().removeAll();
+                                frame.add(postCutscene);
+                                frame.revalidate();
+                                frame.repaint();
+                            } else {
+                                javax.swing.Timer t = new javax.swing.Timer(2500,
+                                        ev -> returnToTitleScreen(frame));
+                                t.setRepeats(false);
+                                t.start();
+                                javax.swing.SwingUtilities.invokeLater(() ->
+                                        screenMessage.show("Game Over", null, 120, false));
+                            }
                         });
                     });
 
                     frame.getContentPane().removeAll();
                     frame.add(bp);
-                    frame.revalidate(); frame.repaint();
+                    frame.revalidate();
+                    frame.repaint();
                 });
 
         frame.getContentPane().removeAll();
         frame.add(cutscene);
-        frame.revalidate(); frame.repaint();
+        frame.revalidate();
+        frame.repaint();
     }
 
     private void launchFrankensteinBattle(NPC_Frankenstein frankNPC) {
