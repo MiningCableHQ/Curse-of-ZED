@@ -1,3 +1,6 @@
+
+
+
 package Combat;
 
 import Entities.Characters.*;
@@ -17,7 +20,6 @@ import java.util.List;
 import Items.Item;
 import Main.InventoryPanel;
 import java.util.function.BiConsumer;
-import Combat.StatusEffects.StatusEffect;
 
 public class BattlePanel extends JPanel {
 
@@ -80,11 +82,11 @@ public class BattlePanel extends JPanel {
     private int currentPlayerFrame = 0;
     private Timer animationTimer;
 
-    // ── Enemy Animation ───────────────────────────────────────────
-    private Timer enemyAnimationTimer;
+    // ── GIF placeholder labels (enemies only) ─────────────────────
     private final List<JLabel> enemyGifLabels = new ArrayList<>();
 
     // ── Buttons ───────────────────────────────────────────────────
+    private int uiBoxVCenter;
     private BattleButton btnFight;
     private BattleButton btnBag;
     private BattleButton btnRun;
@@ -105,25 +107,22 @@ public class BattlePanel extends JPanel {
     // ── Item selection callback ───────────────────────────────────
     private BiConsumer<Item, Enemy> itemSelectionCallback;
 
-    // ── Status Effect Display ─────────────────────────────────────
-    private boolean showStatusEffects = true;
-
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
-    public BattlePanel(Player player, Enemy enemy) {
-        this(player, List.of(enemy));
+    public BattlePanel(Player player, Enemy enemy, int mapNum) {
+        this(player, List.of(enemy), mapNum);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2) {
-        this(player, List.of(enemy1, enemy2));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, int mapNum) {
+        this(player, List.of(enemy1, enemy2), mapNum);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3) {
-        this(player, List.of(enemy1, enemy2, enemy3));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3, int mapNum) {
+        this(player, List.of(enemy1, enemy2, enemy3), mapNum);
     }
 
-    private BattlePanel(Player player, List<Enemy> enemies) {
+    private BattlePanel(Player player, List<Enemy> enemies, int mapNum) { // Add mapNum here
         this.playerEntity = player;
         this.enemies = new ArrayList<>(enemies);
 
@@ -137,35 +136,46 @@ public class BattlePanel extends JPanel {
 
         computeLayout();
         loadPlayerAnimations();
-        loadEnemySprites();
         buildEnemyLabels();
         buildButtons();
-        loadBackgroundImage();
+
+        // CHANGE THIS: Pass the mapNum into the method
+        loadBackgroundImage(mapNum);
+
         startAnimationTimer();
-        startEnemyAnimationTimer();
 
         // Initialize battle system
         this.battle = new Battle(this, playerEntity, this.enemies);
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
-            stopEnemyAnimationTimer();
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
         });
 
-        // Start the battle
         battle.startBattle();
     }
 
     /** Load the background image */
-    private void loadBackgroundImage() {
+    /** Load the background image based on the map number */
+    private void loadBackgroundImage(int mapNum) {
+        System.out.println("DEBUG BattlePanel - mapNum received: " + mapNum);
+        String path;
+        switch (mapNum) {
+            case 1: path = "/map1assets/combat_bg_map1.gif"; break;
+            case 2: path = "/map2assets/combat_bg_map2v2.gif"; break;
+            case 3: path = "/map3assets/combat_bg_map3.gif"; break;
+            default: path = "/map2assets/combat_bg_map2v2.gif"; break;
+        }
+        System.out.println("DEBUG BattlePanel - loading path: " + path);
+
         try {
-            java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2v2.gif");
+            java.net.URL imgUrl = getClass().getResource(path);
+            System.out.println("DEBUG BattlePanel - imgUrl found: " + (imgUrl != null));
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
-                backgroundImage = new ImageIcon("/map2assets/combat_bg_map2v2.gif").getImage();
+                backgroundImage = new ImageIcon(path).getImage();
             }
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
@@ -191,6 +201,7 @@ public class BattlePanel extends JPanel {
         String className = getCharacterClassName();
         boolean anyFrameLoaded = false;
 
+        // Try to load 5 idle frames
         for (int i = 0; i < 5; i++) {
             try {
                 playerIdleFrames[i] = ImageIO.read(getClass().getResourceAsStream("/" + className + "/"+className+"_idle/idle_right" + (i + 1) + ".png"));
@@ -200,6 +211,7 @@ public class BattlePanel extends JPanel {
             }
         }
 
+        // Create fallback placeholders if images not found
         if (!anyFrameLoaded) {
             createPlaceholderFrames();
         }
@@ -227,6 +239,7 @@ public class BattlePanel extends JPanel {
             initial = "M";
         }
 
+        // Create slightly different colors for each frame to simulate animation
         for (int i = 0; i < 5; i++) {
             float brightness = 0.7f + (i * 0.06f);
             Color frameColor = new Color(
@@ -243,12 +256,15 @@ public class BattlePanel extends JPanel {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
 
+        // Background
         g2.setColor(color);
         g2.fillRect(0, 0, w, h);
 
+        // Add subtle movement effect
         int offsetX = (frame % 2 == 0) ? 0 : (frame - 2) * 2;
         int offsetY = (frame % 3 == 0) ? 2 : 0;
 
+        // Large initial letter
         Font bigFont = new Font("Serif", Font.BOLD, 60);
         g2.setFont(bigFont);
         FontMetrics fm = g2.getFontMetrics();
@@ -257,9 +273,11 @@ public class BattlePanel extends JPanel {
 
         g2.setColor(new Color(0, 0, 0, 80));
         g2.drawString(initial, lx + 2, ly + 2);
+
         g2.setColor(new Color(255, 245, 200));
         g2.drawString(initial, lx, ly);
 
+        // Silhouette border
         g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 120));
         g2.setStroke(new BasicStroke(2f));
         g2.drawOval(w/2 - 30, h/2 - 30, 60, 60);
@@ -287,61 +305,6 @@ public class BattlePanel extends JPanel {
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  Enemy Sprite Loading & Animation
-    // ─────────────────────────────────────────────────────────────
-    private void loadEnemySprites() {
-        for (Enemy enemy : enemies) {
-            enemy.loadSprite(); // Each enemy loads its own sprite
-        }
-    }
-
-    private void startEnemyAnimationTimer() {
-        if (enemyAnimationTimer != null) {
-            enemyAnimationTimer.stop();
-        }
-        enemyAnimationTimer = new Timer(100, e -> {
-            for (Enemy enemy : enemies) {
-                if (enemy.getHp() > 0) {
-                    enemy.updateAnimation();
-                }
-            }
-            repaint();
-        });
-        enemyAnimationTimer.start();
-    }
-
-    private void stopEnemyAnimationTimer() {
-        if (enemyAnimationTimer != null) {
-            enemyAnimationTimer.stop();
-            enemyAnimationTimer = null;
-        }
-    }
-
-    private void paintEnemySprite(Graphics2D g2, int index, Enemy enemy) {
-        Rectangle rect = enemyImgRects.get(index);
-
-        if (enemy.hasSprite()) {
-            BufferedImage currentFrame = enemy.getCurrentFrame();
-            if (currentFrame != null) {
-                g2.drawImage(currentFrame, rect.x, rect.y, rect.width, rect.height, null);
-            } else {
-                drawEnemyTextFallback(g2, rect, enemy.getName());
-            }
-        } else {
-            drawEnemyTextFallback(g2, rect, enemy.getName());
-        }
-    }
-
-    private void drawEnemyTextFallback(Graphics2D g2, Rectangle rect, String name) {
-        g2.setColor(Color.GRAY);
-        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Serif", Font.BOLD, 20));
-        String display = name.length() > 2 ? name.substring(0, 2) : name;
-        g2.drawString(display, rect.x + rect.width/2 - 15, rect.y + rect.height/2 + 10);
-    }
-
-    // ─────────────────────────────────────────────────────────────
     //  Layout
     // ─────────────────────────────────────────────────────────────
     private void computeLayout() {
@@ -354,18 +317,24 @@ public class BattlePanel extends JPanel {
 
         int enemyCount = enemies.size();
 
+        // Calculate total width needed for all entities
         int enemySpacing = 50;
         int totalEnemyWidth = enemyCount * (imgW + enemySpacing) - enemySpacing;
         int totalWidth = imgW + 100 + totalEnemyWidth;
 
+        // Calculate starting X position to center everything
         int startX = (WIDTH - totalWidth) / 2;
+
+        // Y position - place entities above UI box
         int entityY = uiY - imgH - statH - 40;
 
+        // Player on left side
         int pX = startX;
         int pY = entityY;
         playerImgRect = new Rectangle(pX, pY, imgW, imgH);
         playerStatRect = new Rectangle(pX - 8, pY + imgH + 8, statW + 15, statH + 8);
 
+        // Position enemies horizontally to the right of player
         int enemyStartX = startX + imgW + 100;
 
         for (int i = 0; i < enemyCount; i++) {
@@ -376,10 +345,14 @@ public class BattlePanel extends JPanel {
             enemyStatRects.add(new Rectangle(eX - 8, eY + imgH + 8, statW, statH));
         }
 
+        // UI box
         uiBoxRect = new Rectangle(10, uiY, WIDTH - 20, uiH);
+        uiBoxVCenter = uiBoxRect.y + (uiBoxRect.height / 2);
     }
 
-    // ── Enemy Labels (Fallback) ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────
+    //  Enemy Labels
+    // ─────────────────────────────────────────────────────────────
     private void buildEnemyLabels() {
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
@@ -391,7 +364,6 @@ public class BattlePanel extends JPanel {
             enemyGifLabel.setBounds(enemyImgRects.get(i));
             add(enemyGifLabel);
             enemyGifLabels.add(enemyGifLabel);
-            enemyGifLabel.setVisible(false); // Hide by default, will show only if no sprite
         }
     }
 
@@ -407,10 +379,13 @@ public class BattlePanel extends JPanel {
     //  Button construction
     // ─────────────────────────────────────────────────────────────
     private void buildButtons() {
+        // Main menu buttons
         int btnW = 140, btnH = 46, gap = 18;
-        int rowY = uiBoxRect.y + uiBoxRect.height - btnH - 20;
-        int startX = uiBoxRect.x + 20;
+        int totalMainBtnWidth = (btnW * 3) + (gap * 2);
+        int startX = uiBoxRect.x + (uiBoxRect.width - totalMainBtnWidth) / 2;
+        int rowY = uiBoxVCenter - (btnH / 2);
 
+// 2. NOW create the buttons and set their bounds
         btnFight = new BattleButton("Fight");
         btnFight.setBounds(startX, rowY, btnW, btnH);
         btnFight.addActionListener(e -> showFightMenu());
@@ -421,24 +396,32 @@ public class BattlePanel extends JPanel {
         btnBag.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
 
-            InventoryPanel invPanel = new InventoryPanel(parentFrame, playerEntity, true,
-                    (item, target) -> {
-                        System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
-                        battle.setPendingItem(item, target);
+            itemSelectionCallback = (item, target) -> {
+                System.out.println("Item selected: " + item.getName()
+                        + ", target: " + (target != null ? target.getName() : "null"));
 
-                        parentFrame.getContentPane().removeAll();
-                        parentFrame.add(BattlePanel.this);
-                        parentFrame.revalidate();
-                        parentFrame.repaint();
+                // Restore the battle panel first
+                parentFrame.getContentPane().removeAll();
+                parentFrame.add(BattlePanel.this);
+                parentFrame.revalidate();
+                parentFrame.repaint();
 
-                        battle.executeItemTurn();
-                    },
+                // Then execute item as a turn — DO NOT call battle.startBattle()
+                battle.setPendingItem(item, target);
+            };
+
+            InventoryPanel invPanel = new InventoryPanel(
+                    parentFrame,
+                    playerEntity,
+                    true,
+                    itemSelectionCallback,
                     () -> {
+                        // Back button: just restore panel, battle is still mid-turn
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
                         parentFrame.repaint();
-                        battle.startBattle();
+                        // DO NOT call battle.startBattle() here
                     }
             );
             invPanel.setBattle(battle);
@@ -447,15 +430,16 @@ public class BattlePanel extends JPanel {
             parentFrame.add(invPanel);
             parentFrame.revalidate();
             parentFrame.repaint();
-            invPanel.requestPanelFocus();
         });
         add(btnBag);
+
 
         btnRun = new BattleButton("Run");
         btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);
         btnRun.addActionListener(e -> battle.handleRunAway());
         add(btnRun);
 
+        // Fight sub-menu moves
         ArrayList<Move> moves = playerEntity.getMoves();
         String[] moveNames = {"Move 1", "Move 2", "Move 3", "Move 4"};
         for (int i = 0; i < moves.size() && i < 4; i++) {
@@ -464,27 +448,45 @@ public class BattlePanel extends JPanel {
             if (n != null && !n.isBlank()) moveNames[i] = n;
         }
 
+        // Initialize the array
         moveBtns = new BattleButton[4];
+
         int mW = 195, mH = 42, mGapX = 16, mGapY = 10;
-        int mX = uiBoxRect.x + 20;
-        int mY = uiBoxRect.y + 38;
+        int totalMoveGridWidth = (mW * 2) + mGapX;
+        int mX = uiBoxRect.x + (uiBoxRect.width - totalMoveGridWidth) / 2;
+        int mY = uiBoxRect.y + 35; // Positioned below the text
 
         for (int i = 0; i < 4; i++) {
             int col = i % 2, row = i / 2;
+
+            // !!! CRITICAL FIX: Create the button object BEFORE calling setBounds !!!
             moveBtns[i] = new BattleButton(moveNames[i]);
+
+            // Now it is safe to set bounds because moveBtns[i] is no longer null
             moveBtns[i].setBounds(mX + col * (mW + mGapX), mY + row * (mH + mGapY), mW, mH);
+            moveBtns[i].setVisible(false); // Hide by default
+
             final int idx = i;
             moveBtns[i].addActionListener(e -> onMoveSelected(idx));
             add(moveBtns[i]);
         }
 
         int backW = 140, backH = 46;
-        int backY = mY + 2 * (mH + mGapY) + 6;
+
+        // 1. Set X to the bottom-left with a small padding (e.g., 30 pixels)
+        int backX = uiBoxRect.x + 45;
+
+        // 2. Adjust Y to align it with the bottom area of the parchment
+        // This uses the bottom of the UI box minus the button height and padding
+        int backY = uiBoxRect.y + uiBoxRect.height - backH - 25;
+
         btnBack = new BattleButton("← Back");
-        btnBack.setBounds(mX, backY, backW, backH);
+        btnBack.setBounds(backX, backY, backW, backH);
         btnBack.addActionListener(e -> showMainMenu());
+        btnBack.setVisible(false);
         add(btnBack);
 
+        // Target selection buttons
         buildTargetButtons();
     }
 
@@ -495,7 +497,10 @@ public class BattlePanel extends JPanel {
 
         int totalButtonsWidth = (enemyCount * btnW) + ((enemyCount - 1) * gap);
         int startX = uiBoxRect.x + (uiBoxRect.width - totalButtonsWidth) / 2;
-        int btnY = uiBoxRect.y + 70;
+        btnW = 195;
+        btnH = 42; // need to make sure these exist before the calculation
+        // Use the calculated V-Center from computeLayout
+        int btnY = uiBoxVCenter - (btnH / 2);
 
         for (int i = 0; i < enemyCount; i++) {
             final int enemyIndex = i;
@@ -544,12 +549,21 @@ public class BattlePanel extends JPanel {
         System.out.println("showMainMenu() called");
 
         uiState = UIState.MAIN;
+
+        // Show main menu buttons
         btnFight.setVisible(true);
         btnBag.setVisible(true);
         btnRun.setVisible(true);
+
+        // Hide move buttons
         for (BattleButton mb : moveBtns) mb.setVisible(false);
+
+        // Hide fight menu back button
         btnBack.setVisible(false);
+
+        // Hide all target selection UI
         hideTargetButtons();
+
         repaint();
     }
 
@@ -563,35 +577,59 @@ public class BattlePanel extends JPanel {
 
     public void showFightMenu() {
         System.out.println("showFightMenu() called - resetting to fight menu");
+
         uiState = UIState.FIGHT;
+
+        // Hide main menu buttons
         btnFight.setVisible(false);
         btnBag.setVisible(false);
         btnRun.setVisible(false);
+
+        // Show move buttons and Back button
         for (BattleButton mb : moveBtns) mb.setVisible(true);
         btnBack.setVisible(true);
+
+        // Hide target selection UI completely
         hideTargetButtons();
+
+        // Clear any pending battle message
         battleMessage = "";
+
+        // Ensure all buttons are enabled
         setButtonsEnabled(true);
+
         repaint();
     }
 
     public void showTargetSelection(Move move) {
         System.out.println("showTargetSelection() called for move: " + move.getName());
+
         uiState = UIState.TARGET_SELECT;
+
+        // Hide move buttons and fight menu back button
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
+
+        // Update target button states based on enemy HP
         updateTargetButtonStates();
+
+        // Show target selection buttons for each alive enemy
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(true);
         }
+
+        // Ensure Back button is visible during target selection
         if (btnBackTarget != null) {
             btnBackTarget.setVisible(true);
             btnBackTarget.setEnabled(true);
+
             setComponentZOrder(btnBackTarget, 0);
             btnBackTarget.revalidate();
             btnBackTarget.repaint();
         }
+
         battleMessage = "Choose a target for " + move.getName() + "!";
+
         this.revalidate();
         this.repaint();
     }
@@ -680,6 +718,7 @@ public class BattlePanel extends JPanel {
         if (btnBackTarget != null) {
             btnBackTarget.setEnabled(enabled);
         }
+
         updateTargetButtonStates();
     }
 
@@ -714,6 +753,7 @@ public class BattlePanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+        // Draw background
         if (backgroundImage != null) {
             g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, this);
         } else {
@@ -725,14 +765,9 @@ public class BattlePanel extends JPanel {
             g2.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
-        // Draw enemy sprites and stat boxes
+        // Enemy stat boxes
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
-
-            // Draw enemy sprite
-            paintEnemySprite(g2, i, enemy);
-
-            // Draw enemy stat box
             if (enemy.getHp() > 0) {
                 paintStatBox(g2, enemyStatRects.get(i),
                         enemy.getName() != null ? enemy.getName() : "Enemy " + (i + 1),
@@ -752,19 +787,25 @@ public class BattlePanel extends JPanel {
                 "EXP: " + playerEntity.getExperience() + " / " + playerEntity.getExpNeeded(),
                 true);
 
+        // Draw player animated sprite (without frame/border)
         paintPlayerSprite(g2);
+
         paintUIBox(g2);
         g2.dispose();
     }
 
     private void paintPlayerSprite(Graphics2D g2) {
         if (playerImgRect == null) return;
+
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        // Draw current animation frame directly without any frame/border
         BufferedImage currentFrame = playerIdleFrames[currentPlayerFrame];
         if (currentFrame != null) {
             g2.drawImage(currentFrame, playerImgRect.x, playerImgRect.y,
                     playerImgRect.width, playerImgRect.height, null);
         } else {
+            // Fallback - draw placeholder without frame
             g2.setColor(Color.GRAY);
             g2.fillRect(playerImgRect.x, playerImgRect.y, playerImgRect.width, playerImgRect.height);
             g2.setColor(Color.WHITE);
@@ -780,6 +821,7 @@ public class BattlePanel extends JPanel {
         g2.setColor(Color.GRAY);
         g2.setStroke(new BasicStroke(2f));
         g2.draw(new RoundRectangle2D.Float(r.x, r.y, r.width, r.height, 12, 12));
+
         g2.setFont(FONT_NAME);
         g2.setColor(Color.GREEN);
         int tx = r.x + 12;
@@ -876,17 +918,6 @@ public class BattlePanel extends JPanel {
                     g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
                 }
             }
-
-            List<StatusEffect> playerEffects = playerEntity.getStatusEffects();
-            if (!playerEffects.isEmpty()) {
-                tyOffset += 12;
-                g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                for (StatusEffect effect : playerEffects) {
-                    g2.setColor(new Color(255, 100, 100));
-                    g2.drawString(effect.toString(), tx, ty + tyOffset);
-                    tyOffset += 10;
-                }
-            }
         }
 
         if (!showExp && enemies.size() > 0) {
@@ -895,6 +926,7 @@ public class BattlePanel extends JPanel {
                     Enemy enemy = enemies.get(i);
                     int tyOffset = 0;
 
+                    //DEF buffs for Final Boss
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();
@@ -903,17 +935,6 @@ public class BattlePanel extends JPanel {
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
                             g2.drawString("DEF: +" + (stacks * 8), tx, ty + tyOffset);
-                        }
-                    }
-
-                    List<StatusEffect> enemyEffects = enemy.getStatusEffects();
-                    if (!enemyEffects.isEmpty()) {
-                        tyOffset += 12;
-                        g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                        for (StatusEffect effect : enemyEffects) {
-                            g2.setColor(new Color(255, 100, 100));
-                            g2.drawString(effect.toString(), tx, ty + tyOffset);
-                            tyOffset += 10;
                         }
                     }
                     break;
@@ -929,6 +950,7 @@ public class BattlePanel extends JPanel {
         int sw = r.width;
         int sh = r.height;
 
+        // ── 1. Outer worn shadow ──
         for (int i = 8; i >= 1; i--) {
             float a = 0.06f * (9 - i);
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a));
@@ -937,17 +959,22 @@ public class BattlePanel extends JPanel {
         }
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
+        // ── 2. Main parchment body ──
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + sh,
                 new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
                 new Color[]{
-                        new Color(148, 108, 44), new Color(192, 152, 78),
-                        new Color(220, 186, 118), new Color(238, 212, 152),
-                        new Color(220, 186, 118), new Color(192, 152, 78),
+                        new Color(148, 108, 44),
+                        new Color(192, 152, 78),
+                        new Color(220, 186, 118),
+                        new Color(238, 212, 152),
+                        new Color(220, 186, 118),
+                        new Color(192, 152, 78),
                         new Color(148, 108, 44)
                 }));
         Shape body = new RoundRectangle2D.Float(sx, sy, sw, sh, 18, 18);
         g2.fill(body);
 
+        // ── 3. Horizontal paper fibre / grain ──
         g2.setStroke(new BasicStroke(0.5f));
         for (int ly = sy + 16; ly < sy + sh - 14; ly += 6) {
             int a = 14 + (int)(6 * Math.sin((ly - sy) * 0.4));
@@ -955,6 +982,7 @@ public class BattlePanel extends JPanel {
             g2.drawLine(sx + 16, ly, sx + sw - 16, ly);
         }
 
+        // ── 4. Subtle vertical vein lines ──
         g2.setStroke(new BasicStroke(0.4f));
         java.util.Random vr = new java.util.Random(77);
         for (int i = 0; i < 6; i++) {
@@ -965,6 +993,7 @@ public class BattlePanel extends JPanel {
             g2.drawLine(vx, vy, vx + vr.nextInt(6) - 3, vy + vlen);
         }
 
+        // ── 5. Age spots ──
         java.util.Random sr = new java.util.Random(42);
         for (int i = 0; i < 20; i++) {
             int ax = sx + 40 + sr.nextInt(sw - 80);
@@ -974,6 +1003,7 @@ public class BattlePanel extends JPanel {
             g2.fillOval(ax, ay, ar, ar);
         }
 
+        // ── 6. Warm inner glow ──
         g2.setPaint(new RadialGradientPaint(
                 new Point2D.Float(sx + sw / 2f, sy + sh / 2f),
                 sw * 0.46f,
@@ -981,6 +1011,7 @@ public class BattlePanel extends JPanel {
                 new Color[]{new Color(255, 230, 140, 38), new Color(255, 200, 80, 0)}));
         g2.fill(body);
 
+        // ── 7. Rolled-edge curl: top ──
         g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + 28,
                 new float[]{0f, 0.4f, 1f},
                 new Color[]{
@@ -990,6 +1021,7 @@ public class BattlePanel extends JPanel {
                 }));
         g2.fill(new RoundRectangle2D.Float(sx, sy, sw, 28, 18, 18));
 
+        // ── 8. Rolled-edge curl: bottom ──
         g2.setPaint(new LinearGradientPaint(sx, sy + sh - 28, sx, sy + sh,
                 new float[]{0f, 0.6f, 1f},
                 new Color[]{
@@ -999,27 +1031,32 @@ public class BattlePanel extends JPanel {
                 }));
         g2.fill(new RoundRectangle2D.Float(sx, sy + sh - 28, sw, 28, 18, 18));
 
+        // ── 9. Inner shadow rings ──
         g2.setStroke(new BasicStroke(0.9f));
         for (int i = 1; i <= 7; i++) {
             g2.setColor(new Color(55, 22, 2, 48 - i * 6));
             g2.draw(new RoundRectangle2D.Float(sx + i, sy + i, sw - i * 2, sh - i * 2, 18 - i, 18 - i));
         }
 
+        // ── 10. Decorative border ──
         g2.setStroke(new BasicStroke(1.0f));
         g2.setColor(new Color(115, 68, 14, 105));
         g2.draw(new RoundRectangle2D.Float(sx + 11, sy + 11, sw - 22, sh - 22, 10, 10));
         g2.setColor(new Color(115, 68, 14, 55));
         g2.draw(new RoundRectangle2D.Float(sx + 14, sy + 14, sw - 28, sh - 28, 8, 8));
 
+        // ── 11. Outer hard border ──
         g2.setStroke(new BasicStroke(2.5f));
         g2.setColor(SCROLL_BORDER);
         g2.draw(body);
 
+        // ── 12. Wax seal ornaments ──
         paintWaxSeal(g2, sx + 18, sy + 18);
         paintWaxSeal(g2, sx + sw - 36, sy + 18);
         paintWaxSeal(g2, sx + 18, sy + sh - 36);
         paintWaxSeal(g2, sx + sw - 36, sy + sh - 36);
 
+        // ── 13. Message text ──
         g2.setFont(FONT_TITLE);
         if (!battleMessage.isEmpty()) {
             g2.setColor(new Color(60, 30, 5, 220));
@@ -1061,13 +1098,19 @@ public class BattlePanel extends JPanel {
         g2.fillOval(cx - 2, cy - 2, 5, 5);
     }
 
+    /**
+     * Shows or hides all UI buttons (menus, move buttons, target buttons)
+     * Used during message display to prevent button clicks while messages are showing
+     */
     public void setUIVisible(boolean visible) {
         if (visible) {
+            // When showing UI, only show the appropriate buttons based on current state
             if (uiState == UIState.MAIN) {
                 showMainMenu();
             } else if (uiState == UIState.FIGHT) {
                 showFightMenu();
             } else if (uiState == UIState.TARGET_SELECT) {
+                // For target selection, show target buttons and back button
                 for (BattleButton targetBtn : targetButtons) {
                     targetBtn.setVisible(true);
                 }
@@ -1076,13 +1119,16 @@ public class BattlePanel extends JPanel {
                 }
             }
         } else {
+            // Hide all buttons
             btnFight.setVisible(false);
             btnBag.setVisible(false);
             btnRun.setVisible(false);
+
             for (BattleButton mb : moveBtns) {
                 mb.setVisible(false);
             }
             btnBack.setVisible(false);
+
             for (BattleButton targetBtn : targetButtons) {
                 targetBtn.setVisible(false);
             }
@@ -1090,6 +1136,7 @@ public class BattlePanel extends JPanel {
                 btnBackTarget.setVisible(false);
             }
         }
+
         if (visible) {
             revalidate();
             repaint();
@@ -1154,6 +1201,7 @@ public class BattlePanel extends JPanel {
                 g2.setColor(new Color(100, 80, 50));
                 g2.setStroke(new BasicStroke(1.8f));
                 g2.draw(oct);
+
                 FontMetrics fm = g2.getFontMetrics(getFont());
                 int tx = (w - fm.stringWidth(getText())) / 2;
                 int ty = (h + fm.getAscent() - fm.getDescent()) / 2;
@@ -1164,14 +1212,17 @@ public class BattlePanel extends JPanel {
                 Color fill = pressed ? BTN_GOLD_PRESS : hovered ? BTN_GOLD_HOVER : BTN_GOLD_NORMAL;
                 g2.setColor(fill);
                 g2.fill(oct);
+
                 if (hovered && !pressed) {
                     g2.setColor(new Color(255, 255, 255, 40));
                     Polygon topOct = makeOctagon(0, 0, w, h / 2, c);
                     g2.fill(topOct);
                 }
+
                 g2.setColor(BTN_BORDER_CLR);
                 g2.setStroke(new BasicStroke(2.0f));
                 g2.draw(oct);
+
                 FontMetrics fm = g2.getFontMetrics(getFont());
                 int tx = (w - fm.stringWidth(getText())) / 2;
                 int ty = (h + fm.getAscent() - fm.getDescent()) / 2;
@@ -1181,6 +1232,7 @@ public class BattlePanel extends JPanel {
                 g2.setColor(getForeground());
                 g2.drawString(getText(), tx, ty);
             }
+
             g2.dispose();
         }
 

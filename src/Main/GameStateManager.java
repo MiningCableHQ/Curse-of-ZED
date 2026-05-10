@@ -1,3 +1,6 @@
+
+
+
 package Main;
 
 public class GameStateManager {
@@ -47,6 +50,7 @@ public class GameStateManager {
     public boolean map3EnemyDefeated             = false;  // Reyven
     public boolean map3BossDefeated              = false;  // Zed final
     public boolean map3BossSpawned               = false;
+    public int     map3EnemiesDefeated           = 0;
 
     // ── Global ──
     public boolean gameWon                       = false;

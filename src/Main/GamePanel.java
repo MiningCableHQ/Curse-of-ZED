@@ -848,6 +848,7 @@ public class GamePanel extends JPanel implements Runnable {
         frame.add(bp);
         frame.revalidate();
         frame.repaint();
+        bp.requestFocusInWindow();
     }
 
     private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle, double spdBeforeBattle) {
@@ -886,7 +887,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 1);
         final GamePanel gpRef = this;
         final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -1155,7 +1156,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
         final GamePanel gpRef = this;
 
         bp.setOnBattleEnd(() -> {
@@ -1256,7 +1257,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         StoryLine.ThroneRoomCutscene cutscene =
                 new StoryLine.ThroneRoomCutscene(() -> {
-                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy);
+                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this.currentMap + 1);
                     final GamePanel gpRef = this;
                     final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -1323,7 +1324,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
         final GamePanel gpRef = this;
 
         GameStateManager.get().easterEggFound = true;
