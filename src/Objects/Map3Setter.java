@@ -4337,7 +4337,8 @@ public class Map3Setter {
                         .getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, battleEnemy, 3);
+        Combat.BattlePanel bp =
+                new Combat.BattlePanel(gp.player, battleEnemy, 3);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {

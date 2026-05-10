@@ -1,6 +1,3 @@
-
-
-
 package Combat;
 
 import Entities.Characters.*;
@@ -20,6 +17,9 @@ import java.util.List;
 import Items.Item;
 import Main.InventoryPanel;
 import java.util.function.BiConsumer;
+
+import Combat.StatusEffects.StatusEffect;
+
 
 public class BattlePanel extends JPanel {
 
@@ -81,11 +81,14 @@ public class BattlePanel extends JPanel {
     private BufferedImage[] playerIdleFrames = new BufferedImage[5];
     private int currentPlayerFrame = 0;
     private Timer animationTimer;
+    private Timer enemyAnimationTimer;
+    private boolean showStatusEffects = true;
 
     // ── GIF placeholder labels (enemies only) ─────────────────────
     private final List<JLabel> enemyGifLabels = new ArrayList<>();
 
     // ── Buttons ───────────────────────────────────────────────────
+
     private int uiBoxVCenter;
     private BattleButton btnFight;
     private BattleButton btnBag;
@@ -122,7 +125,7 @@ public class BattlePanel extends JPanel {
         this(player, List.of(enemy1, enemy2, enemy3), mapNum);
     }
 
-    private BattlePanel(Player player, List<Enemy> enemies, int mapNum) { // Add mapNum here
+    private BattlePanel(Player player, List<Enemy> enemies, int mapNum) {
         this.playerEntity = player;
         this.enemies = new ArrayList<>(enemies);
 
@@ -136,42 +139,38 @@ public class BattlePanel extends JPanel {
 
         computeLayout();
         loadPlayerAnimations();
+        loadEnemySprites();
         buildEnemyLabels();
         buildButtons();
-
-        // CHANGE THIS: Pass the mapNum into the method
         loadBackgroundImage(mapNum);
-
         startAnimationTimer();
+        startEnemyAnimationTimer();
 
         // Initialize battle system
         this.battle = new Battle(this, playerEntity, this.enemies);
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
+            stopEnemyAnimationTimer();
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
         });
 
+        // Start the battle
         battle.startBattle();
     }
 
     /** Load the background image */
-    /** Load the background image based on the map number */
     private void loadBackgroundImage(int mapNum) {
-        System.out.println("DEBUG BattlePanel - mapNum received: " + mapNum);
         String path;
         switch (mapNum) {
-            case 1: path = "/map1assets/combat_bg_map1.gif"; break;
-            case 2: path = "/map2assets/combat_bg_map2v2.gif"; break;
-            case 3: path = "/map3assets/combat_bg_map3.gif"; break;
+            case 1:  path = "/map1assets/combat_bg_map1.gif";   break;
+            case 2:  path = "/map2assets/combat_bg_map2v2.gif"; break;
+            case 3:  path = "/map3assets/combat_bg_map3.gif";   break;
             default: path = "/map2assets/combat_bg_map2v2.gif"; break;
         }
-        System.out.println("DEBUG BattlePanel - loading path: " + path);
-
         try {
             java.net.URL imgUrl = getClass().getResource(path);
-            System.out.println("DEBUG BattlePanel - imgUrl found: " + (imgUrl != null));
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
@@ -215,6 +214,53 @@ public class BattlePanel extends JPanel {
         if (!anyFrameLoaded) {
             createPlaceholderFrames();
         }
+    }
+
+    private void loadEnemySprites() {
+        for (Enemy enemy : enemies) {
+            enemy.loadSprite();
+        }
+    }
+
+    private void startEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) enemyAnimationTimer.stop();
+        enemyAnimationTimer = new Timer(100, e -> {
+            for (Enemy enemy : enemies) {
+                if (enemy.getHp() > 0) enemy.updateAnimation();
+            }
+            repaint();
+        });
+        enemyAnimationTimer.start();
+    }
+
+    private void stopEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) {
+            enemyAnimationTimer.stop();
+            enemyAnimationTimer = null;
+        }
+    }
+
+    private void paintEnemySprite(Graphics2D g2, int index, Enemy enemy) {
+        Rectangle rect = enemyImgRects.get(index);
+        if (enemy.hasSprite()) {
+            BufferedImage currentFrame = enemy.getCurrentFrame();
+            if (currentFrame != null) {
+                g2.drawImage(currentFrame, rect.x, rect.y, rect.width, rect.height, null);
+            } else {
+                drawEnemyTextFallback(g2, rect, enemy.getName());
+            }
+        } else {
+            drawEnemyTextFallback(g2, rect, enemy.getName());
+        }
+    }
+
+    private void drawEnemyTextFallback(Graphics2D g2, Rectangle rect, String name) {
+        g2.setColor(Color.GRAY);
+        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Serif", Font.BOLD, 20));
+        String display = name.length() > 2 ? name.substring(0, 2) : name;
+        g2.drawString(display, rect.x + rect.width/2 - 15, rect.y + rect.height/2 + 10);
     }
 
     private String getCharacterClassName() {
@@ -364,6 +410,7 @@ public class BattlePanel extends JPanel {
             enemyGifLabel.setBounds(enemyImgRects.get(i));
             add(enemyGifLabel);
             enemyGifLabels.add(enemyGifLabel);
+            enemyGifLabel.setVisible(false);
         }
     }
 
@@ -768,6 +815,7 @@ public class BattlePanel extends JPanel {
         // Enemy stat boxes
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
+            paintEnemySprite(g2, i, enemy);
             if (enemy.getHp() > 0) {
                 paintStatBox(g2, enemyStatRects.get(i),
                         enemy.getName() != null ? enemy.getName() : "Enemy " + (i + 1),

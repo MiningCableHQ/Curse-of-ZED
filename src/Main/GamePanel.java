@@ -1,7 +1,3 @@
-
-
-
-
 package Main;
 
 import javax.swing.*;
@@ -9,6 +5,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.Random;
 
 import Entities.Characters.*;
 import Tile.TileManager;
@@ -44,15 +41,24 @@ public class GamePanel extends JPanel implements Runnable {
     private NPC              nearbyNPC   = null;
     private OBJ_NoticeBoard  nearbyBoard = null;
     private boolean ePressedLastFrame    = false;
+    private String lastInteractedNPCName = "Frank";
+
 
     // Map 2 intro
     private boolean map2PlayerFrozen = false;
     private boolean map2ExploreShown = false;
     private boolean map2ExploreReady = false;
 
-
-
     private EssenceParticle essenceParticle = new EssenceParticle();
+
+    // Inventory management
+    private InventoryPanel currentInventoryPanel;
+    private boolean inventoryOpen = false;
+    private JFrame parentFrame;
+
+    // Character management
+    private CharacterPanel currentCharacterPanel;
+    private boolean characterOpen = false;
 
     // ── Screen settings ───────────────────────────────────────────
     public final int originalTileSize = 32;
@@ -195,7 +201,31 @@ public class GamePanel extends JPanel implements Runnable {
         });
 
         // ── Shop callback ─────────────────────────────────────────
-        dialogueSystem.setOnOpenShop(() -> System.out.println("OPEN SHOP UI HERE"));
+        dialogueSystem.setOnOpenShop(() -> {
+            if (parentFrame == null)
+                parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            final Entities.NPCs.Shopkeeper sk = new Entities.NPCs.Shopkeeper(lastInteractedNPCName);
+            final GamePanel gpRef = this;
+
+            ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
+                SwingUtilities.invokeLater(() -> {
+                    parentFrame.getContentPane().removeAll();
+                    parentFrame.add(gpRef);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                    gpRef.setVisible(true);
+                    gpRef.requestFocusInWindow();
+                });
+            });
+
+            this.setVisible(false);
+            parentFrame.getContentPane().removeAll();
+            parentFrame.add(shopPanel);
+            parentFrame.revalidate();
+            parentFrame.repaint();
+            shopPanel.requestPanelFocus();
+        });
 
         // ── Other systems ─────────────────────────────────────────
         this.gsm            = GameStateManager.get();
@@ -342,6 +372,26 @@ public class GamePanel extends JPanel implements Runnable {
             player.update();
         }
 
+        // ── Inventory key press ───────────────────────────────────
+        if (keyH.iPressed) {
+            if (!inventoryOpen && !characterOpen) {
+                openInventory();
+            } else if (inventoryOpen) {
+                closeInventory();
+            }
+            keyH.iPressed = false;
+        }
+
+        // ── Character panel key press ─────────────────────────────
+        if (keyH.cPressed) {
+            if (!characterOpen && !inventoryOpen) {
+                openCharacter();
+            } else if (characterOpen) {
+                closeCharacter();
+            }
+            keyH.cPressed = false;
+        }
+
         // ── E key interactions ────────────────────────────────────
         if (keyH.ePressed && !ePressedLastFrame && !dialogueSystem.isActive()) {
 
@@ -404,9 +454,6 @@ public class GamePanel extends JPanel implements Runnable {
                     }
 
                 } else if (nearbyNPC.npcName.equals("Frankenstein")) {
-                    // Frankenstein is only interactable during Map 2 first run,
-                    // after the boss has spawned and Frank is available.
-                    // Block in ALL other situations (Map 1, Map 2 revisit, Map 3).
                     if (currentMap == 1
                             && !GameStateManager.get().isMap2Revisit
                             && nearbyNPC.available
@@ -421,6 +468,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 if (canInteract) {
+                    lastInteractedNPCName = nearbyNPC.npcName;
                     dialogueSystem.open(nearbyNPC, getPlayerDisplayClass());
                 } else if (shouldShowLockedMessage) {
                     screenMessage.show("Cannot Interact.",
@@ -441,6 +489,56 @@ public class GamePanel extends JPanel implements Runnable {
                     220, false);
             objectivesHUD.markEggCodeUnlocked();
         }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  INVENTORY & CHARACTER PANEL
+    // ═════════════════════════════════════════════════════════════
+    private void openInventory() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        inventoryOpen = true;
+        currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
+                (item, target) -> System.out.println("Cannot use items outside of combat!"),
+                () -> closeInventory()
+        );
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentInventoryPanel);
+        parentFrame.revalidate(); parentFrame.repaint();
+        currentInventoryPanel.requestFocusInWindow();
+    }
+
+    public void closeInventory() {
+        inventoryOpen = false;
+        currentInventoryPanel = null;
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate(); parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
+    private void openCharacter() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        characterOpen = true;
+        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
+                () -> closeCharacter()
+        );
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentCharacterPanel);
+        parentFrame.revalidate(); parentFrame.repaint();
+        currentCharacterPanel.requestFocusInWindow();
+    }
+
+    public void closeCharacter() {
+        characterOpen = false;
+        currentCharacterPanel = null;
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate(); parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -632,23 +730,53 @@ public class GamePanel extends JPanel implements Runnable {
         });
     }
 
-    // ═════════════════════════════════════════════════════════════
-    //  ENEMY SPAWNS & BATTLES — MAP 1
-    // ═════════════════════════════════════════════════════════════
-    private void launchEnemyBattle(Entities.Enemies.EnemyEntity mapEnemy, boolean isMasklet) {
-        Entities.Enemies.Enemy battleEnemy = mapEnemy.createBattleEnemy();
-        javax.swing.JFrame frame = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+    private void launchEnemyBattle(Entities.Enemies.EnemyEntity mapEnemy,
+                                   boolean isMasklet) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        // Automatically sends 1, 2, or 3 to load the correct background GIF
-        int mapToLoad = this.currentMap + 1;
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(mapEnemy.createBattleEnemy());
+        }
 
-        // FIXED: Now passing 3 arguments (player, enemy, map number)
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, mapToLoad);
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 1);
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), 1);
+        } else {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), enemiesInBattle.get(2), 1);
+        }
+
         final GamePanel gpRef = this;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
 
         bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
+            boolean playerWon = player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            //Reset all buffs after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle);
+
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
                 frame.add(gpRef);
@@ -663,9 +791,11 @@ public class GamePanel extends JPanel implements Runnable {
                 mapEnemy.defeated = true;
                 mapEnemy.available = false;
 
-                // Logic for tracking Map 1 progress
-                if (isMasklet) GameStateManager.get().map1EnemiesDefeated_masklet = true;
-                else GameStateManager.get().map1EnemiesDefeated_zenzilla = true;
+                if (isMasklet) {
+                    GameStateManager.get().map1EnemiesDefeated_masklet = true;
+                } else {
+                    GameStateManager.get().map1EnemiesDefeated_zenzilla = true;
+                }
 
                 GameStateManager.get().map1EnemiesDefeated++;
                 int count = GameStateManager.get().map1EnemiesDefeated;
@@ -676,17 +806,20 @@ public class GamePanel extends JPanel implements Runnable {
                         GameStateManager.get().map1BossSpawned = true;
                         GameStateManager.get().map1Phase = GameStateManager.Map1Phase.FIGHT_BOSS;
                         objectivesHUD.setObjective("Defeat the Boss", 0, 1);
-                        screenMessage.show("The Boss Has Spawned!", "Find and defeat Thorncrusher!", 180, false);
+                        screenMessage.show("The Boss Has Spawned!",
+                                "Find and defeat Thorncrusher!", 180, false);
                         spawnMap1Boss();
                     }
                 });
                 hudTimer.setRepeats(false);
                 hudTimer.start();
             } else {
-                javax.swing.Timer t = new javax.swing.Timer(2500, ev -> returnToTitleScreen(frame));
+                javax.swing.Timer t = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
                 t.setRepeats(false);
                 t.start();
-                javax.swing.SwingUtilities.invokeLater(() -> screenMessage.show("Game Over", null, 120, false));
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
             }
         });
 
@@ -694,9 +827,20 @@ public class GamePanel extends JPanel implements Runnable {
         frame.add(bp);
         frame.revalidate();
         frame.repaint();
-        bp.requestFocusInWindow();
     }
 
+    private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle) {
+        if (player instanceof Swordsman) {
+            ((Swordsman) player).resetBattleBuffs();
+        } else if (player instanceof Ranger) {
+            ((Ranger) player).resetBattleBuffs();
+        } else if (player instanceof Mage) {
+            ((Mage) player).resetBattleBuffs();
+        }
+
+        player.setAttack(atkBeforeBattle);
+        player.setDefense(defBeforeBattle);
+    }
 
     private void spawnMap1Boss() {
         Entities.Enemies.MapBoss_Thorncrusher boss =
@@ -717,6 +861,7 @@ public class GamePanel extends JPanel implements Runnable {
         if (frame == null) return;
 
         Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 1);
+
         final GamePanel gpRef = this;
 
         bp.setOnBattleEnd(() -> {
@@ -804,8 +949,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
-        final GamePanel gpRef = this;
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 2);        final GamePanel gpRef = this;
 
         bp.setOnBattleEnd(() -> {
             boolean won = battleEnemy.getHp() <= 0;
@@ -905,7 +1049,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 2);
         final GamePanel gpRef = this;
 
         bp.setOnBattleEnd(() -> {
@@ -932,7 +1076,6 @@ public class GamePanel extends JPanel implements Runnable {
                         screenMessage.show("Objectives Cleared!",
                                 "Final Fight Unlocked — Proceed to Map 3", 180, false);
                         objectivesHUD.setSimpleObjective("Proceed to Map 3");
-
                     }
                 });
                 t.setRepeats(false); t.start();
@@ -950,8 +1093,6 @@ public class GamePanel extends JPanel implements Runnable {
         frame.revalidate(); frame.repaint();
     }
 
-
-
     // ═════════════════════════════════════════════════════════════
     //  MAP 2 BOSS
     // ═════════════════════════════════════════════════════════════
@@ -966,17 +1107,11 @@ public class GamePanel extends JPanel implements Runnable {
         obj[30] = zed;
     }
 
-    /**
-     * Schedules Frankenstein to become visible after the easter-egg
-     * spawn message has finished showing (3.5 s delay).
-     * Called only during the FIRST Map 2 run after both enemies are defeated.
-     */
     public void enableFrankenstein() {
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] instanceof NPC_Frankenstein) {
                 NPC_Frankenstein frank = (NPC_Frankenstein) obj[i];
 
-                // Start fully hidden and unavailable
                 frank.available     = false;
                 frank.setVisible(false);
                 frank.showOnMinimap = false;
@@ -988,11 +1123,9 @@ public class GamePanel extends JPanel implements Runnable {
                     battleTransition.start(() -> launchFrankensteinBattle(frank));
                 });
 
-                // Reveal AFTER the easter-egg screen message window (~3.5 s)
                 javax.swing.Timer revealTimer = new javax.swing.Timer(3500, e -> {
                     frank.available     = true;
                     frank.setVisible(true);
-                    // Keep off minimap until player finds him via exploration
                     frank.showOnMinimap = false;
                     System.out.println("✅ Frankenstein NOW VISIBLE (first run) at "
                             + frank.worldX / tileSize + "," + frank.worldY / tileSize);
@@ -1013,8 +1146,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         StoryLine.ThroneRoomCutscene cutscene =
                 new StoryLine.ThroneRoomCutscene(() -> {
-                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this.currentMap + 1);
-                    final GamePanel gpRef = this;
+                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 2);                    final GamePanel gpRef = this;
 
                     bp.setOnBattleEnd(() -> {
                         javax.swing.SwingUtilities.invokeLater(() -> {
@@ -1048,7 +1180,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this.currentMap + 1);
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 2);
         final GamePanel gpRef = this;
 
         GameStateManager.get().easterEggFound = true;
@@ -1058,7 +1190,6 @@ public class GamePanel extends JPanel implements Runnable {
             boolean won = battleEnemy.getHp() <= 0;
             bp.stopAnimationTimer();
 
-            // ── Panel swap — identical pattern to all other battles ──
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
                 frame.add(gpRef);
@@ -1069,7 +1200,6 @@ public class GamePanel extends JPanel implements Runnable {
                 gpRef.map2PlayerFrozen = false;
             });
 
-            // ── Win/lose logic outside invokeLater — same as other battles ──
             if (won) {
                 frankNPC.defeated  = true;
                 frankNPC.available = false;
@@ -1096,133 +1226,6 @@ public class GamePanel extends JPanel implements Runnable {
         frame.add(bp);
         frame.revalidate();
         frame.repaint();
-    }
-    // ═════════════════════════════════════════════════════════════
-//  ENEMY SPAWNS & BATTLES — MAP 3
-// ═════════════════════════════════════════════════════════════
-    public void spawnMap3Enemies() {
-        Entities.Enemies.MapEnemy_Reyven reyven =
-                new Entities.Enemies.MapEnemy_Reyven(this);
-        reyven.worldX = 20 * tileSize;
-        reyven.worldY = 15 * tileSize;
-        reyven.setOnBattleTrigger(() -> {
-            if (battleTransition.isRunning()) return;
-            battleTransition.start(() -> launchMap3EnemyBattle(reyven));
-        });
-        obj[20] = reyven;
-    }
-
-    private void launchMap3EnemyBattle(Entities.Enemies.EnemyEntity mapEnemy) {
-        Entities.Enemies.Enemy battleEnemy = mapEnemy.createBattleEnemy();
-        javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (frame == null) return;
-
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 3); // ← HARDCODE 3
-        final GamePanel gpRef = this;
-
-        bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().removeAll();
-                frame.add(gpRef);
-                frame.revalidate(); frame.repaint();
-                gpRef.requestFocusInWindow();
-                battleTransition = new BattleTransition();
-                map2PlayerFrozen = false;
-            });
-
-            if (won) {
-                mapEnemy.defeated = true;
-                mapEnemy.available = false;
-                GameStateManager.get().map3EnemyDefeated = true;
-                GameStateManager.get().map3EnemiesDefeated++;
-                int count = GameStateManager.get().map3EnemiesDefeated;
-
-                javax.swing.Timer hudTimer = new javax.swing.Timer(200, e -> {
-                    objectivesHUD.updateProgress(count);
-                    if (count >= 1 && !GameStateManager.get().map3BossSpawned) {
-                        GameStateManager.get().map3BossSpawned = true;
-                        objectivesHUD.setObjective("Defeat the Final Boss", 0, 1);
-                        screenMessage.show("The Final Boss Has Spawned!",
-                                "Find and defeat ZED!", 180, false);
-                        spawnMap3Boss();
-                    }
-                });
-                hudTimer.setRepeats(false);
-                hudTimer.start();
-            } else {
-                javax.swing.Timer t = new javax.swing.Timer(2500,
-                        ev -> returnToTitleScreen(frame));
-                t.setRepeats(false); t.start();
-                javax.swing.SwingUtilities.invokeLater(() ->
-                        screenMessage.show("Game Over", null, 120, false));
-            }
-        });
-
-        frame.getContentPane().removeAll();
-        frame.add(bp);
-        frame.revalidate(); frame.repaint();
-        bp.requestFocusInWindow();
-    }
-
-    public void spawnMap3Boss() {
-        Entities.Enemies.MapBoss_Zed boss =
-                new Entities.Enemies.MapBoss_Zed(this);
-        boss.worldX = 35 * tileSize;
-        boss.worldY = 35 * tileSize;
-        boss.setOnBattleTrigger(() -> {
-            if (battleTransition.isRunning()) return;
-            battleTransition.start(() -> launchMap3BossBattle(boss));
-        });
-        obj[30] = boss;
-    }
-
-    private void launchMap3BossBattle(Entities.Enemies.MapBoss_Zed mapBoss) {
-        Entities.Enemies.Enemy bossEnemy = mapBoss.createBattleEnemy();
-        javax.swing.JFrame frame =
-                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (frame == null) return;
-
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 3); // ← HARDCODE 3
-        final GamePanel gpRef = this;
-
-        bp.setOnBattleEnd(() -> {
-            boolean won = bossEnemy.getHp() <= 0;
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                frame.getContentPane().removeAll();
-                frame.add(gpRef);
-                frame.revalidate(); frame.repaint();
-                gpRef.requestFocusInWindow();
-                battleTransition = new BattleTransition();
-                map2PlayerFrozen = false;
-            });
-
-            if (won) {
-                mapBoss.defeated  = true;
-                mapBoss.available = false;
-                GameStateManager.get().map3BossDefeated = true;
-
-                javax.swing.Timer hudTimer = new javax.swing.Timer(200, e -> {
-                    objectivesHUD.updateProgress(1);
-                    screenMessage.show("ZED DEFEATED!",
-                            "The Curse of Zed has been lifted!", 220, true);
-                });
-                hudTimer.setRepeats(false);
-                hudTimer.start();
-            } else {
-                javax.swing.Timer t = new javax.swing.Timer(2500,
-                        ev -> returnToTitleScreen(frame));
-                t.setRepeats(false); t.start();
-                javax.swing.SwingUtilities.invokeLater(() ->
-                        screenMessage.show("Game Over", null, 120, false));
-            }
-        });
-
-        frame.getContentPane().removeAll();
-        frame.add(bp);
-        frame.revalidate(); frame.repaint();
-        bp.requestFocusInWindow();
     }
 
     // ═════════════════════════════════════════════════════════════
@@ -1264,7 +1267,6 @@ public class GamePanel extends JPanel implements Runnable {
         player.worldY = tileSize * 27;
 
         objectivesHUD.setObjective("Collect 5 Essence", 0, 5);
-        // Clear Map 2 challenge and egg objectives — they don't belong in Map 1 revisit
         objectivesHUD.clearChallengeObjective();
         objectivesHUD.clearEggCodeObjective();
 
