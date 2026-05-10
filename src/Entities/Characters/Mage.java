@@ -143,7 +143,7 @@ public class Mage extends Player {
         if (empowerStacks < 3) {
             empowerStacks++;
             // Increase attack by flat 25 per stack
-            flatAttackBonus = 25 * empowerStacks;
+            flatAttackBonus = 25;
             recalculateAttack();
         }
     }

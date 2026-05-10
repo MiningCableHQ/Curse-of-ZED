@@ -143,7 +143,7 @@ public class Swordsman extends Player {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
             // Increase defense by flat 20 per stack
-            flatDefenseBonus = 20 * ironStanceStacks;
+            flatDefenseBonus = 20;
             recalculateDefense();
         }
     }

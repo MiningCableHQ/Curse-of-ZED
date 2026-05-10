@@ -146,9 +146,9 @@ public class Ranger extends Player {
         if (harmonyStacks < 3) {
             harmonyStacks++;
             // Increase attack by 12 per stack
-            flatAttackBonus = 12 * harmonyStacks;
+            flatAttackBonus = 12;
             // Increase defense by 12 per stack
-            flatDefenseBonus = 12 * harmonyStacks;
+            flatDefenseBonus = 12;
             recalculateStats();
         }
     }
