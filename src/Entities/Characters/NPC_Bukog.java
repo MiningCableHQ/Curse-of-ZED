@@ -39,7 +39,7 @@ public class NPC_Bukog extends NPC {
                         + "Take a look, take a look!", false));
 
         tree.addPage(new DialogueTree.Page(khaiTitle, "", true)
-                .addChoice("Let me see your wares.", -1) // TODO: open shop UI
+                .addShopChoice("Let me see your wares.")
                 .addChoice("Maybe later.", -1));
 
         return tree;

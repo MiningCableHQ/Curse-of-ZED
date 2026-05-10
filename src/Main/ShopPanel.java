@@ -331,17 +331,32 @@ public class ShopPanel extends JPanel {
     }
 
     private void loadShopkeeperAnimations() {
-        // Use archer/ranger sprites as shopkeeper placeholder
-        String className = "archer";  // Ranger uses archer folder
         boolean anyFrameLoaded = false;
 
+        // Try NPC-specific idle sprites first (frank_idle1.png, bukog_idle1.png, etc.)
+        String npcName = shopkeeper.getName().toLowerCase();
         for (int i = 0; i < 5; i++) {
             try {
-                String path = "/" + className + "/" + className + "_idle/idle_left" + (i + 1) + ".png";
+                int frameNum = (i % 2) + 1; // cycles between 1 and 2
+                String path = "/npc/" + npcName + "/" + npcName + "_idle" + frameNum + ".png";
                 shopkeeperIdleFrames[i] = ImageIO.read(getClass().getResourceAsStream(path));
                 if (shopkeeperIdleFrames[i] != null) anyFrameLoaded = true;
             } catch (Exception e) {
                 shopkeeperIdleFrames[i] = null;
+            }
+        }
+
+        // Fall back to archer/ranger sprites
+        if (!anyFrameLoaded) {
+            String className = "archer";
+            for (int i = 0; i < 5; i++) {
+                try {
+                    String path = "/" + className + "/" + className + "_idle/idle_left" + (i + 1) + ".png";
+                    shopkeeperIdleFrames[i] = ImageIO.read(getClass().getResourceAsStream(path));
+                    if (shopkeeperIdleFrames[i] != null) anyFrameLoaded = true;
+                } catch (Exception e) {
+                    shopkeeperIdleFrames[i] = null;
+                }
             }
         }
 
