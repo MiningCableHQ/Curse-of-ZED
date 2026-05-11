@@ -220,16 +220,16 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserPower(), 3);
         inventory.addItem(new LesserSoftening(), 2);
 
-        inventory.addItem(new ElementalCodex());
+        inventory.addItem(new ElementalCodex(5));
         inventory.addItem(new Swiftwind());
-        inventory.addItem(new Unyielding());
+        inventory.addItem(new Unyielding(5));
 
         //I delete lang if tiwason ang duwa
         inventory.addItem(new Arcanum());
-        inventory.addItem(new AnkhStaff());
-        inventory.addItem(new Slowstring());
-        inventory.addItem(new Mistwood());
-        inventory.addItem(new Stunblade());
+        inventory.addItem(new AnkhStaff(5));
+        inventory.addItem(new Slowstring(5));
+        inventory.addItem(new Mistwood(5));
+        inventory.addItem(new Stunblade(5));
         inventory.addItem(new RazorEdge());
     }
 
