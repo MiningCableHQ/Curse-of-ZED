@@ -1,5 +1,6 @@
 package Moves.Ranger;
 
+import Combat.StatusEffects.Poison;
 import Entities.Characters.Ranger;
 import Entities.Entity;
 import Items.Weapons.Weapon;
@@ -12,13 +13,13 @@ public class SnipersGamble extends Move {
     public SnipersGamble() {
         super("Sniper's Gamble", 50, TargetType.ENEMY);
         hasUnlocked = false;
-        description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 35% for this move";
+        description = "Deals 350% of ATK as dmg to a single target, accuracy is lowered by 35% and causes poison when missing a target";
     }
 
     public SnipersGamble(boolean hasUnlocked) {
         super("Sniper's Gamble", 50, TargetType.ENEMY);
         this.hasUnlocked = hasUnlocked;
-        description = "Deals 350% of ATK as dmg to a single target, but accuracy is lowered by 35% for this move";
+        description = "Deals 350% of ATK as dmg to a single target, accuracy is lowered by 35% and causes poison when missing a target";
     }
 
     @Override
@@ -51,6 +52,7 @@ public class SnipersGamble extends Move {
                         " and dealt " + (int)actualDamage + " damage!");
             } else {
                 // Attack missed
+                ranger.addStatusEffect(new Poison(2));
                 setDamageDealt(0);
                 setMessage(ranger.getName() + " used " + this.name + " on " + enemy.getName() +
                         " but it missed!");

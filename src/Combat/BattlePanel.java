@@ -927,62 +927,99 @@ public class BattlePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.drawString(hp + " / " + maxHp, barX, ty);
 
-        if (showExp && expLine != null) {
-            ty += 12;
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-            g2.setColor(new Color(50, 50, 160));
-            g2.drawString(expLine, tx, ty);
-        }
+        // REMOVED THE EXP DISPLAY IN STAT BOX DURING COMBAT KAY AKOY BUOT
+//        if (showExp && expLine != null) {
+//            ty += 12;
+//            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+//            g2.setColor(new Color(50, 50, 160));
+//            g2.drawString(expLine, tx, ty);
+//        }
 
+        // ========== PLAYER SECTION (showExp = true) ==========
         if (showExp) {
-            int tyOffset = 0;
+            int buffsOffset = 0;
+
+            // --- BUFFS FIRST (Class buffs like Iron Stance, Harmony, Empower) ---
             if (playerEntity instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) playerEntity;
                 int stacks = swordsman.getIronStanceStacks();
                 if (stacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(100, 150, 255));
-                    g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + buffsOffset);
                 }
             }
             if (playerEntity instanceof Ranger) {
                 Ranger ranger = (Ranger) playerEntity;
                 int harmonyStacks = ranger.getHarmonyStacks();
                 if (harmonyStacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(100, 200, 100));
-                    g2.drawString("Harmony: " + harmonyStacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Harmony: " + harmonyStacks + "/3", tx, ty + buffsOffset);
                 }
             }
             if (playerEntity instanceof Mage) {
                 Mage mage = (Mage) playerEntity;
                 int stacks = mage.getEmpowerStacks();
                 if (stacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(255, 150, 100));
-                    g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Empower: " + stacks + "/3", tx, ty + buffsOffset);
+                }
+            }
+
+            // --- STATUS EFFECTS BELOW BUFFS (Start after buffs) ---
+            List<StatusEffect> playerEffects = playerEntity.getStatusEffects();
+            if (!playerEffects.isEmpty()) {
+                int statusOffset = buffsOffset;
+                for (StatusEffect effect : playerEffects) {
+                    statusOffset += 12;
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                    g2.setColor(new Color(255, 100, 100)); // Red for status effects
+                    String effectText = effect.toString();
+                    if (effectText.length() > 25) {
+                        effectText = effectText.substring(0, 22) + "...";
+                    }
+                    g2.drawString(effectText, tx, ty + statusOffset);
                 }
             }
         }
 
+        // ========== ENEMY SECTION (showExp = false) ==========
         if (!showExp && enemies.size() > 0) {
             for (int i = 0; i < enemies.size(); i++) {
                 if (enemies.get(i).getName().equals(name)) {
                     Enemy enemy = enemies.get(i);
-                    int tyOffset = 0;
+                    int buffsOffset = 0;
 
-                    //DEF buffs for Final Boss
+                    // --- BUFFS FIRST (Enemy-specific buffs like ZED's DEF increase) ---
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();
                         if (stacks > 0) {
-                            tyOffset += 12;
+                            buffsOffset += 12;
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
-                            g2.drawString("DEF: +" + (stacks * 8), tx, ty + tyOffset);
+                            g2.drawString("DEF: +" + (stacks * 8), tx, ty + buffsOffset);
+                        }
+                    }
+
+                    // --- STATUS EFFECTS BELOW BUFFS (Start after buffs) ---
+                    List<StatusEffect> enemyEffects = enemy.getStatusEffects();
+                    if (!enemyEffects.isEmpty()) {
+                        int statusOffset = buffsOffset;
+                        for (StatusEffect effect : enemyEffects) {
+                            statusOffset += 12;
+                            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
+                            g2.setColor(new Color(255, 100, 100)); // Red for status effects
+                            String effectText = effect.toString();
+                            if (effectText.length() > 25) {
+                                effectText = effectText.substring(0, 22) + "...";
+                            }
+                            g2.drawString(effectText, tx, ty + statusOffset);
                         }
                     }
                     break;
