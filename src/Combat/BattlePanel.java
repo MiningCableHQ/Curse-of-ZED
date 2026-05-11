@@ -1228,6 +1228,10 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    public void refreshInventoryDisplay() {
+        System.out.println("Inventory updated - item quantity changed");
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  Inner class: BattleButton with Gold Octagon styling
     // ─────────────────────────────────────────────────────────────

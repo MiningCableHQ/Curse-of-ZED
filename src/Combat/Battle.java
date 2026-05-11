@@ -150,10 +150,26 @@ public class Battle {
 
             String resultMessage;
 
+            // Check if player still has the item (in case quantity changed)
+            int currentQuantity = player.getInventory().getQuantity(item);
+            if (currentQuantity <= 0) {
+                resultMessage = player.getName() + " has no " + item.getName() + " left!";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+
+                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+                nextTimer.setRepeats(false);
+                nextTimer.start();
+                return;
+            }
+
             // Check item target type
             if (item.getTargetType() == Item.TargetType.SELF) {
                 // Self-targeting item
                 item.useItem(player);
+                // Remove ONE item from inventory
+                player.getInventory().removeItem(item, 1);
+
                 // USE THE ITEM'S MESSAGE
                 resultMessage = item.getUseMessage();
                 if (resultMessage == null || resultMessage.isEmpty()) {
@@ -166,6 +182,9 @@ public class Battle {
                 item.useItem(target);
                 double afterHp = target.getHp();
                 double effectAmount = beforeHp - afterHp;
+
+                // Remove ONE item from inventory after using
+                player.getInventory().removeItem(item, 1);
 
                 // USE THE ITEM'S MESSAGE OR CREATE ONE
                 resultMessage = item.getUseMessage();
@@ -185,6 +204,9 @@ public class Battle {
                         item.useItem(enemy);
                     }
                 }
+                // Remove ONE item from inventory
+                player.getInventory().removeItem(item, 1);
+
                 // USE THE ITEM'S MESSAGE
                 resultMessage = item.getUseMessage();
                 if (resultMessage == null || resultMessage.isEmpty()) {
@@ -202,6 +224,8 @@ public class Battle {
             battlePanel.setBattleMessage(resultMessage);
             battlePanel.repaint();
             battlePanel.updateTargetButtonStates();
+
+            battlePanel.refreshInventoryDisplay();
 
             // Check if battle should end
             if (getAliveEnemies().isEmpty()) {
