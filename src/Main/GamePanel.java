@@ -7,12 +7,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.Random;
 
+import Audio.Music.MusicPlayer;
 import Entities.Characters.*;
 import Tile.TileManager;
 import Objects.*;
 import Entities.Characters.NPC;
 import Dialogue.*;
-import StoryLine.*;
 
 import static Main.GameStateManager.Map1Phase.COLLECT_ESSENCE;
 
@@ -60,6 +60,10 @@ public class GamePanel extends JPanel implements Runnable {
     private CharacterPanel currentCharacterPanel;
     private boolean characterOpen = false;
 
+    // Volume management
+    private VolumePanel volumePanel;
+    private boolean volumeOpen = false;
+
     // ── Screen settings ───────────────────────────────────────────
     public final int originalTileSize = 32;
     public final int scale            = 2;
@@ -76,6 +80,9 @@ public class GamePanel extends JPanel implements Runnable {
     public final int worldHeight = tileSize * maxWorldRow;
 
     public int FPS = 60;
+
+    // ── Audio Players ───────────────────────────────────────────
+    public MusicPlayer musicPlayer = new MusicPlayer(this);
 
     // ── Entities ──────────────────────────────────────────────────
     public Player      player;
@@ -273,6 +280,26 @@ public class GamePanel extends JPanel implements Runnable {
                 emoteSystem.updateMouse(e.getX(), e.getY());
             }
         });
+
+        //Volume Panel
+        volumePanel = new VolumePanel(this, musicPlayer.getMap1Music(), () -> {
+            SwingUtilities.invokeLater(() -> {
+                if (volumeOpen) {
+                    // Just hide and flag, don't remove from layered pane here
+                    volumePanel.setVisible(false);
+                    volumeOpen = false;
+                    GamePanel.this.setFocusable(true);
+                    GamePanel.this.requestFocusInWindow();
+                }
+            });
+        });
+        volumePanel.setSize(350, 220);
+        volumeOpen = false;
+
+    }
+
+    public void resumeMapMusic() {
+        musicPlayer.resumeMapMusic();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -292,6 +319,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
+        musicPlayer.playMapMusic();
     }
 
     @Override
@@ -374,7 +402,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // ── Inventory key press ───────────────────────────────────
         if (keyH.iPressed) {
-            if (!inventoryOpen && !characterOpen) {
+            if (!volumeOpen && !inventoryOpen && !characterOpen) {
                 openInventory();
             } else if (inventoryOpen) {
                 closeInventory();
@@ -384,13 +412,24 @@ public class GamePanel extends JPanel implements Runnable {
 
         // ── Character panel key press ─────────────────────────────
         if (keyH.cPressed) {
-            if (!characterOpen && !inventoryOpen) {
+            if (!volumeOpen && !characterOpen && !inventoryOpen) {
                 openCharacter();
             } else if (characterOpen) {
                 closeCharacter();
             }
             keyH.cPressed = false;
         }
+
+        // ── Volume panel key press ─────────────────────────────
+        if(keyH.escPressed){
+            if(volumeOpen){
+                closeVolumePanel();
+            } else if(!characterOpen && !inventoryOpen){
+                showVolumePanel();
+            }
+            keyH.escPressed = false;
+        }
+
 
         // ── E key interactions ────────────────────────────────────
         if (keyH.ePressed && !ePressedLastFrame && !dialogueSystem.isActive()) {
@@ -477,6 +516,12 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
         ePressedLastFrame = keyH.ePressed;
+
+        // ── Audio Updates ──────────────────────────────────
+        if (volumePanel != null) {
+            float vol = volumePanel.getVolume();
+            musicPlayer.updateVolume(vol);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -542,6 +587,41 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     // ═════════════════════════════════════════════════════════════
+    //  VOLUME PANEL
+    // ═════════════════════════════════════════════════════════════
+    public void showVolumePanel() {
+        if (parentFrame == null) {
+            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        }
+
+        int centerX = (screenWidth - 350) / 2;
+        int centerY = (screenHeight - 220) / 2;
+        volumePanel.setLocation(centerX, centerY);
+
+        JLayeredPane layeredPane = parentFrame.getRootPane().getLayeredPane();
+
+        // Only add if not already added
+        if (volumePanel.getParent() == null) {
+            layeredPane.add(volumePanel, JLayeredPane.POPUP_LAYER);
+        }
+
+        volumePanel.setVisible(true);
+        volumePanel.requestPanelFocus();
+        volumeOpen = true;
+
+        this.setFocusable(false);
+    }
+
+    public void closeVolumePanel() {
+        if (volumePanel != null && volumeOpen) {
+            volumePanel.setVisible(false);
+            volumeOpen = false;
+            this.setFocusable(true);
+            this.requestFocusInWindow();
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════
     //  MAP TRANSITIONS
     // ═════════════════════════════════════════════════════════════
     public void checkMapTransition() {
@@ -574,6 +654,7 @@ public class GamePanel extends JPanel implements Runnable {
                 tileM.loadMap("/maps/world02.txt");
                 aSetter.setObject();
                 mapLabel.reset("Map 2", "The Sorcerer's Lair");
+                musicPlayer.playMapMusic();
 
                 player.worldX = tileSize * 3;
                 player.worldY = tileSize * 10;
@@ -611,6 +692,7 @@ public class GamePanel extends JPanel implements Runnable {
                 tileM.loadMap("/maps/world03.txt");
                 aSetter.setObject();
                 mapLabel.reset("Map 3", "The Sorcerer's Lair - Final Battle");
+                musicPlayer.playMapMusic();
                 objectivesHUD.setObjective("Fight the enemy", 0, 1);
                 player.worldX = tileSize * 2;
                 player.worldY = tileSize * 2;
@@ -621,6 +703,7 @@ public class GamePanel extends JPanel implements Runnable {
                 tileM.loadMap("/maps/world01.txt");
                 aSetter.setObject();
                 mapLabel.reset("Map 1", "The Neverwinter Village");
+                musicPlayer.playMapMusic();
                 player.worldX = worldWidth - (tileSize * 3);
                 player.worldY = tileSize * 10;
             }
@@ -632,6 +715,7 @@ public class GamePanel extends JPanel implements Runnable {
                 currentMap = 1;
                 tileM.loadMap("/maps/world02.txt");
                 aSetter.setObject();
+                musicPlayer.playMapMusic();
                 player.worldX = worldWidth - (tileSize * 3);
                 player.worldY = tileSize * 10;
             }
@@ -829,6 +913,8 @@ public class GamePanel extends JPanel implements Runnable {
                 });
                 hudTimer.setRepeats(false);
                 hudTimer.start();
+
+                resumeMapMusic();
             } else {
                 javax.swing.Timer t = new javax.swing.Timer(2500,
                         ev -> returnToTitleScreen(frame));
@@ -882,8 +968,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 1);
-
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this);
         final GamePanel gpRef = this;
         final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -941,6 +1026,7 @@ public class GamePanel extends JPanel implements Runnable {
                 });
                 hudTimer.setRepeats(false);
                 hudTimer.start();
+                resumeMapMusic();
             } else {
                 javax.swing.Timer t = new javax.swing.Timer(2500,
                         ev -> returnToTitleScreen(frame));
@@ -1108,6 +1194,7 @@ public class GamePanel extends JPanel implements Runnable {
                 });
                 t.setRepeats(false);
                 t.start();
+                resumeMapMusic();
             } else {
                 javax.swing.Timer gameOverTimer = new javax.swing.Timer(2500,
                         ev -> returnToTitleScreen(frame));
@@ -1240,8 +1327,8 @@ public class GamePanel extends JPanel implements Runnable {
                         objectivesHUD.setSimpleObjective("Proceed to Map 3");
                     }
                 });
-                t.setRepeats(false);
-                t.start();
+                t.setRepeats(false); t.start();
+                resumeMapMusic();
             } else {
                 javax.swing.Timer gameOverTimer = new javax.swing.Timer(2500,
                         ev -> returnToTitleScreen(frame));
@@ -1315,7 +1402,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         StoryLine.ThroneRoomCutscene cutscene =
                 new StoryLine.ThroneRoomCutscene(() -> {
-                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, 2);
+
+                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this);
                     final GamePanel gpRef = this;
                     final Entities.Enemies.Enemy finalBoss = bossEnemy;
 
@@ -1382,11 +1470,11 @@ public class GamePanel extends JPanel implements Runnable {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, 2);
-        final GamePanel gpRef = this;
-
         GameStateManager.get().easterEggFound = true;
         objectivesHUD.completeChallenge();
+
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this);
+        final GamePanel gpRef = this;
 
         bp.setOnBattleEnd(() -> {
             boolean won = battleEnemy.getHp() <= 0;
@@ -1413,6 +1501,8 @@ public class GamePanel extends JPanel implements Runnable {
                                 "Continue your journey...", 180, false));
                 msgTimer.setRepeats(false);
                 msgTimer.start();
+
+                resumeMapMusic();
 
             } else {
                 javax.swing.Timer t = new javax.swing.Timer(2500,
@@ -1481,6 +1571,8 @@ public class GamePanel extends JPanel implements Runnable {
         gpRef.requestFocusInWindow();
         battleTransition  = new BattleTransition();
         map2PlayerFrozen  = false;
+
+        musicPlayer.playMapMusic();
     }
 
     private void lockNPCsExceptShop() {

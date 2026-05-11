@@ -3,6 +3,7 @@ package Combat;
 import Entities.Characters.*;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
+import Main.GamePanel;
 import Moves.Move;
 
 import javax.imageio.ImageIO;
@@ -110,27 +111,49 @@ public class BattlePanel extends JPanel {
     // ── Item selection callback ───────────────────────────────────
     private BiConsumer<Item, Enemy> itemSelectionCallback;
 
+    // ── Status Effect Display ─────────────────────────────────────
+    //FIXME Figure out where is the existing defined scope type shi
+    //private boolean showStatusEffects = true;
+
+    // ── Game Panel ─────────────────────────────────────
+    private GamePanel gp;
+
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
-    public BattlePanel(Player player, Enemy enemy, int mapNum) {
-        this(player, List.of(enemy), mapNum);
+    public BattlePanel(Player player, Enemy enemy, GamePanel gp) {
+        this(player, List.of(enemy), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, int mapNum) {
-        this(player, List.of(enemy1, enemy2), mapNum);
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3, int mapNum) {
-        this(player, List.of(enemy1, enemy2, enemy3), mapNum);
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2, enemy3), gp);
     }
 
-    private BattlePanel(Player player, List<Enemy> enemies, int mapNum) {
+    private BattlePanel(Player player, List<Enemy> enemies, GamePanel gp) {
         this.playerEntity = player;
         this.enemies = new ArrayList<>(enemies);
+        this.gp = gp;
 
         if (this.enemies.isEmpty()) {
             throw new IllegalArgumentException("At least one enemy is required");
+        }
+
+        // Stop whatever music is playing and start battle music immediately
+        boolean isBossBattle = this.enemies.stream().anyMatch(e -> e instanceof Entities.Enemies.Boss);
+        if (gp != null && gp.musicPlayer != null) {
+            System.out.println("[BattlePanel] stopMapMusic() called");
+            gp.musicPlayer.stopMapMusic();
+            if (isBossBattle) {
+                System.out.println("[BattlePanel] getBossMusic().play() called");
+                gp.musicPlayer.getBossMusic().play(true);
+            } else {
+                System.out.println("[BattlePanel] getCombatMusic().play() called");
+                gp.musicPlayer.getCombatMusic().play(true);
+            }
         }
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -142,7 +165,7 @@ public class BattlePanel extends JPanel {
         loadEnemySprites();
         buildEnemyLabels();
         buildButtons();
-        loadBackgroundImage(mapNum);
+        loadBackgroundImage(gp.currentMap);
         startAnimationTimer();
         startEnemyAnimationTimer();
 
@@ -151,6 +174,15 @@ public class BattlePanel extends JPanel {
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
             stopEnemyAnimationTimer();
+            if (gp != null && gp.musicPlayer != null) {
+                if (isBossBattle) {
+                    System.out.println("[BattlePanel] getBossMusic().stop() called");
+                    gp.musicPlayer.getBossMusic().stop();
+                } else {
+                    System.out.println("[BattlePanel] getCombatMusic().stop() called");
+                    gp.musicPlayer.getCombatMusic().stop();
+                }
+            }
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
@@ -164,9 +196,9 @@ public class BattlePanel extends JPanel {
     private void loadBackgroundImage(int mapNum) {
         String path;
         switch (mapNum) {
-            case 1:  path = "/map1assets/combat_bg_map1.gif";   break;
-            case 2:  path = "/map2assets/combat_bg_map2v2.gif"; break;
-            case 3:  path = "/map3assets/combat_bg_map3.gif";   break;
+            case 0:  path = "/map1assets/combat_bg_map1.gif";   break;
+            case 1:  path = "/map2assets/combat_bg_map2v2.gif"; break;
+            case 2:  path = "/map3assets/combat_bg_map3.gif";   break;
             default: path = "/map2assets/combat_bg_map2v2.gif"; break;
         }
         try {

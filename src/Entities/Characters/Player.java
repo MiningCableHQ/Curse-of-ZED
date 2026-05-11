@@ -63,7 +63,7 @@ public abstract class Player extends Entity {
         setDefaultValues();
         getPlayerImage();
 
-        money = 0;  // Initialize money
+        money = 0; // Initialize money
 
         level = 1;
         experience = 0;

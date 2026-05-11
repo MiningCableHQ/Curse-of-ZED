@@ -6,6 +6,7 @@ public class KeyHandler implements KeyListener {
     public boolean ePressed;
     public boolean iPressed;
     public boolean cPressed;
+    public boolean escPressed;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -23,7 +24,7 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_I){ iPressed = true; }
         if(code == KeyEvent.VK_C){ cPressed = true; }
         if(code == KeyEvent.VK_ESCAPE){
-            // ESC handled separately in panels
+            escPressed = true;
         }
     }
 
@@ -38,5 +39,8 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_E){ ePressed = false; }
         if(code == KeyEvent.VK_I){ iPressed = false; }
         if(code == KeyEvent.VK_C){ cPressed = false; }
+        if(code == KeyEvent.VK_ESCAPE){
+            escPressed = false;
+        }
     }
 }

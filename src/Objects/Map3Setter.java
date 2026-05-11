@@ -4351,16 +4351,16 @@ public class Map3Setter {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(gp.player, enemiesInBattle.get(0), 3);
+            bp = new Combat.BattlePanel(gp.player, enemiesInBattle.get(0), gp);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(gp.player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1), 3);
+                    enemiesInBattle.get(1), gp);
         } else {
             bp = new Combat.BattlePanel(gp.player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2), 3);
+                    enemiesInBattle.get(2), gp);
         }
 
         final GamePanel gpRef = gp;
@@ -4437,7 +4437,7 @@ public class Map3Setter {
                 });
                 t.setRepeats(false);
                 t.start();
-
+                gpRef.musicPlayer.resumeMapMusic();
             } else {
                 gameOver(frame, gpRef);
             }
@@ -4458,7 +4458,7 @@ public class Map3Setter {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, new ZED(), 3);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, new ZED(), gp);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
