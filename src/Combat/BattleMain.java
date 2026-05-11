@@ -26,7 +26,7 @@ public class BattleMain {
             Player testPlayer = new Ranger(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new Frankenstein());
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Frankenstein(), gp);
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

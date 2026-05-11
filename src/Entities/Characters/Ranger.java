@@ -20,7 +20,7 @@ public class Ranger extends Player {
         name = "Archer";
         hp = 10000; /** Ako gi op**/
         maxHp = hp;
-        attack = 240;
+        attack = 2400;
         maxAttack = attack;
         defense = 20;
         maxDefense = defense;

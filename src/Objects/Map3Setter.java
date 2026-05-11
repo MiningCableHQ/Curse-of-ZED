@@ -4338,7 +4338,7 @@ public class Map3Setter {
         if (frame == null) return;
 
         Combat.BattlePanel bp =
-                new Combat.BattlePanel(gp.player, battleEnemy);
+                new Combat.BattlePanel(gp.player, battleEnemy, gp);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {
@@ -4379,7 +4379,7 @@ public class Map3Setter {
                 });
                 t.setRepeats(false);
                 t.start();
-
+                gpRef.musicPlayer.resumeMapMusic();
             } else {
                 gameOver(frame, gpRef);
             }
@@ -4400,7 +4400,7 @@ public class Map3Setter {
                         .getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, bossEnemy, gp);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {

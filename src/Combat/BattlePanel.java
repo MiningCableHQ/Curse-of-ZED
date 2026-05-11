@@ -3,6 +3,7 @@ package Combat;
 import Entities.Characters.*;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
+import Main.GamePanel;
 import Moves.Move;
 
 import javax.imageio.ImageIO;
@@ -17,7 +18,6 @@ import java.util.List;
 import Items.Item;
 import Main.InventoryPanel;
 import java.util.function.BiConsumer;
-import Combat.StatusEffects.StatusEffect;
 
 public class BattlePanel extends JPanel {
 
@@ -107,27 +107,45 @@ public class BattlePanel extends JPanel {
     // ── Status Effect Display ─────────────────────────────────────
     private boolean showStatusEffects = true;
 
+    // ── Game Panel ─────────────────────────────────────
+    private GamePanel gp;
+
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
-    public BattlePanel(Player player, Enemy enemy) {
-        this(player, List.of(enemy));
+    public BattlePanel(Player player, Enemy enemy, GamePanel gp) {
+        this(player, List.of(enemy), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2) {
-        this(player, List.of(enemy1, enemy2));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3) {
-        this(player, List.of(enemy1, enemy2, enemy3));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2, enemy3), gp);
     }
 
-    private BattlePanel(Player player, List<Enemy> enemies) {
+    private BattlePanel(Player player, List<Enemy> enemies, GamePanel gp) {
         this.playerEntity = player;
         this.enemies = new ArrayList<>(enemies);
+        this.gp = gp;
 
         if (this.enemies.isEmpty()) {
             throw new IllegalArgumentException("At least one enemy is required");
+        }
+
+        // Stop whatever music is playing and start battle music immediately
+        boolean isBossBattle = this.enemies.stream().anyMatch(e -> e instanceof Entities.Enemies.Boss);
+        if (gp != null && gp.musicPlayer != null) {
+            System.out.println("[BattlePanel] stopMapMusic() called");
+            gp.musicPlayer.stopMapMusic();
+            if (isBossBattle) {
+                System.out.println("[BattlePanel] getBossMusic().play() called");
+                gp.musicPlayer.getBossMusic().play(true);
+            } else {
+                System.out.println("[BattlePanel] getCombatMusic().play() called");
+                gp.musicPlayer.getCombatMusic().play(true);
+            }
         }
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -145,6 +163,15 @@ public class BattlePanel extends JPanel {
         this.battle = new Battle(this, playerEntity, this.enemies);
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
+            if (gp != null && gp.musicPlayer != null) {
+                if (isBossBattle) {
+                    System.out.println("[BattlePanel] getBossMusic().stop() called");
+                    gp.musicPlayer.getBossMusic().stop();
+                } else {
+                    System.out.println("[BattlePanel] getCombatMusic().stop() called");
+                    gp.musicPlayer.getCombatMusic().stop();
+                }
+            }
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
