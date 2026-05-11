@@ -10,13 +10,13 @@ public class MultiStrike extends Move {
     Random rand = new Random();
 
     public MultiStrike() {
-        super("Multi Strike", 40, TargetType.ALL_ENEMIES);
+        super("Multi Strike", 40, TargetType.ALL_ENEMIES, 3);
         hasUnlocked = false;
         description = "Deals 20% of ATK to all enemies 5-10x";
     }
 
     public MultiStrike(boolean hasUnlocked) {
-        super("Multi Strike", 40, TargetType.ALL_ENEMIES);
+        super("Multi Strike", 40, TargetType.ALL_ENEMIES, 7);
         this.hasUnlocked = hasUnlocked;
         description = "Deals 20% of ATK to all enemies 5-10x";
     }

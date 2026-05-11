@@ -9,13 +9,13 @@ public class FlurryShot extends Move {
     Random rand = new Random();
 
     public FlurryShot() {
-        super("Flurry Shot", 40, TargetType.ENEMY);
+        super("Flurry Shot", 40, TargetType.ENEMY, 3);
         hasUnlocked = false;
         description = "Deals 45% of ATK as dmg 2-5x to a single target";
     }
 
     public FlurryShot(boolean hasUnlocked) {
-        super("Flurry Shot", 40);
+        super("Flurry Shot", 40, TargetType.ENEMY, 3);
         this.hasUnlocked = hasUnlocked;
         description = "Deals 45% of ATK as dmg 2-5x to a single target";
     }

@@ -11,13 +11,13 @@ public class SnipersGamble extends Move {
     private static final Random rand = new Random();
 
     public SnipersGamble() {
-        super("Sniper's Gamble", 50, TargetType.ENEMY);
+        super("Sniper's Gamble", 50, TargetType.ENEMY, 10);
         hasUnlocked = false;
         description = "Deals 350% of ATK as dmg to a single target, accuracy is lowered by 35% and causes poison when missing a target";
     }
 
     public SnipersGamble(boolean hasUnlocked) {
-        super("Sniper's Gamble", 50, TargetType.ENEMY);
+        super("Sniper's Gamble", 50, TargetType.ENEMY, 10);
         this.hasUnlocked = hasUnlocked;
         description = "Deals 350% of ATK as dmg to a single target, accuracy is lowered by 35% and causes poison when missing a target";
     }

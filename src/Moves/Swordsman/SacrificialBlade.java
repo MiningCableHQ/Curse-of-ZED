@@ -11,13 +11,13 @@ public class SacrificialBlade extends Move {
     Random rand = new Random();
 
     public SacrificialBlade() {
-        super("Sacrificial Blade", 70);
+        super("Sacrificial Blade", 70, TargetType.ENEMY, 10);
         hasUnlocked = false;
         description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
     }
 
     public SacrificialBlade(boolean hasUnlocked) {
-        super("Sacrificial Blade", 70);
+        super("Sacrificial Blade", 70, TargetType.ENEMY, 10);
         hasUnlocked = this.hasUnlocked;
         description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
     }

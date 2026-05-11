@@ -11,13 +11,13 @@ public class LifeLeech extends Move {
     Random rand = new Random();
 
     public LifeLeech() {
-        super("Life Leech", 30, TargetType.ENEMY);
+        super("Life Leech", 30, TargetType.ENEMY, 3);
         hasUnlocked = false;
         description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
     }
 
     public LifeLeech(boolean hasUnlocked) {
-        super("Life Leech", 30);
+        super("Life Leech", 30, TargetType.ENEMY, 3);
         this.hasUnlocked = hasUnlocked;
         description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
     }

@@ -10,13 +10,13 @@ public class Roulette extends Move {
     Random rand = new Random();
 
     public Roulette() {
-        super("Roulette", 35, TargetType.ALL_ENEMIES);
+        super("Roulette", 35, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = false;
         description = "Deal 15% damage to all enemies 3-10x";
     }
 
     public Roulette(boolean hasUnlocked) {
-        super("Roulette", 35, TargetType.ALL_ENEMIES);
+        super("Roulette", 35, TargetType.ALL_ENEMIES, 7);
         this.hasUnlocked = hasUnlocked;
         description = "Deal 15% damage to all enemies 3-10x";
     }

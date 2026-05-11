@@ -11,13 +11,13 @@ public class ChillingGamble extends Move {
     Random rand = new Random();
 
     public ChillingGamble() {
-        super("Chilling Gamble", 40, TargetType.ENEMY);
+        super("Chilling Gamble", 40, TargetType.ENEMY, 10);
         hasUnlocked = false;
         description = "Deals 300% of ATK as dmg to a single target, but gains Frozen status";
     }
 
     public ChillingGamble(boolean hasUnlocked) {
-        super("Chilling Gamble", 40);
+        super("Chilling Gamble", 40, TargetType.ENEMY, 10);
         this.hasUnlocked = hasUnlocked;
         description = "Deals 300% of ATK as dmg to a single target, but gains Frozen status";
     }

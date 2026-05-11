@@ -1,5 +1,6 @@
 package Moves;
 
+import Entities.Characters.Player;
 import Entities.Entity;
 
 public abstract class Move {
@@ -9,6 +10,7 @@ public abstract class Move {
     protected boolean isDisabled;
     protected int disabledCounter;
     protected boolean hasUnlocked;
+    protected int levelToBeUnlocked;
 
     // Current target type shi
     public static Entity currentTarget;
@@ -44,6 +46,21 @@ public abstract class Move {
         isDisabled = false;
         disabledCounter = 0;
         this.targetType = targetType;
+    }
+
+    public Move(String name, int attack, TargetType targetType, int levelToBeUnlocked){
+        this.name = name;
+        this.attack = attack;
+        isDisabled = false;
+        disabledCounter = 0;
+        this.targetType = targetType;
+        this.levelToBeUnlocked = levelToBeUnlocked;
+    }
+
+    public void canUnlock(Player player){
+        if(player.getLevel() >=  levelToBeUnlocked){
+            hasUnlocked = true;
+        }
     }
 
     public abstract <T> void execute(T Entity);

@@ -10,13 +10,13 @@ public class LifedrainArrow extends Move {
     Random rand = new Random();
 
     public LifedrainArrow(){
-        super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES);
+        super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = false;
         description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
     }
 
     public LifedrainArrow(boolean hasUnlocked){
-        super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES);
+        super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = this.hasUnlocked();
         description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
     }

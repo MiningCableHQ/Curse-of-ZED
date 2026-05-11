@@ -127,8 +127,7 @@ public class Swordsman extends Player {
         moves.add(new HeroicSlash());
         moves.add(new SweepingStrike());
         moves.add(new IronStance());
-        //moves.add(new GuideToAfterlife());
-        moves.add(new SacrificialBlade());
+        moves.add(new GuideToAfterlife());
     }
 
     // --- For move: Iron stance ---------------------------------------------------------------------------------------

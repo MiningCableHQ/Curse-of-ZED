@@ -8,13 +8,13 @@ public class Preservation extends Move {
     Random rand = new Random();
 
     public Preservation() {
-        super("Preservation", 0, TargetType.SELF);
+        super("Preservation", 0, TargetType.SELF, 7);
         hasUnlocked = false;
         description = "Heals the character by 300-800 HP";
     }
 
     public Preservation(boolean hasUnlocked) {
-        super("Preservation", 0, TargetType.SELF);
+        super("Preservation", 0, TargetType.SELF, 7);
         hasUnlocked = this.hasUnlocked;
         description = "Heals the character by 300-800 HP";
     }

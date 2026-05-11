@@ -220,17 +220,17 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserPower(), 3);
         inventory.addItem(new LesserSoftening(), 2);
 
-        inventory.addItem(new ElementalCodex(5));
+        inventory.addItem(new AnkhStaff(5));
         inventory.addItem(new Swiftwind());
         inventory.addItem(new Unyielding(5));
 
         //I delete lang if tiwason ang duwa
         inventory.addItem(new Arcanum());
-        inventory.addItem(new AnkhStaff(5));
         inventory.addItem(new Slowstring(5));
         inventory.addItem(new Mistwood(5));
         inventory.addItem(new Stunblade(5));
         inventory.addItem(new RazorEdge());
+        inventory.addItem(new ElementalCodex(5));
     }
 
     // KEEP YOUR LEVEL UP SYSTEM (with stat increases)
@@ -269,6 +269,14 @@ public abstract class Player extends Entity {
             expNeeded = 125;
         }else{
             expNeeded = 150;
+        }
+
+        updateMoveSet();
+    }
+
+    public void updateMoveSet(){
+        for(Move move : moveset){
+            move.canUnlock(this);
         }
     }
 
