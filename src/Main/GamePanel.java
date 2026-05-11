@@ -835,11 +835,11 @@ public class GamePanel extends JPanel implements Runnable {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 1);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
         } else if (enemyCount == 2) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), 1);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), this);
         } else {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), enemiesInBattle.get(2), 1);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), enemiesInBattle.get(2), this);
         }
 
         final GamePanel gpRef = this;
@@ -1093,16 +1093,16 @@ public class GamePanel extends JPanel implements Runnable {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 2);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1), 2);
+                    enemiesInBattle.get(1), this);
         } else {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2), 2);
+                    enemiesInBattle.get(2), this);
         }
 
         final GamePanel gpRef = this;
@@ -1254,16 +1254,16 @@ public class GamePanel extends JPanel implements Runnable {
         Combat.BattlePanel bp;
 
         if (enemyCount == 1) {
-            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), 2);
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
         } else if (enemyCount == 2) {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
-                    enemiesInBattle.get(1), 2);
+                    enemiesInBattle.get(1), this);
         } else {
             bp = new Combat.BattlePanel(player,
                     enemiesInBattle.get(0),
                     enemiesInBattle.get(1),
-                    enemiesInBattle.get(2), 2);
+                    enemiesInBattle.get(2), this);
         }
 
         final GamePanel gpRef = this;
