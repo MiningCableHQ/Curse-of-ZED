@@ -85,14 +85,20 @@ public class Battle {
     }
 
     public void setPendingItem(Item item, Enemy target) {
-        if (target != null) {
-            // Target already selected (for self-targeting items)
-            pendingItem = item;
+        pendingItem = item;
+
+        if (item.getTargetType() == Item.TargetType.SELF) {
+            // Self-targeting item (potions, buffs, heals) — apply directly to player
             hasPendingItem = false;
-            executeItemTurn(item, target);
+            executeItemTurn(item, null);
+
+        } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
+            // AoE item — no target selection needed, hits all enemies
+            hasPendingItem = false;
+            executeItemTurn(item, null);
+
         } else {
-            // Need target selection
-            pendingItem = item;
+            // Enemy-targeted item (debuffs etc.) — show target selection screen
             hasPendingItem = true;
             battlePanel.showItemTargetSelection(item);
         }
