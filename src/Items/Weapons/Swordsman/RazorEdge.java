@@ -51,7 +51,7 @@ public class RazorEdge extends Weapon {
     @Override
     public String getPassiveDescription() {
         int tierIndex = getTierIndex();
-        return "Increases base ATK by " + (int)ATK_BONUSES[tierIndex];
+        return "Increases ATK by an additional " + (int)ATK_BONUSES[tierIndex];
     }
 
     public double getCurrentAtkBonus() {

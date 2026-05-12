@@ -51,7 +51,7 @@ public class Unyielding extends Weapon {
     @Override
     public String getPassiveDescription() {
         int tierIndex = getTierIndex();
-        return "Increases damage resistance by " + (int)(RESISTANCE_BONUSES[tierIndex] * 100) + "%";
+        return "Increases resistance by an additional " + (int)(RESISTANCE_BONUSES[tierIndex] * 100) + "%";
     }
 
     public double getCurrentResistanceBonus() {

@@ -40,7 +40,7 @@ public class AnkhStaff extends Weapon {
     @Override
     public String getPassiveDescription() {
         int tierIndex = getTierIndex();
-        return "30% Chance to heal " + (int)(HEAL_PERCENTAGES[tierIndex] * 100) + "% of max HP after using any move";
+        return "30% Chance to heal " + (int)(HEAL_PERCENTAGES[tierIndex] * 100) + "% of max HP after using a move";
     }
 
     @Override

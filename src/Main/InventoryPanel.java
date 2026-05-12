@@ -852,7 +852,7 @@ public class InventoryPanel extends JPanel {
                             slot.setHovered(true);
                             String displayText = item.getName() + " x" + quantity;
                             if (item instanceof Weapon) {
-                                displayText += " - ATK: +" + (int)((Weapon)item).getAttack();
+                                displayText += " - ATK: +" + (int)((Weapon)item).getAttack() + " | " + ((Weapon)item).getPassiveDescription();
                             } else {
                                 displayText += " - " + item.getDescription();
                             }

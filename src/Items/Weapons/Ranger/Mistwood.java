@@ -51,7 +51,7 @@ public class Mistwood extends Weapon {
     @Override
     public String getPassiveDescription() {
         int tierIndex = getTierIndex();
-        return "Increases speed by " + (int)SPD_BONUSES[tierIndex];
+        return "Increases speed by an additional " + (int)SPD_BONUSES[tierIndex];
     }
 
     public double getCurrentSpdBonus() {
