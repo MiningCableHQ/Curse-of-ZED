@@ -154,6 +154,27 @@ public class Audio {
         stopCurrentClip();
     }
 
+    /** Load the clip into memory in the background without starting playback. */
+    public void preload() {
+        if (hasPlayed && clip != null && clip.isOpen()) return;
+        audioExecutor.submit(() -> {
+            if (hasPlayed && clip != null && clip.isOpen()) return;
+            try {
+                stopCurrentClip();
+                clip = AudioSystem.getClip();
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(new File(filePath));
+                clip.open(audioIn);
+                if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                    volumeControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                    applyVolume();
+                }
+                hasPlayed = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     // Uses close() so clip.isOpen() becomes false, reliably exiting the
     // executor while-loop even when isRunning visibility is delayed across threads.
     public void stopCurrentMusic() {

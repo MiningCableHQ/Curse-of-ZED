@@ -2,52 +2,59 @@ package Audio.SFX;
 
 import javax.sound.sampled.*;
 import java.io.File;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class SFXPlayer {
 
     private float volume = 0.7f;
-    private Clip currentClip;
-
-    // Separate executor so SFX are never blocked by the music's while-loop
+    private final ConcurrentHashMap<String, Clip> clipCache = new ConcurrentHashMap<>();
     private final ExecutorService sfxExecutor = Executors.newCachedThreadPool();
 
-    // Same dB mapping as Audio.java
     private static final float[] SLIDER_VALUES = {0.0f, 0.5f, 0.75f, 1.0f};
     private static final float[] DB_TARGETS    = {-80f, -10f,  -3f,   6f};
 
-    public void playSFX(AudioSFX sfx) {
-        System.out.println("[SFXPlayer] Playing: " + sfx.getClass().getSimpleName());
+    /** Load the clip into memory in background so first play is instant. */
+    public void preloadSFX(AudioSFX sfx) {
+        String path = sfx.getFilePath();
+        if (clipCache.containsKey(path)) return;
         sfxExecutor.submit(() -> {
             try {
-                synchronized (this) {
-                    if (currentClip != null && currentClip.isRunning()) {
-                        currentClip.stop();
-                        currentClip.close();
-                    }
-                }
-
                 Clip clip = AudioSystem.getClip();
-                AudioInputStream audioIn = AudioSystem.getAudioInputStream(
-                        new File(sfx.getFilePath()));
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(new File(path));
                 clip.open(audioIn);
+                applyVolumeToClip(clip);
+                clipCache.put(path, clip);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-                if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                    FloatControl vc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                    vc.setValue(interpolateDB(volume));
-                }
-
-                synchronized (this) {
-                    currentClip = clip;
-                }
-
+    /**
+     * Play an SFX. If preloaded, resets the cached clip and starts instantly
+     * (no file I/O, < 1 ms). Falls back to background load on first use.
+     */
+    public void playSFX(AudioSFX sfx) {
+        String path = sfx.getFilePath();
+        Clip cached = clipCache.get(path);
+        if (cached != null && cached.isOpen()) {
+            if (cached.isRunning()) cached.stop();
+            cached.setFramePosition(0);
+            applyVolumeToClip(cached);
+            cached.start();
+            return;
+        }
+        // Not cached yet — load and play in background (only on first call)
+        sfxExecutor.submit(() -> {
+            try {
+                Clip clip = AudioSystem.getClip();
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(new File(path));
+                clip.open(audioIn);
+                applyVolumeToClip(clip);
+                clipCache.putIfAbsent(path, clip);
                 clip.start();
-                clip.addLineListener(event -> {
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        clip.close();
-                    }
-                });
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -56,18 +63,20 @@ public class SFXPlayer {
 
     public void setVolume(float volume) {
         this.volume = Math.max(0f, Math.min(1f, volume));
+        clipCache.values().forEach(this::applyVolumeToClip);
     }
 
     public void stopAll() {
-        sfxExecutor.submit(() -> {
-            synchronized (this) {
-                if (currentClip != null && currentClip.isRunning()) {
-                    currentClip.stop();
-                    currentClip.close();
-                    currentClip = null;
-                }
+        clipCache.values().forEach(clip -> { if (clip.isRunning()) clip.stop(); });
+    }
+
+    private void applyVolumeToClip(Clip clip) {
+        try {
+            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl vc = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                vc.setValue(interpolateDB(volume));
             }
-        });
+        } catch (Exception ignored) {}
     }
 
     private float interpolateDB(float slider) {

@@ -86,6 +86,9 @@ public class GamePanel extends JPanel implements Runnable {
     public MusicPlayer musicPlayer = new MusicPlayer(this);
     private SFXPlayer sfxPlayer = new SFXPlayer();
 
+    // ── Map transition state ──────────────────────────────────────
+    private volatile boolean mapTransitionInProgress = false;
+
     // ── Entities ──────────────────────────────────────────────────
     public Player      player;
     public SuperObject obj[] = new SuperObject[100000];
@@ -329,6 +332,8 @@ public class GamePanel extends JPanel implements Runnable {
     public void setupGame()      { aSetter.setObject(); }
 
     public void startGameThread() {
+        sfxPlayer.preloadSFX(new Audio.SFX.ClickSFX());
+        musicPlayer.preloadAllMusic();
         gameThread = new Thread(this);
         gameThread.start();
         musicPlayer.playMapMusic();
@@ -346,7 +351,9 @@ public class GamePanel extends JPanel implements Runnable {
             lastTime = currentTime;
 
             if (delta >= 1) {
-                update();
+                if (!mapTransitionInProgress) {
+                    update();
+                }
                 repaint();
                 delta--;
             }
@@ -638,7 +645,33 @@ public class GamePanel extends JPanel implements Runnable {
     // ═════════════════════════════════════════════════════════════
     //  MAP TRANSITIONS
     // ═════════════════════════════════════════════════════════════
+
+    /**
+     * Load a map off the EDT so the game loop keeps ticking.
+     * While loading, the game loop skips update() and paintComponent()
+     * draws a loading screen — no concurrent reads of tileM or obj[].
+     */
+    private void transitionToMap(String mapPath, Runnable onComplete) {
+        mapTransitionInProgress = true;
+        SwingWorker<Void, Void> loader = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                tileM.loadMap(mapPath);
+                aSetter.setObject();
+                return null;
+            }
+            @Override
+            protected void done() {
+                try { get(); } catch (Exception e) { e.printStackTrace(); }
+                onComplete.run();
+                mapTransitionInProgress = false;
+            }
+        };
+        loader.execute();
+    }
+
     public void checkMapTransition() {
+        if (mapTransitionInProgress) return;
 
         // MAP 1 → MAP 2
         if (currentMap == 0) {
@@ -665,24 +698,22 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 currentMap = 1;
-                tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
-                mapLabel.reset("Map 2", "The Sorcerer's Lair");
-                musicPlayer.playMapMusic();
-
-                player.worldX = tileSize * 3;
-                player.worldY = tileSize * 10;
-
-                objectivesHUD.clearEggCodeObjective();
-                map2ExploreShown = false;
-                map2ExploreReady = false;
-                if (!GameStateManager.get().map2IntroShown
-                        && !GameStateManager.get().isMap2Revisit) {
-                    triggerMap2Intro();
-                } else if (GameStateManager.get().isMap2Revisit) {
-                    objectivesHUD.setObjective("Fight the enemies", 0, 2);
-                    map2PlayerFrozen = false;
-                }
+                transitionToMap("/maps/world02.txt", () -> {
+                    mapLabel.reset("Map 2", "The Sorcerer's Lair");
+                    musicPlayer.playMapMusic();
+                    player.worldX = tileSize * 3;
+                    player.worldY = tileSize * 10;
+                    objectivesHUD.clearEggCodeObjective();
+                    map2ExploreShown = false;
+                    map2ExploreReady = false;
+                    if (!GameStateManager.get().map2IntroShown
+                            && !GameStateManager.get().isMap2Revisit) {
+                        triggerMap2Intro();
+                    } else if (GameStateManager.get().isMap2Revisit) {
+                        objectivesHUD.setObjective("Fight the enemies", 0, 2);
+                        map2PlayerFrozen = false;
+                    }
+                });
             }
         }
 
@@ -703,23 +734,24 @@ public class GamePanel extends JPanel implements Runnable {
                 }
 
                 currentMap = 2;
-                tileM.loadMap("/maps/world03.txt");
-                aSetter.setObject();
-                mapLabel.reset("Map 3", "The Sorcerer's Lair - Final Battle");
-                musicPlayer.playMapMusic();
-                objectivesHUD.setObjective("Fight the enemy", 0, 1);
-                player.worldX = tileSize * 2;
-                player.worldY = tileSize * 2;
+                transitionToMap("/maps/world03.txt", () -> {
+                    mapLabel.reset("Map 3", "The Sorcerer's Lair - Final Battle");
+                    musicPlayer.playMapMusic();
+                    objectivesHUD.setObjective("Fight the enemy", 0, 1);
+                    player.worldX = tileSize * 2;
+                    player.worldY = tileSize * 2;
+                });
+                return;
             }
 
             if (player.worldX < tileSize && !GameStateManager.get().isMap2Revisit) {
                 currentMap = 0;
-                tileM.loadMap("/maps/world01.txt");
-                aSetter.setObject();
-                mapLabel.reset("Map 1", "The Neverwinter Village");
-                musicPlayer.playMapMusic();
-                player.worldX = worldWidth - (tileSize * 3);
-                player.worldY = tileSize * 10;
+                transitionToMap("/maps/world01.txt", () -> {
+                    mapLabel.reset("Map 1", "The Neverwinter Village");
+                    musicPlayer.playMapMusic();
+                    player.worldX = worldWidth - (tileSize * 3);
+                    player.worldY = tileSize * 10;
+                });
             }
         }
 
@@ -727,11 +759,11 @@ public class GamePanel extends JPanel implements Runnable {
         else if (currentMap == 2) {
             if (player.worldX < tileSize) {
                 currentMap = 1;
-                tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
-                musicPlayer.playMapMusic();
-                player.worldX = worldWidth - (tileSize * 3);
-                player.worldY = tileSize * 10;
+                transitionToMap("/maps/world02.txt", () -> {
+                    musicPlayer.playMapMusic();
+                    player.worldX = worldWidth - (tileSize * 3);
+                    player.worldY = tileSize * 10;
+                });
             }
         }
     }
@@ -1604,28 +1636,24 @@ public class GamePanel extends JPanel implements Runnable {
         GameStateManager.get().isMap2Revisit = false;
         GameStateManager.get().map1Phase     = COLLECT_ESSENCE;
 
-        tileM.loadMap("/maps/world01.txt");
-        aSetter.setObject();
-        mapLabel.reset("Map 1", "The Neverwinter Village");
-
-        player.worldX = tileSize * 27;
-        player.worldY = tileSize * 27;
-
-        objectivesHUD.setObjective("Collect 5 Essence", 0, 5);
-        objectivesHUD.clearChallengeObjective();
-        objectivesHUD.clearEggCodeObjective();
-
-        screenMessage.show("You have returned...",
-                "Seek the essence of your village.", 180, false);
-
         frame.getContentPane().removeAll();
         frame.add(gpRef);
         frame.revalidate(); frame.repaint();
         gpRef.requestFocusInWindow();
-        battleTransition  = new BattleTransition();
-        map2PlayerFrozen  = false;
+        battleTransition = new BattleTransition();
+        map2PlayerFrozen = false;
 
-        musicPlayer.playMapMusic();
+        transitionToMap("/maps/world01.txt", () -> {
+            mapLabel.reset("Map 1", "The Neverwinter Village");
+            player.worldX = tileSize * 27;
+            player.worldY = tileSize * 27;
+            objectivesHUD.setObjective("Collect 5 Essence", 0, 5);
+            objectivesHUD.clearChallengeObjective();
+            objectivesHUD.clearEggCodeObjective();
+            screenMessage.show("You have returned...",
+                    "Seek the essence of your village.", 180, false);
+            musicPlayer.playMapMusic();
+        });
     }
 
     private void lockNPCsExceptShop() {
@@ -1648,6 +1676,19 @@ public class GamePanel extends JPanel implements Runnable {
         if (player == null) return;
 
         Graphics2D g2 = (Graphics2D) g;
+
+        if (mapTransitionInProgress) {
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+            g2.setColor(new Color(252, 218, 72));
+            g2.setFont(new Font("Serif", Font.BOLD, 28));
+            FontMetrics fm = g2.getFontMetrics();
+            String text = "Loading...";
+            g2.drawString(text,
+                    (screenWidth - fm.stringWidth(text)) / 2,
+                    screenHeight / 2 + fm.getAscent() / 2);
+            return;
+        }
 
         tileM.draw(g2);
 

@@ -113,11 +113,11 @@ public class CurseOfZed extends JFrame {
 
     /**
      * Starts the game with the selected player character.
-     *
-     * @param player The player character to use in the game
+     * GamePanel construction and asset loading run off the EDT so the UI
+     * stays responsive; a loading screen is shown in the meantime.
      */
     public void startGameWithPlayer(Player player) {
-        GameStateManager.reset();           // ← wipe state FIRST
+        GameStateManager.reset();
         KeyHandler keyH = new KeyHandler();
 
         try {
@@ -129,18 +129,60 @@ public class CurseOfZed extends JFrame {
             System.err.println("Warning: Could not set KeyHandler: " + e.getMessage());
         }
 
-        GamePanel gamePanel = new GamePanel(player, keyH);
-
+        // Show loading screen immediately so the UI doesn't appear frozen.
         getContentPane().removeAll();
-        add(gamePanel);
+        add(createLoadingPanel());
         revalidate();
         repaint();
-        pack();
-        setLocationRelativeTo(null);
 
-        gamePanel.setupGame();
-        gamePanel.requestFocusInWindow();
-        gamePanel.startGameThread();
+        SwingWorker<GamePanel, Void> loader = new SwingWorker<GamePanel, Void>() {
+            @Override
+            protected GamePanel doInBackground() {
+                GamePanel gp = new GamePanel(player, keyH);
+                gp.setupGame();
+                return gp;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    GamePanel gamePanel = get();
+                    getContentPane().removeAll();
+                    add(gamePanel);
+                    revalidate();
+                    repaint();
+                    pack();
+                    setLocationRelativeTo(null);
+                    gamePanel.requestFocusInWindow();
+                    gamePanel.startGameThread();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        loader.execute();
+    }
+
+    private javax.swing.JPanel createLoadingPanel() {
+        return new javax.swing.JPanel() {
+            {
+                setBackground(new Color(10, 5, 20));
+            }
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(252, 218, 72));
+                g2.setFont(new Font("Serif", Font.BOLD, 32));
+                FontMetrics fm = g2.getFontMetrics();
+                String text = "Loading...";
+                g2.drawString(text,
+                        (getWidth() - fm.stringWidth(text)) / 2,
+                        getHeight() / 2 + fm.getAscent() / 2);
+                g2.dispose();
+            }
+        };
     }
 }
 

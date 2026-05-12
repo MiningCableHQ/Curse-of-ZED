@@ -57,6 +57,7 @@ import Audio.SFX.ClickSFX;
         setPreferredSize(new Dimension(W, H));
         setOpaque(true);
         loadAssets();
+        sfxPlayer.preloadSFX(new ClickSFX());
 
         addMouseListener(new MouseAdapter() {
             @Override public void mousePressed(MouseEvent e) {
