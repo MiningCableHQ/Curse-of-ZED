@@ -32,7 +32,7 @@ public class Move1 extends Move {
                 setDamageDealt(actualDamage);
                 setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
 
-                if(rand.nextDouble() <= 0.20){
+                if(rand.nextDouble() <= 0.50){
                     target.addStatusEffect(new Burn(1));
                 }
             } else  {

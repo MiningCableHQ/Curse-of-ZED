@@ -25,25 +25,25 @@ public class ZED extends Boss{
         if (isStrongVersion) {
             hp = 10000;
             maxHp = hp;
-            attack = 300;
+            attack = 320;
             maxAttack = attack;
-            defense = 0;
+            defense = 40;
             maxDefense = defense;
             speed = 45;
-            dmgResistance = 0;
+            dmgResistance = 0.20;
             expYield = 300;
-            goldYield = 1000;
+            goldYield = 400;
         } else {
-            hp = 4000;
+            hp = 5000;
             maxHp = hp;
             attack = 320;
             maxAttack = attack;
             defense = 30;
             maxDefense = defense;
             speed = 45;
-            dmgResistance = 0.25;
+            dmgResistance = 0.30;
             expYield = 300;
-            goldYield = 1000;
+            goldYield = 400;
         }
 
         originalDefense = defense;
@@ -64,10 +64,10 @@ public class ZED extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 40% chance for Move1, 35% chance for Move2, 25% for ult
-        if (randomValue < 40) {
+        // 45% chance for Move1, 25% chance for Move2, 30% for ult
+        if (randomValue < 45) {
             return moveset.get(0); // Move1
-        } else if(randomValue < 75) {
+        } else if(randomValue < 70) {
             return moveset.get(1); // Move2
         } else {
             return moveset.get(2); // Move3 (Ult)
@@ -86,8 +86,8 @@ public class ZED extends Boss{
     // Unique methods for final boss
     public void addDefBuff() {
         defBuffStacks++;
-        // Increase defense by 8 per stack
-        defense = originalDefense + (defBuffStacks * 8);
+        // Increase defense by 10 per stack
+        defense = originalDefense + (defBuffStacks * 10);
     }
 
     public void resetBattleBuffs() {

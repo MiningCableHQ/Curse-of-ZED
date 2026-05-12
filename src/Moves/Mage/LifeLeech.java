@@ -13,13 +13,13 @@ public class LifeLeech extends Move {
     public LifeLeech() {
         super("Life Leech", 30, TargetType.ENEMY, 3);
         hasUnlocked = false;
-        description = "Deals 150% of ATK as damage to a single target and heals 20% of MaxHP";
+        description = "Deals 130% of ATK as damage to a single target and heals 5-15% of MaxHP";
     }
 
     public LifeLeech(boolean hasUnlocked) {
         super("Life Leech", 30, TargetType.ENEMY, 3);
         this.hasUnlocked = hasUnlocked;
-        description = "Deals 150% of ATK as damage to a single target and heals 20% of MaxHP";
+        description = "Deals 130% of ATK as damage to a single target and heals 5-15% of MaxHP";
     }
 
     @Override
@@ -48,7 +48,7 @@ public class LifeLeech extends Move {
 
                 // --- Self Heal Part --------------------------------------------------------------------------------------
                 double maxHp = mage.getMaxHp();
-                double healAmount = maxHp * 0.2; // 20% of MaxHP heal
+                double healAmount = maxHp * (0.05 + (Math.random() * 0.10));
                 mage.heal(healAmount);
 
                 // Calculate actual heal amount

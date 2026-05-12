@@ -30,7 +30,7 @@ public class Move3 extends Move {
                 setDamageDealt(actualDamage);
                 setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
 
-                if(rand.nextDouble() <= 0.30){
+                if(rand.nextDouble() <= 0.50){
                     Move.currentBattle.applyFrozen(target);
                 }
             } else {

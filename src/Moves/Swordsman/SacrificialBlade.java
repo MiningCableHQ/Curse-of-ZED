@@ -13,13 +13,13 @@ public class SacrificialBlade extends Move {
     public SacrificialBlade() {
         super("Sacrificial Blade", 70, TargetType.ENEMY, 10);
         hasUnlocked = false;
-        description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
+        description = "Deal 450% of ATK as dmg to a single target and uses up 50% of CurrentHP";
     }
 
     public SacrificialBlade(boolean hasUnlocked) {
         super("Sacrificial Blade", 70, TargetType.ENEMY, 10);
         hasUnlocked = this.hasUnlocked;
-        description = "Deal 500% of ATK as dmg to a single target and uses up 50% of CurrentHP";
+        description = "Deal 450% of ATK as dmg to a single target and uses up 50% of CurrentHP";
     }
 
     @Override
@@ -48,7 +48,7 @@ public class SacrificialBlade extends Move {
 
                 totalATK += this.attack; // this move's atk
 
-                double damage = totalATK * 5;
+                double damage = totalATK * 4.5;
 
                 // Apply damage to enemy
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());

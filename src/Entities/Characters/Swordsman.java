@@ -23,7 +23,7 @@ public class Swordsman extends Player {
         defense = 40;
         maxDefense = defense;
         speed = 28;
-        dmgResistance = 0.15;
+        dmgResistance = 0.05;
         loadMoves();
     }
 

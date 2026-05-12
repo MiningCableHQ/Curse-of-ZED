@@ -7,7 +7,7 @@ public class Revitalize extends Move {
     public Revitalize() {
         super("Revitalize", 0, TargetType.SELF);
         hasUnlocked = true;
-        description = "Heals the character by 30-50% of MaxHP";
+        description = "Heals the character by 15-25% of MaxHP, but gets poisoned for 2 turns";
     }
 
     @Override
@@ -18,8 +18,7 @@ public class Revitalize extends Move {
             double beforeHp = mage.getHp();
             double maxHp = mage.getMaxHp();
 
-            // Random between 30% and 50%
-            double healPercentage = 0.30 + (Math.random() * 0.20);
+            double healPercentage = 0.15 + (Math.random() * 0.10);
             double healAmount = maxHp * healPercentage;
 
             mage.heal(healAmount);

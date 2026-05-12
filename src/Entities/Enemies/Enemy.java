@@ -20,7 +20,7 @@ public abstract class Enemy extends Entity {
     protected static final int ANIMATION_SPEED = 2;
 
     public Enemy(){
-        accuracy = 0.90;
+        accuracy = 0.85;
         moves = new ArrayList<>();
         moveset = new ArrayList<>();
     }

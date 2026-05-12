@@ -68,7 +68,7 @@ public abstract class Player extends Entity {
         level = 1;
         experience = 0;
         expNeeded = 100;
-        accuracy = 0.95;
+        accuracy = 0.80;
         inventory = new Inventory();
         moves = new ArrayList<>();
         moveset = new ArrayList<>();
@@ -257,12 +257,11 @@ public abstract class Player extends Entity {
         double hpIncrease = 220;
         double attackIncrease = 15;
         double defenseIncrease = 3;
-        double speedIncrease = 4;
+        double speedIncrease = 3;
 
         // For unique class level up
         if (this instanceof Swordsman){
             hpIncrease = 400;
-            defenseIncrease = 6;
         } else if (this instanceof Ranger) {
             speedIncrease = 10;
         } else if (this instanceof Mage){

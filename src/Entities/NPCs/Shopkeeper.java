@@ -27,11 +27,11 @@ public class Shopkeeper extends NPC{
     }
 
     public void generateShop(Player player){
-        if(player.getLevel() <= 3){
+        if(player.getLevel() <= 4){
             getShop1();
-        }else if(player.getLevel() <= 6){
+        }else if(player.getLevel() <= 7){
             getShop2();
-        }else if(player.getLevel() <= 9){
+        }else if(player.getLevel() <= 10){
             getShop3();
         }
     }

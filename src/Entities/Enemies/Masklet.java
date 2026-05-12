@@ -18,7 +18,7 @@ public class Masklet extends Enemy{
         speed = 20;
         dmgResistance = 0.05;
         expYield = 150;
-        goldYield = 200;
+        goldYield = 100;
         loadMoves();
         loadSprite();
     }
