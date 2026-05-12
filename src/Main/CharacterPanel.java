@@ -7,6 +7,7 @@ import Entities.Characters.Mage;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
+import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -99,6 +100,7 @@ public class CharacterPanel extends JPanel {
     private final Player player;
     private final boolean fromCombat;
     private final Runnable onBackPressed;
+    private GamePanel gamePanel;
 
     // UI Components
     private JPanel leftPanel;
@@ -184,6 +186,14 @@ public class CharacterPanel extends JPanel {
         }
         if (titleAnimTimer != null) {
             titleAnimTimer.stop();
+        }
+    }
+
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+
+    private void playClickSFX() {
+        if (gamePanel != null) {
+            gamePanel.getSFXPlayer().playSFX(new ClickSFX());
         }
     }
 
@@ -381,6 +391,7 @@ public class CharacterPanel extends JPanel {
         backButton = new GoldButton("← Back");
         backButton.setBounds(BACK_BTN_X, BACK_BTN_Y, BACK_BTN_W, BACK_BTN_H);
         backButton.addActionListener(e -> {
+            playClickSFX();
             cleanup();
             if (onBackPressed != null) {
                 onBackPressed.run();
@@ -672,7 +683,7 @@ public class CharacterPanel extends JPanel {
             MoveButton btn = new MoveButton("");
             btn.setBounds(20 + (col * 155), 50 + (row * 52), 140, 42);
             final int index = i;
-            btn.addActionListener(e -> handleEquippedMoveClick(index));
+            btn.addActionListener(e -> { playClickSFX(); handleEquippedMoveClick(index); });
             equippedMoveButtons.add(btn);
             rightPanel.add(btn);
         }
@@ -699,7 +710,7 @@ public class CharacterPanel extends JPanel {
                 MoveButton btn = new MoveButton(move.getName());
                 btn.setMove(move);
                 btn.setBounds(20 + (col * 155), 205 + (row * 52), 140, 42);
-                btn.addActionListener(e -> handleAvailableMoveClick(move));
+                btn.addActionListener(e -> { playClickSFX(); handleAvailableMoveClick(move); });
                 availableMoveButtons.add(btn);
 
                 availableMoveButtonMap.put(btn, move);
@@ -952,6 +963,7 @@ public class CharacterPanel extends JPanel {
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
         btn1.addActionListener(e -> {
+            playClickSFX();
             dialog.dispose();
             if (onConfirm != null) onConfirm.run();
         });
@@ -961,6 +973,7 @@ public class CharacterPanel extends JPanel {
             GoldButton btn2 = new GoldButton(option2);
             btn2.setBounds(220, 130, 100, 40);
             btn2.addActionListener(e -> {
+                playClickSFX();
                 dialog.dispose();
                 cancelReplacement();
             });

@@ -1,5 +1,7 @@
 package Main;
 
+import Audio.SFX.ClickSFX;
+import Audio.SFX.SFXPlayer;
 import Entities.Characters.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -49,6 +51,7 @@ public class CharacterSelectionPanel extends JPanel {
     private SelectButton[] selectBtns = new SelectButton[3];
     private ConfirmButton  confirmBtn;
     private BackButton     backBtn;
+    private final SFXPlayer sfxPlayer = new SFXPlayer();
 
     // ── Character data ────────────────────────────────────────────
     private static final String[] NAMES  = {"swordsman", "archer", "mage"};
@@ -328,7 +331,7 @@ public class CharacterSelectionPanel extends JPanel {
             final int idx = i;
             selectBtns[i] = new SelectButton("Select");
             selectBtns[i].setBounds(btnX, btnY, 140, 42);
-            selectBtns[i].addActionListener(e -> selectCharacter(idx));
+            selectBtns[i].addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); selectCharacter(idx); });
             add(selectBtns[i]);
         }
 
@@ -338,13 +341,13 @@ public class CharacterSelectionPanel extends JPanel {
         confirmBtn = new ConfirmButton("Confirm Selection");
         confirmBtn.setBounds(confirmX, confirmY, 220, 50);
         confirmBtn.setVisible(false);
-        confirmBtn.addActionListener(e -> confirmSelection());
+        confirmBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); confirmSelection(); });
         add(confirmBtn);
 
         // Back button — always visible, positioned at bottom left
         backBtn = new BackButton("← Back");
         backBtn.setBounds(20, H - 80, 140, 50);
-        backBtn.addActionListener(e -> goBack());
+        backBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); goBack(); });
         add(backBtn);
     }
 

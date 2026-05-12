@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.imageio.ImageIO;
+import Main.GamePanel;
+import Audio.SFX.ClickSFX;
 
 public class DefeatCutscene extends JPanel {
     private static final int W = 1024, H = 768;
@@ -46,6 +48,11 @@ public class DefeatCutscene extends JPanel {
     private GoldButton nextBtn, backBtn, skipBtn;
     private JButton playAgainBtn;
     private Runnable onFinish;
+    private GamePanel gamePanel;
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+    private void playClickSFX() {
+        if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new ClickSFX());
+    }
 
     public DefeatCutscene(Runnable onFinish) {
         this.onFinish = onFinish;
@@ -300,19 +307,20 @@ public class DefeatCutscene extends JPanel {
         backBtn = new GoldButton("← BACK");
         backBtn.setBounds(62, 700, 140, 45);
         backBtn.setVisible(false);
-        backBtn.addActionListener(e -> changePage(-1));
+        backBtn.addActionListener(e -> { playClickSFX(); changePage(-1); });
 
         nextBtn = new GoldButton("NEXT →");
         nextBtn.setBounds(822, 700, 140, 45);
         nextBtn.setVisible(false);
         nextBtn.addActionListener(e -> {
+            playClickSFX();
             if (currentPage < TOTAL_PAGES - 1) changePage(1);
             else showDefeatScreen();
         });
 
         skipBtn = new GoldButton("SKIP");
         skipBtn.setBounds(840, 30, 120, 40);
-        skipBtn.addActionListener(e -> showDefeatScreen());
+        skipBtn.addActionListener(e -> { playClickSFX(); showDefeatScreen(); });
 
         // --- NEW GHOST BUTTON UPGRADE START ---
         playAgainBtn = new JButton("Play Again") {
@@ -362,6 +370,7 @@ public class DefeatCutscene extends JPanel {
         playAgainBtn.setBounds(W / 2 - 110, H / 2 + 100, 220, 55);
         playAgainBtn.setVisible(false);
         playAgainBtn.addActionListener(e -> {
+            playClickSFX();
             Main.GameStateManager.reset();
             if (onFinish != null) onFinish.run();
         });

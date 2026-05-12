@@ -93,31 +93,46 @@ public abstract class Player extends Entity {
         // Sprint Logic
         entitySpeed = keyH.shiftPressed ? sprintSpeed : normalSpeed;
 
-        if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
+        boolean moving = keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed;
+
+        if (moving) {
             // Reset idle animation when starting to move
             if (!isMoving) {
                 idleSpriteNum = 0;
                 idleSpriteCounter = 0;
             }
 
-            if (keyH.upPressed) direction = "up";
-            else if (keyH.downPressed) direction = "down";
-            else if (keyH.leftPressed) direction = "left";
+            // Set facing direction — horizontal takes priority for animation
+            if (keyH.leftPressed)       direction = "left";
             else if (keyH.rightPressed) direction = "right";
+            else if (keyH.upPressed)    direction = "up";
+            else                        direction = "down";
 
-            // CHECK COLLISION
-            collisionOn = false;
-            gp.cChecker.checkObject(this, true);
-
-            // MOVE ONLY IF NOT COLLIDING
-            if (!collisionOn) {
-                switch (direction) {
-                    case "up":    worldY -= entitySpeed; break;
-                    case "down":  worldY += entitySpeed; break;
-                    case "left":  worldX -= entitySpeed; break;
-                    case "right": worldX += entitySpeed; break;
+            // Check and apply horizontal movement independently
+            if (keyH.leftPressed || keyH.rightPressed) {
+                direction = keyH.leftPressed ? "left" : "right";
+                collisionOn = false;
+                gp.cChecker.checkObject(this, true);
+                if (!collisionOn) {
+                    worldX += keyH.leftPressed ? -entitySpeed : entitySpeed;
                 }
             }
+
+            // Check and apply vertical movement independently
+            if (keyH.upPressed || keyH.downPressed) {
+                direction = keyH.upPressed ? "up" : "down";
+                collisionOn = false;
+                gp.cChecker.checkObject(this, true);
+                if (!collisionOn) {
+                    worldY += keyH.upPressed ? -entitySpeed : entitySpeed;
+                }
+            }
+
+            // Restore facing direction for animation after axis checks
+            if (keyH.leftPressed)       direction = "left";
+            else if (keyH.rightPressed) direction = "right";
+            else if (keyH.upPressed)    direction = "up";
+            else                        direction = "down";
 
             // Walking animation
             spriteCounter++;

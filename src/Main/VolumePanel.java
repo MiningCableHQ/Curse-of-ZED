@@ -1,6 +1,7 @@
 package Main;
 
 import Audio.Audio;
+import Audio.SFX.ClickSFX;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
@@ -116,7 +117,7 @@ public class VolumePanel extends JPanel {
 
         GoldButton closeButton = new GoldButton("Close");
         closeButton.setBounds(125, 155, 100, 35);
-        closeButton.addActionListener(e -> closePanel());
+        closeButton.addActionListener(e -> { gp.getSFXPlayer().playSFX(new ClickSFX()); closePanel(); });
         add(closeButton);
     }
 
