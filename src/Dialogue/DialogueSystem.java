@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import Main.*;
+import Audio.SFX.ClickSFX;
 
 
 public class DialogueSystem {
@@ -74,6 +75,12 @@ public class DialogueSystem {
 
     // Callback for shop
     private Runnable onOpenShop;
+
+    private GamePanel gamePanel;
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+    private void playClickSFX() {
+        if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new ClickSFX());
+    }
 
     public DialogueSystem() {
         loadFonts();
@@ -162,6 +169,7 @@ public class DialogueSystem {
         if (page.choices != null && !page.choices.isEmpty()) {
             for (int i = 0; i < page.choices.size() && i < choiceBtns.length; i++) {
                 if (choiceBtns[i].contains(mx, my)) {
+                    playClickSFX();
                     DialogueTree.Choice choice = page.choices.get(i);
                     if (choice.opensShop) {
                         close();
@@ -181,6 +189,7 @@ public class DialogueSystem {
 
         // Next button
         if (btnNext.contains(mx, my)) {
+            playClickSFX();
             int next = currentPage + 1;
             if (next >= tree.size()) {
                 onDialogueEnd();
@@ -192,12 +201,14 @@ public class DialogueSystem {
 
         // Back button
         if (btnBack.contains(mx, my) && currentPage > 0) {
+            playClickSFX();
             startPage(currentPage - 1);
             return;
         }
 
         // Exit button
         if (btnExit.contains(mx, my)) {
+            playClickSFX();
             close();
         }
     }

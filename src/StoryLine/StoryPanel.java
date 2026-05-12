@@ -6,6 +6,8 @@ import java.awt.event.*;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import Audio.SFX.SFXPlayer;
+import Audio.SFX.ClickSFX;
 
 public class StoryPanel extends JPanel {
     // ── Palette ───────────────────────────────────────────────────
@@ -26,6 +28,7 @@ public class StoryPanel extends JPanel {
     private float alpha = 1.0f;
     private GoldButton nextBtn, backBtn, skipBtn;
     private Runnable onFinish;
+    private final SFXPlayer sfxPlayer = new SFXPlayer();
     private Image[] images;
     private float panX = 0;
     private float panSpeed = 0.5f; // Adjust this for faster/slower panning
@@ -62,19 +65,20 @@ public class StoryPanel extends JPanel {
         backBtn = new GoldButton("← BACK");
         backBtn.setBounds(62, 670, 140, 45);
         backBtn.setVisible(false);
-        backBtn.addActionListener(e -> changePage(-1));
+        backBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); changePage(-1); });
 
         nextBtn = new GoldButton("NEXT →");
         nextBtn.setBounds(822, 670, 140, 45);
         nextBtn.setVisible(false);
         nextBtn.addActionListener(e -> {
+            sfxPlayer.playSFX(new ClickSFX());
             if (currentPage < pages.length - 1) changePage(1);
             else fadeToFinish();
         });
 
         skipBtn = new GoldButton("SKIP STORY");
         skipBtn.setBounds(822, 30, 140, 40);
-        skipBtn.addActionListener(e -> fadeToFinish());
+        skipBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); fadeToFinish(); });
 
         add(backBtn); add(nextBtn); add(skipBtn);
     }

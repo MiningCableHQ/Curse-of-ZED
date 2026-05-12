@@ -8,6 +8,7 @@ import Entities.Characters.Mage;
 import Entities.Entity;
 import Items.Item;
 
+import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -91,6 +92,7 @@ public class ShopPanel extends JPanel {
     private final Player player;
     private final Shopkeeper shopkeeper;
     private final Runnable onBackPressed;
+    private GamePanel gamePanel;
 
     // Currency tracking
     private int playerGold = 5000;
@@ -187,6 +189,14 @@ public class ShopPanel extends JPanel {
         }
         if (titleAnimTimer != null) {
             titleAnimTimer.stop();
+        }
+    }
+
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+
+    private void playClickSFX() {
+        if (gamePanel != null) {
+            gamePanel.getSFXPlayer().playSFX(new ClickSFX());
         }
     }
 
@@ -450,6 +460,7 @@ public class ShopPanel extends JPanel {
         backButton = new GoldButton("← Back");
         backButton.setBounds(BACK_BTN_X, BACK_BTN_Y, BACK_BTN_W, BACK_BTN_H);
         backButton.addActionListener(e -> {
+            playClickSFX();
             cleanup();
             if (onBackPressed != null) {
                 onBackPressed.run();
@@ -808,6 +819,7 @@ public class ShopPanel extends JPanel {
         upBtn.setBounds(166, 85, 40, 40);  // 98 + 60 + 8
         upBtn.setContentAreaFilled(false);
         upBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
                 if (val < maxQty) {
@@ -827,6 +839,7 @@ public class ShopPanel extends JPanel {
         downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
         downBtn.setContentAreaFilled(false);
         downBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
                 if (val > 1) {
@@ -846,6 +859,7 @@ public class ShopPanel extends JPanel {
         maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
         maxBtn.setContentAreaFilled(false);
         maxBtn.addActionListener(e -> {
+            playClickSFX();
             qtyField.setText(String.valueOf(maxQty));
         });
         contentPane.add(maxBtn);
@@ -910,6 +924,7 @@ public class ShopPanel extends JPanel {
         GoldButton sellBtn = new GoldButton("Sell");
         sellBtn.setBounds(80, 155, 100, 35);
         sellBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int qty = Integer.parseInt(qtyField.getText());
                 if (qty < 1) qty = 1;
@@ -926,7 +941,7 @@ public class ShopPanel extends JPanel {
         // Cancel button
         GoldButton cancelBtn = new GoldButton("Cancel");
         cancelBtn.setBounds(220, 155, 100, 35);
-        cancelBtn.addActionListener(e -> dialog.dispose());
+        cancelBtn.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
         contentPane.add(cancelBtn);
 
         dialog.setVisible(true);
@@ -1023,6 +1038,7 @@ public class ShopPanel extends JPanel {
         upBtn.setContentAreaFilled(false);
         int finalMaxQty = maxQty;
         upBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
                 if (val < finalMaxQty) {
@@ -1042,6 +1058,7 @@ public class ShopPanel extends JPanel {
         downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
         downBtn.setContentAreaFilled(false);
         downBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
                 if (val > 1) {
@@ -1061,6 +1078,7 @@ public class ShopPanel extends JPanel {
         maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
         maxBtn.setContentAreaFilled(false);
         maxBtn.addActionListener(e -> {
+            playClickSFX();
             qtyField.setText(String.valueOf(finalMaxQty));
         });
         contentPane.add(maxBtn);
@@ -1133,6 +1151,7 @@ public class ShopPanel extends JPanel {
         GoldButton buyBtn = new GoldButton("Buy");
         buyBtn.setBounds(80, 155, 100, 35);
         buyBtn.addActionListener(e -> {
+            playClickSFX();
             try {
                 int qty = Integer.parseInt(qtyField.getText());
                 if (qty < 1) qty = 1;
@@ -1153,7 +1172,7 @@ public class ShopPanel extends JPanel {
         // Cancel button
         GoldButton cancelBtn = new GoldButton("Cancel");
         cancelBtn.setBounds(220, 155, 100, 35);
-        cancelBtn.addActionListener(e -> dialog.dispose());
+        cancelBtn.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
         contentPane.add(cancelBtn);
 
         // ESC key to close
@@ -1248,6 +1267,7 @@ public class ShopPanel extends JPanel {
 
                         @Override
                         public void mouseClicked(MouseEvent e) {
+                            playClickSFX();
                             int availableQty = shopkeeper.getShop().getQuantity(item);
                             if (availableQty <= 0) {
                                 refreshShopGrid();
@@ -1344,6 +1364,7 @@ public class ShopPanel extends JPanel {
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
         btn1.addActionListener(e -> {
+            playClickSFX();
             dialog.dispose();
             if (onConfirm != null) onConfirm.run();
         });
@@ -1352,7 +1373,7 @@ public class ShopPanel extends JPanel {
         if (option2 != null) {
             GoldButton btn2 = new GoldButton(option2);
             btn2.setBounds(220, 130, 100, 40);
-            btn2.addActionListener(e -> dialog.dispose());
+            btn2.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
             contentPane.add(btn2);
         }
 
@@ -1404,6 +1425,7 @@ public class ShopPanel extends JPanel {
 
                         @Override
                         public void mouseClicked(MouseEvent e) {
+                            playClickSFX();
                             int availableQty = player.getInventory().getQuantity(item);
                             if (availableQty <= 0) {
                                 refreshPlayerShopGrid();

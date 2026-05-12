@@ -20,6 +20,7 @@ import Main.InventoryPanel;
 import java.util.function.BiConsumer;
 
 import Combat.StatusEffects.StatusEffect;
+import Audio.SFX.ClickSFX;
 
 
 public class BattlePanel extends JPanel {
@@ -454,6 +455,10 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    private void playClickSFX() {
+        if (gp != null) gp.getSFXPlayer().playSFX(new ClickSFX());
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  Button construction
     // ─────────────────────────────────────────────────────────────
@@ -467,12 +472,13 @@ public class BattlePanel extends JPanel {
 // 2. NOW create the buttons and set their bounds
         btnFight = new BattleButton("Fight");
         btnFight.setBounds(startX, rowY, btnW, btnH);
-        btnFight.addActionListener(e -> showFightMenu());
+        btnFight.addActionListener(e -> { playClickSFX(); showFightMenu(); });
         add(btnFight);
 
         btnBag = new BattleButton("Bag");
         btnBag.setBounds(startX + (btnW + gap), rowY, btnW, btnH);
         btnBag.addActionListener(e -> {
+            playClickSFX();
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
 
             itemSelectionCallback = (item, target) -> {
@@ -515,7 +521,7 @@ public class BattlePanel extends JPanel {
 
         btnRun = new BattleButton("Run");
         btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);
-        btnRun.addActionListener(e -> battle.handleRunAway());
+        btnRun.addActionListener(e -> { playClickSFX(); battle.handleRunAway(); });
         add(btnRun);
 
         // Fight sub-menu moves
@@ -546,7 +552,7 @@ public class BattlePanel extends JPanel {
             moveBtns[i].setVisible(false); // Hide by default
 
             final int idx = i;
-            moveBtns[i].addActionListener(e -> onMoveSelected(idx));
+            moveBtns[i].addActionListener(e -> { playClickSFX(); onMoveSelected(idx); });
             add(moveBtns[i]);
         }
 
@@ -561,7 +567,7 @@ public class BattlePanel extends JPanel {
 
         btnBack = new BattleButton("← Back");
         btnBack.setBounds(backX, backY, backW, backH);
-        btnBack.addActionListener(e -> showMainMenu());
+        btnBack.addActionListener(e -> { playClickSFX(); showMainMenu(); });
         btnBack.setVisible(false);
         add(btnBack);
 
@@ -587,7 +593,7 @@ public class BattlePanel extends JPanel {
 
             BattleButton targetBtn = new BattleButton(enemies.get(i).getName());
             targetBtn.setBounds(btnX, btnY, btnW, btnH);
-            targetBtn.addActionListener(e -> onTargetSelected(enemyIndex));
+            targetBtn.addActionListener(e -> { playClickSFX(); onTargetSelected(enemyIndex); });
             targetBtn.setVisible(false);
             add(targetBtn);
             targetButtons.add(targetBtn);
@@ -600,6 +606,7 @@ public class BattlePanel extends JPanel {
         btnBackTarget = new BattleButton("← Back");
         btnBackTarget.setBounds(backBtnX, backBtnY, backBtnW, backBtnH);
         btnBackTarget.addActionListener(e -> {
+            playClickSFX();
             System.out.println("Back button pressed during target selection - resetting UI");
 
             if (battle.hasPendingItem()) {

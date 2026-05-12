@@ -93,4 +93,14 @@ public class MusicPlayer {
     public BossMusic getBossMusic() {
         return bossMusic;
     }
+
+    public void playShopMusic() {
+        if (currentPlayingMusic != null) {
+            currentPlayingMusic.stopCurrentMusic();
+        }
+        shopMusic.resetForReload();
+        currentPlayingMusic = shopMusic;
+        shopMusic.play(true);
+        System.out.println("[MusicPlayer] Playing shop music");
+    }
 }

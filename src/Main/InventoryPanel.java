@@ -13,6 +13,7 @@ import Items.Consumables.Debuff.Clumsiness.*;
 import Items.Consumables.Debuff.Blinding.*;
 import Moves.Move;
 
+import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -106,6 +107,7 @@ public class InventoryPanel extends JPanel {
     private final BiConsumer<Item, Enemy> onItemSelected;
     private final Runnable onBackPressed;
     private Combat.Battle battle;
+    private GamePanel gamePanel;
 
     // ── UI Components ─────────────────────────────────────────────
     private JPanel characterPanel;
@@ -189,6 +191,14 @@ public class InventoryPanel extends JPanel {
                 }
             }
         });
+    }
+
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+
+    private void playClickSFX() {
+        if (gamePanel != null) {
+            gamePanel.getSFXPlayer().playSFX(new ClickSFX());
+        }
     }
 
     public void requestPanelFocus() {
@@ -375,6 +385,7 @@ public class InventoryPanel extends JPanel {
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
         btn1.addActionListener(e -> {
+            playClickSFX();
             dialog.dispose();
             if (onConfirm != null) onConfirm.run();
         });
@@ -383,7 +394,7 @@ public class InventoryPanel extends JPanel {
         if (option2 != null) {
             GoldButton btn2 = new GoldButton(option2);
             btn2.setBounds(220, 130, 100, 40);
-            btn2.addActionListener(e -> dialog.dispose());
+            btn2.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
             contentPane.add(btn2);
         }
 
@@ -559,6 +570,7 @@ public class InventoryPanel extends JPanel {
         backButton = new GoldButton("← Back");
         backButton.setBounds(BACK_BTN_X, BACK_BTN_Y, BACK_BTN_W, BACK_BTN_H);
         backButton.addActionListener(e -> {
+            playClickSFX();
             if (animationTimer != null) {
                 animationTimer.cancel();
                 animationTimer = null;
@@ -649,6 +661,7 @@ public class InventoryPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (!fromCombat && player.getWeapon() != null) {
+                    playClickSFX();
                     unequipWeapon();
                 }
             }
@@ -730,6 +743,7 @@ public class InventoryPanel extends JPanel {
             int y = startYButtons + row * gapY;
             moveBtn.setBounds(x, y, btnW, btnH);
             moveBtn.addActionListener(e -> {
+                playClickSFX();
                 if (!fromCombat) {
                     messageLabel.setText(move.getName() + ": " + move.getDescription());
                 }
@@ -804,7 +818,15 @@ public class InventoryPanel extends JPanel {
     }
 
     private void setupInventoryPanel() {
-        inventoryGrid = new JPanel();
+        inventoryGrid = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                Container parent = SwingUtilities.getAncestorOfClass(JViewport.class, this);
+                if (parent != null) d.width = parent.getWidth();
+                return d;
+            }
+        };
         inventoryGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
         inventoryGrid.setOpaque(false);
 
@@ -867,6 +889,7 @@ public class InventoryPanel extends JPanel {
 
                         @Override
                         public void mouseClicked(MouseEvent e) {
+                            playClickSFX();
                             if (fromCombat) {
                                 if (item instanceof Weapon) {
                                     showParchmentDialog("Cannot Equip", "Cannot equip or unequip weapons during combat!", "OK", null, null);

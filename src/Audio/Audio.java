@@ -13,8 +13,8 @@ public class Audio {
     protected boolean isLooping = false;
     protected static ExecutorService audioExecutor = Executors.newSingleThreadExecutor();
     protected FloatControl volumeControl;
-    private float pendingVolume = 0.5f;   // 50% default
-    private boolean hasPlayed = false;
+    protected float pendingVolume = 0.5f;   // 50% default
+    protected boolean hasPlayed = false;
 
     // Target dB mapping: slider value -> desired dB
     //  0.0 -> -80 dB (mute)
@@ -92,7 +92,7 @@ public class Audio {
         hasPlayed = false;   // Reset so it reloads next time
     }
 
-    private void stopCurrentClip() {
+    protected void stopCurrentClip() {
         try {
             if (clip != null) {
                 if (clip.isRunning()) clip.stop();
@@ -103,7 +103,7 @@ public class Audio {
         }
     }
 
-    private void applyVolume() {
+    protected void applyVolume() {
         if (volumeControl == null) return;
 
         float actualMin = volumeControl.getMinimum();

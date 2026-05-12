@@ -8,6 +8,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.Random;
 
 import Audio.Music.MusicPlayer;
+import Audio.SFX.SFXPlayer;
 import Entities.Characters.*;
 import Tile.TileManager;
 import Objects.*;
@@ -83,6 +84,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     // ── Audio Players ───────────────────────────────────────────
     public MusicPlayer musicPlayer = new MusicPlayer(this);
+    private SFXPlayer sfxPlayer = new SFXPlayer();
 
     // ── Entities ──────────────────────────────────────────────────
     public Player      player;
@@ -126,6 +128,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // ── Core systems ──────────────────────────────────────────
         this.dialogueSystem    = new DialogueSystem();
+        this.dialogueSystem.setGamePanel(this);
         this.interactionPrompt = new InteractionPrompt();
 
         gossipSystem.setDialogueSystem(this.dialogueSystem);
@@ -216,6 +219,9 @@ public class GamePanel extends JPanel implements Runnable {
             final GamePanel gpRef = this;
 
             ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
+                // Restore map music when shop closes
+                musicPlayer.stopMapMusic();
+                musicPlayer.playMapMusic();
                 SwingUtilities.invokeLater(() -> {
                     parentFrame.getContentPane().removeAll();
                     parentFrame.add(gpRef);
@@ -225,6 +231,10 @@ public class GamePanel extends JPanel implements Runnable {
                     gpRef.requestFocusInWindow();
                 });
             });
+            shopPanel.setGamePanel(this);
+
+            // Switch to shop music when shop opens
+            musicPlayer.playShopMusic();
 
             this.setVisible(false);
             parentFrame.getContentPane().removeAll();
@@ -297,6 +307,8 @@ public class GamePanel extends JPanel implements Runnable {
         volumeOpen = false;
 
     }
+
+    public SFXPlayer getSFXPlayer() { return sfxPlayer; }
 
     public void resumeMapMusic() {
         musicPlayer.resumeMapMusic();
@@ -546,6 +558,7 @@ public class GamePanel extends JPanel implements Runnable {
                 (item, target) -> System.out.println("Cannot use items outside of combat!"),
                 () -> closeInventory()
         );
+        currentInventoryPanel.setGamePanel(this);
         this.setVisible(false);
         parentFrame.getContentPane().removeAll();
         parentFrame.add(currentInventoryPanel);
@@ -569,6 +582,7 @@ public class GamePanel extends JPanel implements Runnable {
         currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
                 () -> closeCharacter()
         );
+        currentCharacterPanel.setGamePanel(this);
         this.setVisible(false);
         parentFrame.getContentPane().removeAll();
         parentFrame.add(currentCharacterPanel);
@@ -1450,6 +1464,7 @@ public class GamePanel extends JPanel implements Runnable {
                                             returnToMap1SecondVisit(frame, gpRef);
                                             map2PlayerFrozen = false;
                                         });
+                                postCutscene.setGamePanel(gpRef);
                                 frame.getContentPane().removeAll();
                                 frame.add(postCutscene);
                                 frame.revalidate();
@@ -1471,6 +1486,7 @@ public class GamePanel extends JPanel implements Runnable {
                     frame.repaint();
                 });
 
+        cutscene.setGamePanel(this);
         frame.getContentPane().removeAll();
         frame.add(cutscene);
         frame.revalidate();

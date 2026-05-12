@@ -4512,6 +4512,7 @@ public class Map3Setter {
                                         }
                                     });
                                 });
+                        victory.setGamePanel(gpRef);
                         frame.getContentPane().removeAll();
                         frame.add(victory);
                         frame.revalidate();
@@ -4541,6 +4542,7 @@ public class Map3Setter {
                                         }
                                     });
                                 });
+                        defeat.setGamePanel(gpRef);
                         frame.getContentPane().removeAll();
                         frame.add(defeat);
                         frame.revalidate();

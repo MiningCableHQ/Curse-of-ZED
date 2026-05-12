@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import Audio.SFX.SFXPlayer;
+import Audio.SFX.ClickSFX;
 
 // ═════════════════════════════════════════════════════════════
 //  Main Panel
@@ -48,6 +50,7 @@ import java.util.Random;
     // ── Button state ─────────────────────────────────────────
     private boolean hover = false, press = false;
     private final Rectangle btnRect = new Rectangle();
+    private final SFXPlayer sfxPlayer = new SFXPlayer();
 
     // ── Constructor ──────────────────────────────────────────
     public TitlePanel() {
@@ -59,6 +62,7 @@ import java.util.Random;
             @Override public void mousePressed(MouseEvent e) {
                 if (btnRect.contains(e.getPoint())) {
                     press = true;
+                    sfxPlayer.playSFX(new ClickSFX());
                     if (onStartCallback != null) {
                         onStartCallback.run();
                     }
