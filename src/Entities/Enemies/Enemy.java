@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public abstract class Enemy extends Entity {
     protected int expYield;
+    protected int goldYield;
     protected ArrayList<Move> moveset;
     protected ArrayList<Move> moves;
 
@@ -70,6 +71,10 @@ public abstract class Enemy extends Entity {
     //Getters and Setters
     public int getExpYield(){
         return expYield;
+    }
+
+    public int getGoldYield(){
+        return goldYield;
     }
 
     public ArrayList<Move> getMoves(){

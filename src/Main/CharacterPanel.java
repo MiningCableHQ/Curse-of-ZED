@@ -832,8 +832,7 @@ public class CharacterPanel extends JPanel {
             refreshUI();
         } else {
             String confirmMessage = "Equip " + move.getName() + "?\n" +
-                    move.getDescription() + "\nMultiplier: " +
-                    String.format("%.0f%%", move.getAttack() * 100);
+                    move.getDescription();
             showParchmentDialog("Equip Move", confirmMessage, "Yes", "No", () -> {
                 if (player.getMoves().contains(move)) {
                     showParchmentDialog("Already Equipped",
@@ -1013,7 +1012,6 @@ public class CharacterPanel extends JPanel {
                             String displayText;
 
                             displayText = move.getName() + " | " + move.getDescription();
-                            displayText += " | Multiplier: " + String.format("%.0f%%", move.getAttack() * 100);
 
                             if (!move.hasUnlocked()) {
                                 displayText = move.getName() + " | LOCKED | Requires level progression";

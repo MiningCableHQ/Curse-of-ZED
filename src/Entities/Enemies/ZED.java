@@ -26,6 +26,7 @@ public class ZED extends Boss{
         originalDefense = defense;
 
         expYield = 300;
+        goldYield = 1000;
         loadMoves();
         loadSprite();
     }

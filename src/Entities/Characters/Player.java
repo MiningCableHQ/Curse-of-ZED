@@ -218,19 +218,19 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserHealing(), 5);
         inventory.addItem(new LesserHardening(), 3);
         inventory.addItem(new LesserPower(), 3);
-        inventory.addItem(new LesserSoftening(), 2);
+        //inventory.addItem(new LesserSoftening(), 2);
 
         inventory.addItem(new AnkhStaff(5));
         inventory.addItem(new Swiftwind());
         inventory.addItem(new Unyielding(5));
 
         //I delete lang if tiwason ang duwa
-        inventory.addItem(new Arcanum());
-        inventory.addItem(new Slowstring(5));
-        inventory.addItem(new Mistwood(5));
-        inventory.addItem(new Stunblade(5));
-        inventory.addItem(new RazorEdge());
-        inventory.addItem(new ElementalCodex(5));
+//        inventory.addItem(new Arcanum());
+//        inventory.addItem(new Slowstring(5));
+//        inventory.addItem(new Mistwood(5));
+//        inventory.addItem(new Stunblade(5));
+//        inventory.addItem(new RazorEdge());
+//        inventory.addItem(new ElementalCodex(5));
     }
 
     // KEEP YOUR LEVEL UP SYSTEM (with stat increases)
@@ -241,13 +241,13 @@ public abstract class Player extends Entity {
         // Base stat increases (flat amounts)
         double hpIncrease = 220;
         double attackIncrease = 15;
-        double defenseIncrease = 6;
+        double defenseIncrease = 3;
         double speedIncrease = 4;
 
         // For unique class level up
         if (this instanceof Swordsman){
             hpIncrease = 400;
-            defenseIncrease = 12;
+            defenseIncrease = 6;
         } else if (this instanceof Ranger) {
             speedIncrease = 10;
         } else if (this instanceof Mage){
@@ -290,13 +290,37 @@ public abstract class Player extends Entity {
     }
 
     public void gainExp(int experience, int chapter) {
-        if(canGainExp(chapter)){
+        if (canGainExp(chapter)) {
             this.experience += experience;
-            while (this.experience >= this.expNeeded && level < 10) {
+
+            // Calculate max level for this chapter
+            int maxLevelForChapter;
+            switch (chapter) {
+                case 1: maxLevelForChapter = 4; break;
+                case 2: maxLevelForChapter = 7; break;
+                case 3: maxLevelForChapter = 10; break;
+                default: maxLevelForChapter = 10; break;
+            }
+
+            // Only level up if we haven't reached the chapter cap
+            while (this.experience >= this.expNeeded && level < maxLevelForChapter) {
                 levelUp();
             }
-        }else{
-            // TODO Inform the player that he cannot gain exp
+
+            // If we're at the chapter cap, prevent overflow EXP
+            if (level >= maxLevelForChapter) {
+                int expNeededForNextLevel = this.expNeeded;
+                if (this.experience > expNeededForNextLevel) {
+                    // Cap the excess EXP to prevent overflow when chapter cap increases
+                    this.experience = expNeededForNextLevel;
+                }
+            }
+        } else {
+            if (gp != null && gp.screenMessage != null) {
+                gp.screenMessage.show("Cannot Gain EXP",
+                        "You have reached the maximum level for this chapter!", 80, false);
+            }
+            System.out.println("Cannot gain EXP - Level " + level + " is max for chapter " + chapter);
         }
     }
 

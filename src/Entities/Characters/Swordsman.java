@@ -142,8 +142,8 @@ public class Swordsman extends Player {
     public void addIronStanceStack() {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
-            // Increase defense by flat 20 per stack
-            flatDefenseBonus = 20;
+            // Increase defense by flat 30 per stack
+            flatDefenseBonus = 30;
             recalculateDefense();
         }
     }

@@ -9,17 +9,8 @@ public class GreaterHardening extends Consumable {
 
     // Constructor without price (for existing items, default price 0)
     public GreaterHardening(){
-        super("Greater Hardening Potion", "Increases DEF by 120");
-        defenseBuffAmount = 120;
-        useMessage = "Used Greater Hardening Potion!";
-
-        loadImage("/items/buff_potions/greater_hardening_potion.png");
-    }
-
-    // Constructor with price (for shop system)
-    public GreaterHardening(int price){
-        super("Greater Hardening Potion", "Increases DEF by 120", price);
-        defenseBuffAmount = 120;
+        super("Greater Hardening Potion", "Increases DEF by 50", 90);
+        defenseBuffAmount = 50;
         useMessage = "Used Greater Hardening Potion!";
 
         loadImage("/items/buff_potions/greater_hardening_potion.png");

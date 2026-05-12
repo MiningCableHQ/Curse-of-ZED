@@ -874,19 +874,22 @@ public class GamePanel extends JPanel implements Runnable {
 
             if (won) {
                 int totalExp = 0;
+                int totalGold = 0;
                 for (Entities.Enemies.Enemy e : finalEnemies) {
                     totalExp += e.getExpYield();
-                    System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
                 }
 
-                player.gainExp(totalExp, 3);
+                player.gainExp(totalExp, 1);
+                player.addMoney(totalGold);
 
                 System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
                 System.out.println("Player Level: " + player.getLevel());
-                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+                System.out.println("Player Gold: " + player.getMoney());
 
-                // Show EXP gained message
-                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
                 mapEnemy.defeated = true;
                 mapEnemy.available = false;
@@ -992,16 +995,18 @@ public class GamePanel extends JPanel implements Runnable {
 
             if (won) {
                 int totalExp = finalBoss.getExpYield();
+                int totalGold = finalBoss.getGoldYield();
 
-                player.gainExp(totalExp, 3);
+                player.gainExp(totalExp, 1);
+                player.addMoney(totalGold);
 
                 System.out.println("BOSS DEFEATED!");
                 System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
                 System.out.println("Player Level: " + player.getLevel());
-                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+                System.out.println("Player Gold: " + player.getMoney());
 
-                // Show EXP gained message
-                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
                 mapBoss.defeated  = true;
                 mapBoss.available = false;
@@ -1136,21 +1141,23 @@ public class GamePanel extends JPanel implements Runnable {
             });
 
             if (won) {
-                // Calculate total EXP from all defeated enemies
                 int totalExp = 0;
+                int totalGold = 0;
                 for (Entities.Enemies.Enemy e : finalEnemies) {
                     totalExp += e.getExpYield();
-                    System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
                 }
 
-                player.gainExp(totalExp, 3);
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
 
                 System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
                 System.out.println("Player Level: " + player.getLevel());
-                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+                System.out.println("Player Gold: " + player.getMoney());
 
-                // Show EXP gained message
-                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
                 mapEnemy.defeated = true;
                 mapEnemy.available = false;
@@ -1298,19 +1305,22 @@ public class GamePanel extends JPanel implements Runnable {
 
             if (won) {
                 int totalExp = 0;
+                int totalGold = 0;
                 for (Entities.Enemies.Enemy e : finalEnemies) {
                     totalExp += e.getExpYield();
-                    System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
                 }
 
-                player.gainExp(totalExp, 3);
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
 
                 System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
                 System.out.println("Player Level: " + player.getLevel());
-                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+                System.out.println("Player Gold: " + player.getMoney());
 
-                // Show EXP gained message
-                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
                 mapEnemy.defeated = true;
                 mapEnemy.available = false;
@@ -1422,15 +1432,18 @@ public class GamePanel extends JPanel implements Runnable {
 
                             if (won) {
                                 int totalExp = finalBoss.getExpYield();
+                                int totalGold = finalBoss.getGoldYield();
+
                                 player.gainExp(totalExp, 2);
+                                player.addMoney(totalGold);
 
                                 System.out.println("BOSS DEFEATED!");
                                 System.out.println("Total EXP gained: " + totalExp);
+                                System.out.println("Total Gold gained: " + totalGold);
                                 System.out.println("Player Level: " + player.getLevel());
-                                System.out.println("Player EXP: " + player.getExperience() + "/" + player.getExpNeeded());
+                                System.out.println("Player Gold: " + player.getMoney());
 
-                                // Show EXP gained message
-                                screenMessage.show("Gained " + totalExp + " EXP!", null, 60, false);
+                                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
                                 StoryLine.PostDefeatCutscene postCutscene =
                                         new StoryLine.PostDefeatCutscene(() -> {
@@ -1465,6 +1478,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void launchFrankensteinBattle(NPC_Frankenstein frankNPC) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
         Entities.Enemies.Enemy battleEnemy = new Entities.Enemies.Frankenstein();
         javax.swing.JFrame frame =
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
@@ -1475,10 +1492,15 @@ public class GamePanel extends JPanel implements Runnable {
 
         Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this);
         final GamePanel gpRef = this;
+        final Entities.Enemies.Enemy finalBoss = battleEnemy;
 
         bp.setOnBattleEnd(() -> {
-            boolean won = battleEnemy.getHp() <= 0;
-            bp.stopAnimationTimer();
+            boolean playerWon = player.getHp() > 0;
+            boolean bossDefeated = finalBoss.getHp() <= 0;
+            boolean won = playerWon && bossDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
                 frame.getContentPane().removeAll();
@@ -1491,7 +1513,22 @@ public class GamePanel extends JPanel implements Runnable {
             });
 
             if (won) {
-                frankNPC.defeated  = true;
+                // Grant EXP for defeating Frankenstein (Easter Egg Boss)
+                int totalExp = finalBoss.getExpYield();
+                int totalGold = finalBoss.getGoldYield();
+
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
+
+                System.out.println("EASTER EGG BOSS DEFEATED!");
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                frankNPC.defeated = true;
                 frankNPC.available = false;
                 frankNPC.setVisible(false);
 

@@ -4397,6 +4397,7 @@ public class Map3Setter {
             if (won) {
                 // Calculate total EXP from all defeated enemies
                 int totalExp = 0;
+                int totalGold = 0;
                 for (Entities.Enemies.Enemy e : finalEnemies) {
                     totalExp += e.getExpYield();
                     System.out.println("Gained " + e.getExpYield() + " EXP from " + e.getName());
