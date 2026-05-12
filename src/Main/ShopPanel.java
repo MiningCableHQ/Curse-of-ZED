@@ -1252,7 +1252,7 @@ public class ShopPanel extends JPanel {
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             slot.setHovered(true);
-                            String displayText = item.getName() + " - $" + item.getPrice();
+                            String displayText = item.getName() + " - $" + item.getPrice() + " | " + item.getDescription();
                             if (quantity > 1) {
                                 displayText += " (x" + quantity + ")";
                             }
