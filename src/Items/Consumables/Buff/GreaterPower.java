@@ -8,8 +8,8 @@ public class GreaterPower extends Consumable {
     protected double attackBuffAmount;
 
     public GreaterPower() {
-        super("Greater Power Potion", "Increases ATK by 50", 120);
-        attackBuffAmount = 50;
+        super("Greater Power Potion", "Increases ATK by 90", 120);
+        attackBuffAmount = 90;
         useMessage = "Used Greater Power Potion!";
 
         loadImage("/items/buff_potions/greater_power_potion.png");

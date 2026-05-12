@@ -64,6 +64,8 @@ public class Battle {
     private List<Entity> frozenEntities = new ArrayList<>();
     private List<Entity> stunnedEntities = new ArrayList<>();
     private List<Entity> slowedEntities = new ArrayList<>();
+    private boolean powerBuffApplied = false;
+    private boolean hardeningBuffApplied = false;
 
     // Store original accuracy for stunned entities to restore later
     private java.util.Map<Entity, Double> originalAccuracyMap = new java.util.HashMap<>();
@@ -149,6 +151,7 @@ public class Battle {
             if (!isBattleActive) return;
 
             String resultMessage;
+            boolean shouldConsumeTurn = true;
 
             // Check if player still has the item (in case quantity changed)
             int currentQuantity = player.getInventory().getQuantity(item);
@@ -163,68 +166,85 @@ public class Battle {
                 return;
             }
 
-            // Check item target type
-            if (item.getTargetType() == Item.TargetType.SELF) {
-                // Self-targeting item
-                item.useItem(player);
-                // Remove ONE item from inventory
-                player.getInventory().removeItem(item, 1);
+            // Check for buff limits
+            String itemName = item.getName().toLowerCase();
+            boolean isPowerBuff = itemName.contains("power");
+            boolean isHardeningBuff = itemName.contains("hardening");
 
-                // USE THE ITEM'S MESSAGE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + "!";
-                }
-
-            } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
-                // Single enemy target
-                double beforeHp = target.getHp();
-                item.useItem(target);
-                double afterHp = target.getHp();
-                double effectAmount = beforeHp - afterHp;
-
-                // Remove ONE item from inventory after using
-                player.getInventory().removeItem(item, 1);
-
-                // USE THE ITEM'S MESSAGE OR CREATE ONE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    if (effectAmount > 0) {
-                        resultMessage = player.getName() + " used " + item.getName() + " on " +
-                                target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
-                    } else {
-                        resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
-                    }
-                }
-
-            } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
-                // AoE item
-                for (Enemy enemy : enemies) {
-                    if (enemy.getHp() > 0) {
-                        item.useItem(enemy);
-                    }
-                }
-                // Remove ONE item from inventory
-                player.getInventory().removeItem(item, 1);
-
-                // USE THE ITEM'S MESSAGE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
-                }
-
+            if (isPowerBuff && powerBuffApplied) {
+                resultMessage = player.getName() + " tried to use " + item.getName() + " but the Power buff is already active! (Max 1 stack)";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+                shouldConsumeTurn = false; // Don't consume a turn
+            } else if (isHardeningBuff && hardeningBuffApplied) {
+                resultMessage = player.getName() + " tried to use " + item.getName() + " but the Hardening buff is already active! (Max 1 stack)";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+                shouldConsumeTurn = false; // Don't consume a turn
             } else {
-                // Default case
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + "!";
+                // Check item target type and apply
+                if (item.getTargetType() == Item.TargetType.SELF) {
+                    // Self-targeting item
+                    item.useItem(player);
+                    player.getInventory().removeItem(item, 1);
+
+                    // Mark buff as applied
+                    if (isPowerBuff) {
+                        powerBuffApplied = true;
+                    } else if (isHardeningBuff) {
+                        hardeningBuffApplied = true;
+                    }
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + "!";
+                    }
+
+                } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
+                    // Single enemy target
+                    double beforeHp = target.getHp();
+                    item.useItem(target);
+                    double afterHp = target.getHp();
+                    double effectAmount = beforeHp - afterHp;
+
+                    player.getInventory().removeItem(item, 1);
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        if (effectAmount > 0) {
+                            resultMessage = player.getName() + " used " + item.getName() + " on " +
+                                    target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
+                        } else {
+                            resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
+                        }
+                    }
+
+                } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
+                    // AoE item
+                    for (Enemy enemy : enemies) {
+                        if (enemy.getHp() > 0) {
+                            item.useItem(enemy);
+                        }
+                    }
+                    player.getInventory().removeItem(item, 1);
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
+                    }
+
+                } else {
+                    // Default case
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + "!";
+                    }
                 }
             }
 
             battlePanel.setBattleMessage(resultMessage);
             battlePanel.repaint();
             battlePanel.updateTargetButtonStates();
-
             battlePanel.refreshInventoryDisplay();
 
             // Check if battle should end
@@ -233,10 +253,24 @@ public class Battle {
                 return;
             }
 
-            // Move to next turn
-            Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
-            nextTimer.setRepeats(false);
-            nextTimer.start();
+            // Move to next turn ONLY if a turn was consumed
+            if (shouldConsumeTurn) {
+                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+                nextTimer.setRepeats(false);
+                nextTimer.start();
+            } else {
+                // No turn consumed, just go back to player input
+                Timer resetTimer = new Timer(TURN_DELAY, ev -> {
+                    isExecutingTurn = false;
+                    isWaitingForPlayerInput = true;
+                    battlePanel.showMainMenu();
+                    battlePanel.setButtonsEnabled(true);
+                    battlePanel.setBattleMessage(player.getName() + "'s turn! What will you do?");
+                    battlePanel.repaint();
+                });
+                resetTimer.setRepeats(false);
+                resetTimer.start();
+            }
         });
         executeTimer.setRepeats(false);
         executeTimer.start();
@@ -249,6 +283,8 @@ public class Battle {
     /** Start the battle */
     public void startBattle() {
         isBattleActive = true;
+        powerBuffApplied = false;
+        hardeningBuffApplied = false;
         startNewCycle();
     }
 
@@ -1014,6 +1050,33 @@ public class Battle {
     // ─────────────────────────────────────────────────────────────
     // Helper Methods
     // ─────────────────────────────────────────────────────────────
+    /**
+     * Check if a Power buff has already been applied this battle
+     */
+    public boolean isPowerBuffApplied() {
+        return powerBuffApplied;
+    }
+
+    /**
+     * Check if a Hardening buff has already been applied this battle
+     */
+    public boolean isHardeningBuffApplied() {
+        return hardeningBuffApplied;
+    }
+
+    /**
+     * Mark Power buff as applied
+     */
+    public void setPowerBuffApplied(boolean applied) {
+        this.powerBuffApplied = applied;
+    }
+
+    /**
+     * Mark Hardening buff as applied
+     */
+    public void setHardeningBuffApplied(boolean applied) {
+        this.hardeningBuffApplied = applied;
+    }
 
     /** Get list of alive enemies */
     private List<Enemy> getAliveEnemies() {
@@ -1032,6 +1095,9 @@ public class Battle {
         isBattleActive = false;
         isWaitingForPlayerInput = false;
         isExecutingTurn = false;
+
+        powerBuffApplied = false;
+        hardeningBuffApplied = false;
 
         String endMessage = playerWon
                 ? "All enemies defeated! Victory!"
