@@ -18,7 +18,7 @@ public class Mage extends Player {
         name = "Mage";
         hp = 800;
         maxHp = hp;
-        attack = 3350;
+        attack = 335;
         maxAttack = attack;
         defense = 10;
         maxDefense = defense;

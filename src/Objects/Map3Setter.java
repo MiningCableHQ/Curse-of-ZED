@@ -4459,7 +4459,7 @@ public class Map3Setter {
                 (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(gp);
         if (frame == null) return;
 
-        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, new ZED(), gp);
+        Combat.BattlePanel bp = new Combat.BattlePanel(gp.player, new ZED(true), gp);
         final GamePanel gpRef = gp;
 
         bp.setOnBattleEnd(() -> {

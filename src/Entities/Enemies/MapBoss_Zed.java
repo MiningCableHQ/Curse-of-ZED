@@ -26,6 +26,6 @@ public class MapBoss_Zed extends EnemyEntity {
 
     @Override
     public Enemy createBattleEnemy() {
-        return new ZED(); // your existing ZED boss class
+        return new ZED();
     }
 }

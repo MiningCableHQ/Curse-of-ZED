@@ -13,7 +13,7 @@ public class GuideToAfterlife extends Move {
     public GuideToAfterlife() {
         super("Guide to Afterlife", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
-        description = "Deal 100% of ATK to all enemies and uses up 10% of CurrentHP for every enemy hit";
+        description = "Deal 150% of ATK to all enemies and uses up 10% of CurrentHP for every enemy hit";
     }
 
     @Override
@@ -42,7 +42,7 @@ public class GuideToAfterlife extends Move {
                 totalATK += this.attack; //this move's atk
 
                 //multiply sum to dmg multiplier
-                double damage = totalATK;
+                double damage = totalATK * 1.50;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
                 setDamageDealt(actualDamage);

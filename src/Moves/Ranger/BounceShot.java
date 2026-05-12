@@ -12,7 +12,7 @@ public class BounceShot extends Move {
     public BounceShot() {
         super("Bounce Shot", 30, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
-        description = "Deal 20% of ATK to all enemies 1-5x";
+        description = "Deal 40% of ATK to all enemies 1-5x";
     }
 
     @Override
@@ -34,7 +34,7 @@ public class BounceShot extends Move {
 
                 // Random number of hits between 1 and 5
                 int hits = rand.nextInt(5) + 1; // 1 to 5 inclusive
-                double damagePerHit = totalATK * 0.20;
+                double damagePerHit = totalATK * 0.40;
                 double totalDamage = damagePerHit * hits;
                 double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
 

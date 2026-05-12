@@ -12,13 +12,13 @@ public class MultiStrike extends Move {
     public MultiStrike() {
         super("Multi Strike", 40, TargetType.ALL_ENEMIES, 3);
         hasUnlocked = false;
-        description = "Deals 20% of ATK to all enemies 5-10x";
+        description = "Deals 25% of ATK to all enemies 5-10x";
     }
 
     public MultiStrike(boolean hasUnlocked) {
         super("Multi Strike", 40, TargetType.ALL_ENEMIES, 7);
         this.hasUnlocked = hasUnlocked;
-        description = "Deals 20% of ATK to all enemies 5-10x";
+        description = "Deals 25% of ATK to all enemies 5-10x";
     }
 
     @Override
@@ -41,7 +41,7 @@ public class MultiStrike extends Move {
 
                 //multiply sum to dmg multiplier
                 int hits = rand.nextInt(6) + 5; // 5 to 10 inclusive
-                double damagePerHit = totalATK * 0.20;
+                double damagePerHit = totalATK * 0.25;
                 double totalDamage = damagePerHit * hits;
                 double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
 

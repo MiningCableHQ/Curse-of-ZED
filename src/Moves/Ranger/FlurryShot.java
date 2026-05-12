@@ -11,13 +11,13 @@ public class FlurryShot extends Move {
     public FlurryShot() {
         super("Flurry Shot", 40, TargetType.ENEMY, 3);
         hasUnlocked = false;
-        description = "Deals 45% of ATK as dmg 2-5x to a single target";
+        description = "Deals 60% of ATK as dmg 2-5x to a single target";
     }
 
     public FlurryShot(boolean hasUnlocked) {
         super("Flurry Shot", 40, TargetType.ENEMY, 3);
         this.hasUnlocked = hasUnlocked;
-        description = "Deals 45% of ATK as dmg 2-5x to a single target";
+        description = "Deals 60% of ATK as dmg 2-5x to a single target";
     }
 
     @Override
@@ -33,7 +33,7 @@ public class FlurryShot extends Move {
 
                 // Random number of hits between 2 and 5
                 int hits = rand.nextInt(4) + 2; // 2 to 5 inclusive
-                double damagePerHit = totalATK * 0.45;
+                double damagePerHit = totalATK * 0.60;
                 double totalDamage = damagePerHit * hits;
                 double actualDamage = enemy.takeDamage(totalDamage, enemy.getDefense(), enemy.getDmgResistance());
 

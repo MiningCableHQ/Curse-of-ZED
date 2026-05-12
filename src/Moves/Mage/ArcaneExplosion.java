@@ -13,7 +13,7 @@ public class ArcaneExplosion extends Move {
     public ArcaneExplosion(){
         super("Arcane Explosion", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
-        description = "Deal 48% of ATK to all enemies";
+        description = "Deal 110% of ATK to all enemies";
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ArcaneExplosion extends Move {
                 totalATK += this.attack; // this move's atk
 
                 // Multiply sum to damage multiplier
-                double damage = totalATK * 0.48;
+                double damage = totalATK * 1.1;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
                 setDamageDealt(actualDamage);

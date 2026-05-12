@@ -12,13 +12,13 @@ public class LifedrainArrow extends Move {
     public LifedrainArrow(){
         super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = false;
-        description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
+        description = "Deals 150% of ATK to all enemies, and heals 150 HP for every enemy hit";
     }
 
     public LifedrainArrow(boolean hasUnlocked){
         super("Lifedrain Arrow", 45, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = this.hasUnlocked();
-        description = "Deals 50% of ATK to all enemies, and heals 150 HP for every enemy hit";
+        description = "Deals 150% of ATK to all enemies, and heals 150 HP for every enemy hit";
     }
 
     @Override
@@ -42,7 +42,7 @@ public class LifedrainArrow extends Move {
                 }
                 totalATK += this.attack; // this move's atk
 
-                double damage = totalATK * 0.5;
+                double damage = totalATK * 1.5;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
                 // --- Self Heal Part --------------------------------------------------------------------------------------

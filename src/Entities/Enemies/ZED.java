@@ -9,24 +9,45 @@ import java.util.Random;
 public class ZED extends Boss{
     private int defBuffStacks = 0;
     private double originalDefense;
+    private boolean isStrongVersion;
 
+    // Constructor for weak version (first encounter)
     public ZED(){
+        this(false);
+    }
+
+    public ZED(boolean isStrongVersion){
+        this.isStrongVersion = isStrongVersion;
+
         name = "Zed";
         level = 999;
-        //hp = 10000;
-        hp = 5000; //halved for playtest purposes
-        maxHp = hp;
-        attack = 320;
-        maxAttack = attack;
-        defense = 30;
-        maxDefense = defense;
-        speed = 45;
-        dmgResistance = 0.25;
+
+        if (isStrongVersion) {
+            hp = 10000;
+            maxHp = hp;
+            attack = 300;
+            maxAttack = attack;
+            defense = 0;
+            maxDefense = defense;
+            speed = 45;
+            dmgResistance = 0;
+            expYield = 300;
+            goldYield = 1000;
+        } else {
+            hp = 4000;
+            maxHp = hp;
+            attack = 320;
+            maxAttack = attack;
+            defense = 30;
+            maxDefense = defense;
+            speed = 45;
+            dmgResistance = 0.25;
+            expYield = 300;
+            goldYield = 1000;
+        }
 
         originalDefense = defense;
 
-        expYield = 300;
-        goldYield = 1000;
         loadMoves();
         loadSprite();
     }
@@ -53,17 +74,22 @@ public class ZED extends Boss{
         }
     }
 
-    //Getters
+    // Getters
     public int getDefBuffStacks() {
         return defBuffStacks;
     }
 
-    //Unique methods for final boss
+    public boolean isStrongVersion() {
+        return isStrongVersion;
+    }
+
+    // Unique methods for final boss
     public void addDefBuff() {
         defBuffStacks++;
         // Increase defense by 8 per stack
         defense = originalDefense + (defBuffStacks * 8);
     }
+
     public void resetBattleBuffs() {
         defBuffStacks = 0;
         defense = originalDefense;

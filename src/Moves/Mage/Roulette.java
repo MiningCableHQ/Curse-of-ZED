@@ -12,13 +12,13 @@ public class Roulette extends Move {
     public Roulette() {
         super("Roulette", 35, TargetType.ALL_ENEMIES, 7);
         hasUnlocked = false;
-        description = "Deal 15% damage to all enemies 3-10x";
+        description = "Deal 25% damage to all enemies 5-10x";
     }
 
     public Roulette(boolean hasUnlocked) {
         super("Roulette", 35, TargetType.ALL_ENEMIES, 7);
         this.hasUnlocked = hasUnlocked;
-        description = "Deal 15% damage to all enemies 3-10x";
+        description = "Deal 25% damage to all enemies 5-10x";
     }
 
     @Override
@@ -38,9 +38,9 @@ public class Roulette extends Move {
                 }
                 totalATK += this.attack; // this move's atk
 
-                // Random number of hits between 3 and 10
-                int hits = rand.nextInt(8) + 3; // 3 to 10 inclusive
-                double damagePerHit = totalATK * 0.15;
+                // Random number of hits between 5 and 10
+                int hits = rand.nextInt(6) + 5; // 5 to 10 inclusive
+                double damagePerHit = totalATK * 0.25;
                 double totalDamage = damagePerHit * hits;
 
                 // Apply the damage
