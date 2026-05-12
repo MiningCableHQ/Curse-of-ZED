@@ -17,8 +17,8 @@ public class MapEnemy_Masklet extends EnemyEntity {
     @Override
     public void loadFrames() {
         for (int i = 0; i < 4; i++) {
-            walkLeft[i]  = loadFrame("/enemies/masklet/walking_left"  + (i + 1) + ".png");
-            walkRight[i] = loadFrame("/enemies/masklet/walking_right" + (i + 1) + ".png");
+            walkLeft[i]  = loadFrame("/enemies/masklet/masklet_walking/walking_left"  + (i + 1) + ".png");
+            walkRight[i] = loadFrame("/enemies/masklet/masklet_walking/walking_right" + (i + 1) + ".png");
         }
         image = walkRight[0] != null ? walkRight[0] : null;
     }

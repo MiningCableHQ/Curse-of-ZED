@@ -234,10 +234,6 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserHardening(), 3);
         inventory.addItem(new LesserPower(), 3);
         //inventory.addItem(new LesserSoftening(), 2);
-        inventory.addItem(new Hardening(), 3);
-        inventory.addItem(new Power(), 3);
-        inventory.addItem(new GreaterHardening(), 3);
-        inventory.addItem(new GreaterPower(), 3);
 
         inventory.addItem(new AnkhStaff(5));
         inventory.addItem(new Swiftwind());

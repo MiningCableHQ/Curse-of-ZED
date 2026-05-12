@@ -35,7 +35,7 @@ public abstract class Enemy extends Entity {
         for (int i = 0; i < 4; i++) {
             try {
                 idleFrames[i] = javax.imageio.ImageIO.read(
-                        getClass().getResourceAsStream("/enemies/" + enemyName + "/idle_left" + (i + 1) + ".png"));
+                        getClass().getResourceAsStream("/enemies/" + enemyName + "/"+ enemyName +"_idle/idle_left" + (i + 1) + ".png"));
             } catch (Exception e) {
                 idleFrames[i] = null;
             }
