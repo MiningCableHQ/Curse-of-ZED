@@ -68,7 +68,7 @@ public abstract class Player extends Entity {
         level = 1;
         experience = 0;
         expNeeded = 100;
-        accuracy = 0.80;
+        accuracy = 0.90;
         inventory = new Inventory();
         moves = new ArrayList<>();
         moveset = new ArrayList<>();

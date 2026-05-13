@@ -67,7 +67,8 @@ public class ObjectivesHUD {
     public void setVisible(boolean v) { this.visible = v; }
 
     public void update() {
-        if (challengeDone && checkAlpha < 1f) checkAlpha += 0.05f;
+
+        if (challengeDone && checkAlpha < 1f) checkAlpha = Math.min(1f, checkAlpha + 0.05f);
     }
 
     public void draw(Graphics2D g2) {
@@ -139,7 +140,7 @@ public class ObjectivesHUD {
         if (subChallenge != null) {
             curY += 6;
             g2.setFont(new Font("Serif", Font.ITALIC, 11));
-            float alpha = 0.6f + checkAlpha * 0.4f;
+            float alpha = Math.min(1f, 0.6f + checkAlpha * 0.4f);
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
             g2.setColor(challengeDone
                     ? new Color(80, 220, 80)

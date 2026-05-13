@@ -91,7 +91,6 @@ public class BattlePanel extends JPanel {
     private final List<JLabel> enemyGifLabels = new ArrayList<>();
 
     // ── Buttons ───────────────────────────────────────────────────
-
     private int uiBoxVCenter;
     private BattleButton btnFight;
     private BattleButton btnBag;
@@ -111,10 +110,6 @@ public class BattlePanel extends JPanel {
 
     // ── Item selection callback ───────────────────────────────────
     private BiConsumer<Item, Enemy> itemSelectionCallback;
-
-    // ── Status Effect Display ─────────────────────────────────────
-    //FIXME Figure out where is the existing defined scope type shi
-    //private boolean showStatusEffects = true;
 
     // ── Game Panel ─────────────────────────────────────
     private GamePanel gp;
@@ -142,6 +137,17 @@ public class BattlePanel extends JPanel {
         if (this.enemies.isEmpty()) {
             throw new IllegalArgumentException("At least one enemy is required");
         }
+
+        // Customize tooltip appearance
+        ToolTipManager.sharedInstance().setInitialDelay(300);  // Show after 300ms
+        ToolTipManager.sharedInstance().setDismissDelay(8000); // Show for 8 seconds
+        ToolTipManager.sharedInstance().setReshowDelay(500);   // Reshow after 500ms
+
+        // Style the tooltips
+        UIManager.put("ToolTip.background", new Color(60, 30, 5, 240));
+        UIManager.put("ToolTip.foreground", new Color(255, 245, 200));
+        UIManager.put("ToolTip.border", BorderFactory.createLineBorder(new Color(255, 220, 80), 2));
+        UIManager.put("ToolTip.font", new Font("Serif", Font.PLAIN, 12));
 
         // Stop whatever music is playing and start battle music immediately
         boolean isBossBattle = this.enemies.stream().anyMatch(e -> e instanceof Entities.Enemies.Boss);
@@ -488,13 +494,11 @@ public class BattlePanel extends JPanel {
                 System.out.println("Item selected: " + item.getName()
                         + ", target: " + (target != null ? target.getName() : "null"));
 
-                // Restore the battle panel first
                 parentFrame.getContentPane().removeAll();
                 parentFrame.add(BattlePanel.this);
                 parentFrame.revalidate();
                 parentFrame.repaint();
 
-                // Then execute item as a turn — DO NOT call battle.startBattle()
                 battle.setPendingItem(item, target);
             };
 
@@ -504,12 +508,10 @@ public class BattlePanel extends JPanel {
                     true,
                     itemSelectionCallback,
                     () -> {
-                        // Back button: just restore panel, battle is still mid-turn
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
                         parentFrame.repaint();
-                        // DO NOT call battle.startBattle() here
                     }
             );
             invPanel.setBattle(battle);
@@ -536,17 +538,34 @@ public class BattlePanel extends JPanel {
         int mW = 195, mH = 42, mGapX = 16, mGapY = 10;
         int totalMoveGridWidth = (mW * 2) + mGapX;
         int mX = uiBoxRect.x + (uiBoxRect.width - totalMoveGridWidth) / 2;
-        int mY = uiBoxRect.y + 35; // Positioned below the text
+        int mY = uiBoxRect.y + 35;
 
         for (int i = 0; i < 4; i++) {
             int col = i % 2, row = i / 2;
 
-            // !!! CRITICAL FIX: Create the button object BEFORE calling setBounds !!!
+            // Create the button with move name
             moveBtns[i] = new BattleButton(moveNames[i]);
 
-            // Now it is safe to set bounds because moveBtns[i] is no longer null
+            // Set tooltip with move description if available
+            if (i < moves.size() && moves.get(i) != null) {
+                Move move = moves.get(i);
+                String description = move.getDescription();
+                if (description != null && !description.isEmpty()) {
+                    // Format the description nicely with HTML
+                    String formattedDesc = "<html><div style='width:250px; padding:5px;'>" +
+                            "<b>" + move.getName() + "</b><br>" +
+                            "<span style='font-size:11px;'>" + description + "</span>" +
+                            "</div></html>";
+                    moveBtns[i].setTooltipText(formattedDesc);
+                } else {
+                    moveBtns[i].setTooltipText("<html><i>No description available</i></html>");
+                }
+            } else {
+                moveBtns[i].setTooltipText("<html><i>Move not available</i></html>");
+            }
+
             moveBtns[i].setBounds(mX + col * (mW + mGapX), mY + row * (mH + mGapY), mW, mH);
-            moveBtns[i].setVisible(false); // Hide by default
+            moveBtns[i].setVisible(false);
 
             final int idx = i;
             moveBtns[i].addActionListener(e -> { playClickSFX(); onMoveSelected(idx); });
@@ -554,12 +573,7 @@ public class BattlePanel extends JPanel {
         }
 
         int backW = 140, backH = 46;
-
-        // 1. Set X to the bottom-left with a small padding (e.g., 30 pixels)
         int backX = uiBoxRect.x + 45;
-
-        // 2. Adjust Y to align it with the bottom area of the parchment
-        // This uses the bottom of the UI box minus the button height and padding
         int backY = uiBoxRect.y + uiBoxRect.height - backH - 25;
 
         btnBack = new BattleButton("← Back");
@@ -580,8 +594,7 @@ public class BattlePanel extends JPanel {
         int totalButtonsWidth = (enemyCount * btnW) + ((enemyCount - 1) * gap);
         int startX = uiBoxRect.x + (uiBoxRect.width - totalButtonsWidth) / 2;
         btnW = 195;
-        btnH = 42; // need to make sure these exist before the calculation
-        // Use the calculated V-Center from computeLayout
+        btnH = 42;
         int btnY = uiBoxVCenter - (btnH / 2);
 
         for (int i = 0; i < enemyCount; i++) {
@@ -960,14 +973,6 @@ public class BattlePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.drawString(hp + " / " + maxHp, barX, ty);
 
-        // REMOVED THE EXP DISPLAY IN STAT BOX DURING COMBAT KAY AKOY BUOT
-//        if (showExp && expLine != null) {
-//            ty += 12;
-//            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-//            g2.setColor(new Color(50, 50, 160));
-//            g2.drawString(expLine, tx, ty);
-//        }
-
         // ========== PLAYER SECTION (showExp = true) ==========
         if (showExp) {
             int buffsOffset = 0;
@@ -1011,7 +1016,7 @@ public class BattlePanel extends JPanel {
                 for (StatusEffect effect : playerEffects) {
                     statusOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                    g2.setColor(new Color(255, 100, 100)); // Red for status effects
+                    g2.setColor(new Color(255, 100, 100));
                     String effectText = effect.toString();
                     if (effectText.length() > 25) {
                         effectText = effectText.substring(0, 22) + "...";
@@ -1036,7 +1041,7 @@ public class BattlePanel extends JPanel {
                             buffsOffset += 12;
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
-                            g2.drawString("DEF: +" + (stacks * 8), tx, ty + buffsOffset);
+                            g2.drawString("DEF: +" + (stacks * 10), tx, ty + buffsOffset);
                         }
                     }
 
@@ -1047,7 +1052,7 @@ public class BattlePanel extends JPanel {
                         for (StatusEffect effect : enemyEffects) {
                             statusOffset += 12;
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                            g2.setColor(new Color(255, 100, 100)); // Red for status effects
+                            g2.setColor(new Color(255, 100, 100));
                             String effectText = effect.toString();
                             if (effectText.length() > 25) {
                                 effectText = effectText.substring(0, 22) + "...";
@@ -1265,11 +1270,12 @@ public class BattlePanel extends JPanel {
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  Inner class: BattleButton with Gold Octagon styling
+    //  Inner class: BattleButton with Gold Octagon styling + Tooltip
     // ─────────────────────────────────────────────────────────────
     private static class BattleButton extends JButton {
         private boolean hovered = false;
         private boolean pressed = false;
+        private String tooltipText = "";
 
         BattleButton(String text) {
             super(text);
@@ -1280,28 +1286,44 @@ public class BattlePanel extends JPanel {
             setForeground(BTN_TEXT_DARK);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+            // Enable tooltips
+            setToolTipText("");
+
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered (MouseEvent e) {
+                @Override
+                public void mouseEntered(MouseEvent e) {
                     if (isEnabled()) {
                         hovered = true;
                         repaint();
+                        // Show custom tooltip with description
+                        if (!tooltipText.isEmpty()) {
+                            setToolTipText(tooltipText);
+                        }
                     }
                 }
-                @Override public void mouseExited  (MouseEvent e) {
+                @Override
+                public void mouseExited(MouseEvent e) {
                     hovered = false;
                     repaint();
                 }
-                @Override public void mousePressed (MouseEvent e) {
+                @Override
+                public void mousePressed(MouseEvent e) {
                     if (isEnabled()) {
                         pressed = true;
                         repaint();
                     }
                 }
-                @Override public void mouseReleased(MouseEvent e) {
+                @Override
+                public void mouseReleased(MouseEvent e) {
                     pressed = false;
                     repaint();
                 }
             });
+        }
+
+        public void setTooltipText(String text) {
+            this.tooltipText = text;
+            super.setToolTipText(text);
         }
 
         @Override

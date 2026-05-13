@@ -37,13 +37,14 @@ public class NPC_Frankenstein extends NPC {
         showOnMinimap = false;
         available = false;
         try {
-            idleFrames[0] = ImageIO.read(getClass().getResourceAsStream("/npc/woman/woman_idle1.png"));
-            idleFrames[1] = ImageIO.read(getClass().getResourceAsStream("/npc/woman/woman_idle2.png"));
+            idleFrames[0] = ImageIO.read(getClass().getResourceAsStream("/boss/frankenstein_idle/idle_left1.png"));
+            idleFrames[1] = ImageIO.read(getClass().getResourceAsStream("/boss/frankenstein_idle/idle_left2.png"));
+            idleFrames[2] = ImageIO.read(getClass().getResourceAsStream("/boss/frankenstein_idle/idle_left3.png"));
             image = idleFrames[0];
         } catch (Exception e) {
             System.err.println("Frankenstein sprite not found.");
         }
-        portrait = loadPortrait("/npc/frankenstein/frank_portrait.png");
+        portrait = loadPortrait("/npc/frankenstein/frankenstein_portrait.png");
     }
 
     @Override
