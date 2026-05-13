@@ -176,17 +176,17 @@ public class GamePanel extends JPanel implements Runnable {
                 case "Ranger":
                     weaponPath = "/items/archer_weapon/mistwood.png";
                     weaponName = "Mistwood";
-                    player.setWeapon(new Mistwood());
+                    player.setWeapon(new Mistwood(5));
                     break;
                 case "Mage":
                     weaponPath = "/items/mage_weapon/ankh_staff.png";
                     weaponName = "Ankh Staff";
-                    player.setWeapon(new AnkhStaff());
+                    player.setWeapon(new AnkhStaff(5));
                     break;
                 default:
                     weaponPath = "/items/warrior_weapon/razoredge_sword.png";
                     weaponName = "Razoredge Sword";
-                    player.setWeapon(new RazorEdge());
+                    player.setWeapon(new RazorEdge(1));
                     break;
             }
 
