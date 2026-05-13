@@ -1045,7 +1045,7 @@ public class BattlePanel extends JPanel {
                             buffsOffset += 12;
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
-                            g2.drawString("DEF: +" + (stacks * 8), tx, ty + buffsOffset);
+                            g2.drawString("DEF: +" + (stacks * 10), tx, ty + buffsOffset);
                         }
                     }
 
