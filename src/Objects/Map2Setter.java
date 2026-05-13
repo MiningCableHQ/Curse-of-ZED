@@ -1571,10 +1571,6 @@ public class Map2Setter {
         gp.obj[400].worldY = 27 * gp.tileSize; // Row 27
 
         //WATER ROCK
-        gp.obj[401] = new OBJ_Rock();
-        gp.obj[401].worldX = 3 * gp.tileSize; // Col 3
-        gp.obj[401].worldY = 21 * gp.tileSize; // Row 21
-
         gp.obj[402] = new OBJ_Rock();
         gp.obj[402].worldX = 16 * gp.tileSize; // Col 16
         gp.obj[402].worldY = 21 * gp.tileSize; // Row 21
@@ -1583,9 +1579,6 @@ public class Map2Setter {
         gp.obj[403].worldX = 33 * gp.tileSize; // Col 33
         gp.obj[403].worldY = 21 * gp.tileSize; // Row 21
 
-        gp.obj[404] = new OBJ_Rock();
-        gp.obj[404].worldX = 41 * gp.tileSize; // Col 41
-        gp.obj[404].worldY = 21 * gp.tileSize; // Row 21
 
         //BRIDGE HORIZONTAL
         gp.obj[405] = new OBJ_BridgeHorizontal();
@@ -4310,6 +4303,35 @@ public class Map2Setter {
         gp.obj[1048] = new OBJ_Grey();
         gp.obj[1048].worldX = 0 * gp.tileSize; // Col 13
         gp.obj[1048].worldY = 4 * gp.tileSize; // Row 36
+
+        gp.obj[1049] = new OBJ_Rock();
+        gp.obj[1049].worldX = 10 * gp.tileSize; // Col 13
+        gp.obj[1049].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[1050] = new OBJ_SmallFish();
+        gp.obj[1050].worldX = 9 * gp.tileSize; // Col 13
+        gp.obj[1050].worldY = 27 * gp.tileSize; // Row 36
+
+        gp.obj[1051] = new OBJ_Rock();
+        gp.obj[1051].worldX = 26 * gp.tileSize; // Col 13
+        gp.obj[1051].worldY = 20 * gp.tileSize; // Row 36
+
+        gp.obj[1052] = new OBJ_BigRock();
+        gp.obj[1052].worldX = 47 * gp.tileSize; // Col 13
+        gp.obj[1052].worldY = 19 * gp.tileSize; // Row 36
+
+        gp.obj[1053] = new OBJ_Trunk();
+        gp.obj[1053].worldX = 45 * gp.tileSize; // Col 13
+        gp.obj[1053].worldY = 21 * gp.tileSize; // Row 36
+
+
+
+
+
+
+
+
+
 
 
 
