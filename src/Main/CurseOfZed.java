@@ -165,20 +165,50 @@ public class CurseOfZed extends JFrame {
 
     private javax.swing.JPanel createLoadingPanel() {
         return new javax.swing.JPanel() {
+            private java.awt.image.BufferedImage loadingBg;
+
             {
                 setBackground(new Color(10, 5, 20));
+                // Load once when the panel is created
+                try {
+                    loadingBg = javax.imageio.ImageIO.read(
+                            getClass().getResourceAsStream("/backgrounds/loading_bg.png"));
+                } catch (Exception ex) {
+                    loadingBg = null;
+                }
             }
+
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (loadingBg != null) {
+                    double ia = (double) loadingBg.getWidth() / loadingBg.getHeight();
+                    double pa = (double) getWidth() / getHeight();
+                    int bw, bh;
+                    if (ia > pa) { bh = getHeight(); bw = (int)(getHeight() * ia); }
+                    else         { bw = getWidth();  bh = (int)(getWidth()  / ia); }
+                    g2.drawImage(loadingBg,
+                            (getWidth()  - bw) / 2,
+                            (getHeight() - bh) / 2,
+                            bw, bh, null);
+                } else {
+                    g2.setColor(new Color(10, 5, 20));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                }
+
+                // Semi-transparent overlay so text stays readable
+                g2.setColor(new Color(0, 0, 0, 100));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+
                 g2.setColor(new Color(252, 218, 72));
                 g2.setFont(new Font("Serif", Font.BOLD, 32));
                 FontMetrics fm = g2.getFontMetrics();
                 String text = "Loading...";
                 g2.drawString(text,
-                        (getWidth() - fm.stringWidth(text)) / 2,
+                        (getWidth()  - fm.stringWidth(text)) / 2,
                         getHeight() / 2 + fm.getAscent() / 2);
                 g2.dispose();
             }
