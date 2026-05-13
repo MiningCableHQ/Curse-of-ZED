@@ -60,6 +60,9 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean inventoryOpen = false;
     private JFrame parentFrame;
 
+    private java.awt.image.BufferedImage loadingBgImage;
+
+
     // Character management
     private CharacterPanel currentCharacterPanel;
     private boolean characterOpen = false;
@@ -1754,6 +1757,18 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
+    private java.awt.image.BufferedImage getLoadingBg() {
+        if (loadingBgImage == null) {
+            try {
+                loadingBgImage = javax.imageio.ImageIO.read(
+                        getClass().getResourceAsStream("/backgrounds/loading_bg.png"));
+            } catch (Exception ex) {
+                // leave null — paintComponent will fall back to black
+            }
+        }
+        return loadingBgImage;
+    }
+
     // ═════════════════════════════════════════════════════════════
     //  PAINT
     // ═════════════════════════════════════════════════════════════
@@ -1765,8 +1780,25 @@ public class GamePanel extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
 
         if (mapTransitionInProgress) {
-            g2.setColor(Color.BLACK);
+            java.awt.image.BufferedImage loadingBg = getLoadingBg();
+            if (loadingBg != null) {
+                double ia = (double) loadingBg.getWidth() / loadingBg.getHeight();
+                double pa = (double) screenWidth / screenHeight;
+                int bw, bh;
+                if (ia > pa) { bh = screenHeight; bw = (int)(screenHeight * ia); }
+                else         { bw = screenWidth;  bh = (int)(screenWidth  / ia); }
+                g2.drawImage(loadingBg,
+                        (screenWidth  - bw) / 2,
+                        (screenHeight - bh) / 2,
+                        bw, bh, null);
+            } else {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, screenWidth, screenHeight);
+            }
+
+            g2.setColor(new Color(0, 0, 0, 100));
             g2.fillRect(0, 0, screenWidth, screenHeight);
+
             g2.setColor(new Color(252, 218, 72));
             g2.setFont(new Font("Serif", Font.BOLD, 28));
             FontMetrics fm = g2.getFontMetrics();

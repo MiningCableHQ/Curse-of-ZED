@@ -30,7 +30,7 @@ public class VictoryCutscene extends JPanel {
             },
             // Page 2: The Forest Heals
             {
-                    {"narrator", "As Zed’s breath faded, the forest breathed its first clean air in decades. Faint green shoots pushed through cracks in stone."},
+                    {"narrator", "As Zed's breath faded, the forest breathed its first clean air in decades. Faint green shoots pushed through cracks in stone."},
                     {"narrator", "Life surged back into the soil, chasing away the gray rot of the withering."}
             },
             // Page 3: The Memory of the Warning
@@ -46,6 +46,7 @@ public class VictoryCutscene extends JPanel {
     };
 
     private Image[] bgImages;
+    private Image victoryBg;
     private int currentPage = 0, lineIndex = 0, charIndex = 0;
     private java.util.List<DialogueLine> currentLines = new java.util.ArrayList<>();
     private String displayedPartial = "";
@@ -73,6 +74,9 @@ public class VictoryCutscene extends JPanel {
         String[] paths = {"/cutscene/ending/victory/pp1.jpg", "/cutscene/ending/victory/pp2.jpg", "/cutscene/ending/victory/pp3.jpg", "/cutscene/ending/victory/pp4.jpg"};
         for (int i = 0; i < bgImages.length; i++) { try { bgImages[i] = ImageIO.read(getClass().getResource(paths[i])); } catch (Exception e) {} }
 
+        try { victoryBg = ImageIO.read(getClass().getResource("/backgrounds/victory_bg.png")); }
+        catch (Exception e) { victoryBg = null; }
+
         setupButtons();
         loadPage(0);
         fadeIn();
@@ -92,7 +96,7 @@ public class VictoryCutscene extends JPanel {
         if (panTimer != null) panTimer.stop();
         panX = 0;
         panTimer = new Timer(16, e -> {
-            panX -= 1.2f; // INCREASED: Faster cinematic sweep
+            panX -= 1.2f;
             if (panX + 1150 <= 1024) panX = 1024 - 1150;
             repaint();
         });
@@ -102,7 +106,6 @@ public class VictoryCutscene extends JPanel {
     private void startTypewriter() {
         if (typewriterTimer != null) typewriterTimer.stop();
 
-        // CRITICAL FIX: Wipe the text IMMEDIATELY before starting the next line
         displayedPartial = "";
         charIndex = 0;
         repaint();
@@ -113,7 +116,7 @@ public class VictoryCutscene extends JPanel {
         }
 
         String fullText = currentLines.get(lineIndex).t;
-        typewriterTimer = new Timer(7, e -> { // SPEED UP: 12ms for faster text flow
+        typewriterTimer = new Timer(7, e -> {
             if (charIndex < fullText.length()) {
                 displayedPartial += fullText.charAt(charIndex++);
                 repaint();
@@ -121,8 +124,7 @@ public class VictoryCutscene extends JPanel {
                 typewriterTimer.stop();
                 lineIndex++;
 
-                // Wait slightly so player can read, then move to next line
-                Timer pause = new Timer(900, ev -> { // SPEED UP: Shorter pause between lines
+                Timer pause = new Timer(900, ev -> {
                     if (lineIndex < currentLines.size()) {
                         startTypewriter();
                     } else {
@@ -197,7 +199,7 @@ public class VictoryCutscene extends JPanel {
 
         if (bgImages[currentPage] != null) g2.drawImage(bgImages[currentPage], (int)panX, 0, 1150, 768, null);
 
-        g2.setColor(new Color(0, 0, 0, 110)); // Darkness vignette
+        g2.setColor(new Color(0, 0, 0, 110));
         g2.fillRect(0, 0, W, H);
 
         paintParchmentBox(g2);
@@ -225,13 +227,11 @@ public class VictoryCutscene extends JPanel {
         Font tF = new Font("Serif", Font.BOLD | Font.ITALIC, 22);
 
         if (lineIndex < currentLines.size()) {
-            // ── CURRENTLY TYPING: use the ACTIVE line's speaker for color ──
             DialogueLine active = currentLines.get(lineIndex);
             drawWrappedLine(g2, nF, tF, active.s, displayedPartial,
                     tx, ty, pw - 80, false, active.s);
 
         } else if (lineIndex > 0) {
-            // ── DONE TYPING: show last line — use THAT line's speaker for color ──
             DialogueLine last = currentLines.get(lineIndex - 1);
             drawWrappedLine(g2, nF, tF, last.s, last.t,
                     tx, ty, pw - 80, true, last.s);
@@ -241,12 +241,11 @@ public class VictoryCutscene extends JPanel {
     private int drawWrappedLine(Graphics2D g2, Font nF, Font tF,
                                 String speaker, String text,
                                 int x, int y, int width, boolean done,
-                                String colorSpeaker) {  // ← NEW param
+                                String colorSpeaker) {
 
         boolean isN = colorSpeaker.equalsIgnoreCase("narrator");
         int curX = x;
 
-        // Color locked to the line being drawn, never bleeds
         Color speakerColor;
         if (isN) {
             speakerColor = new Color(40, 20, 0);
@@ -277,7 +276,7 @@ public class VictoryCutscene extends JPanel {
             if (fm.stringWidth(line + word) < (width - (curX - x))) {
                 line.append(word).append(" ");
             } else {
-                g2.setColor(speakerColor); // keep color locked on each line wrap
+                g2.setColor(speakerColor);
                 g2.drawString(line.toString(), curX, y);
                 y += fm.getHeight();
                 curX = x;
@@ -290,9 +289,31 @@ public class VictoryCutscene extends JPanel {
     }
 
     private void paintVictoryState(Graphics2D g2) {
-        g2.setColor(new Color(5, 12, 5)); g2.fillRect(0, 0, W, H);
-        if (victoryScale > 0.1f) { float r = W * 0.6f * victoryScale; g2.setPaint(new RadialGradientPaint(W/2f, H/2f - 60, r, new float[]{0f, 1f}, new Color[]{new Color(80, 200, 80, (int)(80*victoryScale)), new Color(0,0,0,0)})); g2.fillRect(0, 0, W, H); }
-        if (victoryScale > 0) { int s = (int)(90 * victoryScale); g2.setFont(new Font("Serif", Font.BOLD, s)); FontMetrics fm = g2.getFontMetrics(); String t = "VICTORY"; int tx = (W - fm.stringWidth(t)) / 2, ty = H/2 - 20; g2.setColor(new Color(0, 80, 0, 160)); g2.drawString(t, tx + 4, ty + 6); g2.setPaint(new GradientPaint(tx, ty - s, new Color(255, 255, 210), tx, ty, new Color(220, 180, 20))); g2.drawString(t, tx, ty); }
+        if (victoryBg != null) {
+            g2.drawImage(victoryBg, 0, 0, W, H, null);
+        } else {
+            g2.setColor(new Color(5, 12, 5));
+            g2.fillRect(0, 0, W, H);
+        }
+
+        if (victoryScale > 0.1f) {
+            float r = W * 0.6f * victoryScale;
+            g2.setPaint(new RadialGradientPaint(W/2f, H/2f - 60, r,
+                    new float[]{0f, 1f},
+                    new Color[]{new Color(80, 200, 80, (int)(80*victoryScale)), new Color(0,0,0,0)}));
+            g2.fillRect(0, 0, W, H);
+        }
+        if (victoryScale > 0) {
+            int s = (int)(90 * victoryScale);
+            g2.setFont(new Font("Serif", Font.BOLD, s));
+            FontMetrics fm = g2.getFontMetrics();
+            String t = "VICTORY";
+            int tx = (W - fm.stringWidth(t)) / 2, ty = H/2 - 20;
+            g2.setColor(new Color(0, 80, 0, 160));
+            g2.drawString(t, tx + 4, ty + 6);
+            g2.setPaint(new GradientPaint(tx, ty - s, new Color(255, 255, 210), tx, ty, new Color(220, 180, 20)));
+            g2.drawString(t, tx, ty);
+        }
     }
 
     private void setupButtons() {
@@ -314,7 +335,7 @@ public class VictoryCutscene extends JPanel {
         skipBtn.setBounds(840, 30, 120, 40);
         skipBtn.addActionListener(e -> { playClickSFX(); showVictoryScreen(); });
 
-        // --- NEW GHOST BUTTON UPGRADE START ---
+        // --- ENHANCED "PLAY AGAIN" BUTTON WITH VICTORY-STYLE COLORS ---
         playAgainBtn = new JButton("Play Again") {
             private boolean hovered = false;
             {
@@ -328,9 +349,10 @@ public class VictoryCutscene extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+                // Optional subtle hover background
                 if (hovered) {
-                    g2.setColor(new Color(255, 255, 255, 30));
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                    g2.setColor(new Color(255, 255, 255, 20));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
                 }
 
                 FontMetrics fm = g2.getFontMetrics(getFont());
@@ -338,13 +360,17 @@ public class VictoryCutscene extends JPanel {
                 int tx = (getWidth() - fm.stringWidth(text)) / 2;
                 int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
 
-                g2.setPaint(hovered
-                        ? new GradientPaint(tx, ty - 20, new Color(255, 255, 210), tx, ty + 5, new Color(255, 200, 30))
-                        : new GradientPaint(tx, ty - 20, new Color(230, 200, 150), tx, ty + 5, new Color(180, 140, 60)));
+                // Draw dark green shadow (same as "VICTORY" text)
+                g2.setColor(new Color(0, 80, 0, 160));
+                g2.drawString(text, tx + 4, ty + 6);
 
+                // Draw bright gold gradient (matching victory text)
+                g2.setPaint(new GradientPaint(tx, ty - 20, new Color(255, 255, 210),
+                        tx, ty + 5, new Color(220, 180, 20)));
                 g2.setFont(getFont());
                 g2.drawString(text, tx, ty);
 
+                // Optional: subtle underline on hover
                 if (hovered) {
                     g2.setColor(new Color(255, 200, 50, 200));
                     g2.setStroke(new BasicStroke(1.5f));
@@ -354,12 +380,13 @@ public class VictoryCutscene extends JPanel {
             }
         };
 
-        playAgainBtn.setFont(new Font("Serif", Font.BOLD, 26));
+        // Bigger, bolder font for better visibility
+        playAgainBtn.setFont(new Font("Serif", Font.BOLD, 30));
         playAgainBtn.setContentAreaFilled(false);
         playAgainBtn.setBorderPainted(false);
         playAgainBtn.setFocusPainted(false);
         playAgainBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        playAgainBtn.setBounds(W / 2 - 110, H / 2 + 90, 220, 55);
+        playAgainBtn.setBounds(W / 2 - 120, H / 2 + 90, 240, 60);
         playAgainBtn.setVisible(false);
         playAgainBtn.addActionListener(e -> {
             playClickSFX();
@@ -367,13 +394,42 @@ public class VictoryCutscene extends JPanel {
             if (gamePanel != null) gamePanel.musicPlayer.stopCutsceneMusic();
             if (onFinish != null) onFinish.run();
         });
-        // --- NEW GHOST BUTTON UPGRADE END ---
+        // -----------------------------------------------
 
         add(backBtn); add(nextBtn); add(skipBtn); add(playAgainBtn);
     }
 
     private static class GoldButton extends JButton {
-        private boolean h = false; GoldButton(String t) { super(t); setContentAreaFilled(false); setBorderPainted(false); setFocusPainted(false); setFont(new Font("Serif", Font.BOLD, 16)); setForeground(new Color(42, 12, 0)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); addMouseListener(new MouseAdapter() { public void mouseEntered(MouseEvent e) { h = true; repaint(); } public void mouseExited(MouseEvent e) { h = false; repaint(); } }); }
-        protected void paintComponent(Graphics g) { Graphics2D g2 = (Graphics2D) g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); int w = getWidth(), h_ = getHeight(), c = 8; Polygon oct = new Polygon(new int[]{c, w-c, w, w, w-c, c, 0, 0}, new int[]{0, 0, c, h_-c, h_, h_, h_-c, c}, 8); Color tc = h ? new Color(255, 255, 208) : new Color(252, 240, 122); Color bc = h ? new Color(212, 148, 12) : new Color(178, 108, 0); g2.setPaint(new LinearGradientPaint(0, 0, 0, h_, new float[]{0f, 1f}, new Color[]{tc, bc})); g2.fill(oct); g2.setColor(new Color(82, 38, 0, 210)); g2.draw(oct); FontMetrics fm = g2.getFontMetrics(); g2.setColor(getForeground()); g2.drawString(getText(), (w - fm.stringWidth(getText())) / 2, (h_ + fm.getAscent() - fm.getDescent()) / 2); g2.dispose(); }
+        private boolean h = false;
+        GoldButton(String t) {
+            super(t);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            setFont(new Font("Serif", Font.BOLD, 16));
+            setForeground(new Color(42, 12, 0));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) { h = true; repaint(); }
+                public void mouseExited(MouseEvent e) { h = false; repaint(); }
+            });
+        }
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            int w = getWidth(), h_ = getHeight(), c = 8;
+            Polygon oct = new Polygon(new int[]{c, w-c, w, w, w-c, c, 0, 0},
+                    new int[]{0, 0, c, h_-c, h_, h_, h_-c, c}, 8);
+            Color tc = h ? new Color(255, 255, 208) : new Color(252, 240, 122);
+            Color bc = h ? new Color(212, 148, 12) : new Color(178, 108, 0);
+            g2.setPaint(new LinearGradientPaint(0, 0, 0, h_, new float[]{0f, 1f}, new Color[]{tc, bc}));
+            g2.fill(oct);
+            g2.setColor(new Color(82, 38, 0, 210));
+            g2.draw(oct);
+            FontMetrics fm = g2.getFontMetrics();
+            g2.setColor(getForeground());
+            g2.drawString(getText(), (w - fm.stringWidth(getText())) / 2, (h_ + fm.getAscent() - fm.getDescent()) / 2);
+            g2.dispose();
+        }
     }
 }
