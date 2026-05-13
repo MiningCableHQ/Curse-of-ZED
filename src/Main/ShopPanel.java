@@ -127,8 +127,9 @@ public class ShopPanel extends JPanel {
     private Timer shopkeeperAnimTimer;
     private JLabel shopkeeperSpriteLabel;
 
-    // Background Image
-    private BufferedImage backgroundImage;
+    // ── Background GIF ────────────────────────────────────────────
+    private ImageIcon backgroundGif;
+    private boolean isBukogShop = false;   // <-- NEW: flag for Bukog shop background
 
     // Constructor
     public ShopPanel(JFrame parentFrame, Player player, Shopkeeper shopkeeper, Runnable onBackPressed) {
@@ -142,14 +143,15 @@ public class ShopPanel extends JPanel {
         setOpaque(true);
         setFocusable(true);
 
-        // Generate shop based on player level
         shopkeeper.generateShop(player);
 
-        // Sync with player's actual money if available
+        // Detect Bukog shop (case‑insensitive)
+        isBukogShop = "Bukog".equalsIgnoreCase(shopkeeper.getName());
+
         try {
             playerGold = player.getMoney();
         } catch (Exception e) {
-            playerGold = 5000; // Fallback test value
+            playerGold = 5000;
         }
 
         loadTitleFont();
@@ -160,7 +162,6 @@ public class ShopPanel extends JPanel {
         startAnimations();
         startTitleAnimation();
 
-        // Refresh both grids
         refreshPlayerShopGrid();
         refreshShopGrid();
         updateCurrencyDisplay();
@@ -229,7 +230,7 @@ public class ShopPanel extends JPanel {
             if (floatY < -5f) floatDir = 1f;
             shimmer -= 0.005f;
             if (shimmer < -0.4f) shimmer = 1.4f;
-            repaint();
+            // repaint is driven by the GIF ImageObserver — no need to call it here
         });
         titleAnimTimer.start();
     }
@@ -244,13 +245,11 @@ public class ShopPanel extends JPanel {
         int tx = (WIDTH - tw) / 2 - (int) vis.getX();
         int ty = (int) (60 + floatY);
 
-        // Double drop shadow
         g2.setColor(new Color(0, 0, 0, 185));
         g2.drawString(text, tx + 4, ty + 6);
         g2.setColor(new Color(0, 0, 0, 75));
         g2.drawString(text, tx + 8, ty + 11);
 
-        // Gold gradient
         g2.setPaint(new LinearGradientPaint(
                 tx, ty - (int) vis.getHeight(), tx, ty + 8,
                 new float[]{0f, 0.35f, 0.65f, 1f},
@@ -262,7 +261,6 @@ public class ShopPanel extends JPanel {
                 }));
         g2.drawString(text, tx, ty);
 
-        // Shimmer sweep
         float bandW = 110f;
         float bandX = tx + shimmer * (tw + bandW) - bandW;
         Shape savedClip = g2.getClip();
@@ -280,11 +278,17 @@ public class ShopPanel extends JPanel {
         g2.setClip(savedClip);
     }
 
+    // MODIFIED: Load the correct background based on isBukogShop
     private void loadBackground() {
         try {
-            backgroundImage = ImageIO.read(getClass().getResourceAsStream("/ui/inventory_bg.png"));
+            String bgFileName = isBukogShop ? "/backgrounds/bukog_bg.gif" : "/backgrounds/shop_bg.gif";
+            java.net.URL gifUrl = getClass().getResource(bgFileName);
+            if (gifUrl != null) {
+                backgroundGif = new ImageIcon(gifUrl);
+                backgroundGif.setImageObserver(this);
+            }
         } catch (Exception e) {
-            backgroundImage = null;
+            backgroundGif = null;
         }
     }
 
@@ -343,11 +347,10 @@ public class ShopPanel extends JPanel {
     private void loadShopkeeperAnimations() {
         boolean anyFrameLoaded = false;
 
-        // Try NPC-specific idle sprites first (frank_idle1.png, bukog_idle1.png, etc.)
         String npcName = shopkeeper.getName().toLowerCase();
         for (int i = 0; i < 5; i++) {
             try {
-                int frameNum = (i % 2) + 1; // cycles between 1 and 2
+                int frameNum = (i % 2) + 1;
                 String path = "/npc/" + npcName + "/" + npcName + "_idle" + frameNum + ".png";
                 shopkeeperIdleFrames[i] = ImageIO.read(getClass().getResourceAsStream(path));
                 if (shopkeeperIdleFrames[i] != null) anyFrameLoaded = true;
@@ -356,7 +359,6 @@ public class ShopPanel extends JPanel {
             }
         }
 
-        // Fall back to archer/ranger sprites
         if (!anyFrameLoaded) {
             String className = "archer";
             for (int i = 0; i < 5; i++) {
@@ -376,7 +378,7 @@ public class ShopPanel extends JPanel {
     }
 
     private void createShopkeeperPlaceholderFrames() {
-        Color baseColor = new Color(139, 119, 101); // Warm brown
+        Color baseColor = new Color(139, 119, 101);
         String initial = "S";
 
         for (int i = 0; i < 5; i++) {
@@ -413,7 +415,6 @@ public class ShopPanel extends JPanel {
     }
 
     private void startAnimations() {
-        // Player animation timer
         playerAnimTimer = new Timer();
         playerAnimTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -428,7 +429,6 @@ public class ShopPanel extends JPanel {
             }
         }, 0, 120);
 
-        // Shopkeeper animation timer
         shopkeeperAnimTimer = new Timer();
         shopkeeperAnimTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -479,7 +479,6 @@ public class ShopPanel extends JPanel {
 
                 int sx = 0, sy = 0, sw = getWidth(), sh = getHeight();
 
-                // Outer shadow layers (rolled edges)
                 for (int i = 8; i >= 1; i--) {
                     float a = 0.06f * (9 - i);
                     g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a));
@@ -488,7 +487,6 @@ public class ShopPanel extends JPanel {
                 }
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
-                // Multi-stop parchment gradient
                 g2.setPaint(new LinearGradientPaint(sx, sy, sx, sy + sh,
                         new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
                         new Color[]{
@@ -498,7 +496,6 @@ public class ShopPanel extends JPanel {
                 Shape body = new RoundRectangle2D.Float(sx, sy, sw, sh, 18, 18);
                 g2.fill(body);
 
-                // Gold border
                 g2.setStroke(new BasicStroke(2.5f));
                 g2.setColor(PARCH_BORDER);
                 g2.draw(body);
@@ -513,7 +510,6 @@ public class ShopPanel extends JPanel {
     }
 
     private void setupPlayerBox() {
-        // Player sprite - LEFT side
         playerSpriteLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
             Image scaled = playerIdleFrames[0].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
@@ -524,7 +520,6 @@ public class ShopPanel extends JPanel {
         playerSpriteLabel.setVerticalAlignment(SwingConstants.CENTER);
         playerBox.add(playerSpriteLabel);
 
-        // Player inventory label - LEFT ALIGNED, right of sprite
         String playerName = player != null ? player.getClass().getSimpleName() : "Player";
         JLabel inventoryLabel = new JLabel(playerName + "'s Inventory");
         inventoryLabel.setFont(FONT_NAME);
@@ -533,16 +528,13 @@ public class ShopPanel extends JPanel {
         inventoryLabel.setBounds(105, 40, 320, 30);
         playerBox.add(inventoryLabel);
 
-        // ===== CURRENCY DISPLAY - TOP RIGHT =====
         currencyLabel = new JLabel("$0", SwingConstants.RIGHT);
         currencyLabel.setFont(FONT_NAME);
         currencyLabel.setForeground(TEXT_LIGHT_GREEN);
         currencyLabel.setBounds(330, 40, 120, 30);
         currencyLabel.setOpaque(false);
         playerBox.add(currencyLabel);
-        // ===== END CURRENCY DISPLAY =====
 
-        // ===== PLAYER INVENTORY GRID (WITH WRAPPING) =====
         playerGrid = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
@@ -550,40 +542,25 @@ public class ShopPanel extends JPanel {
                     FlowLayout layout = (FlowLayout) getLayout();
                     int hgap = layout.getHgap();
                     int vgap = layout.getVgap();
-
-                    // Available width for items (scroll pane width minus padding)
-                    int targetWidth = 430 - 20; // 430 is scroll pane width, 20 for padding
-
+                    int targetWidth = 430 - 20;
                     int currentRowWidth = 0;
                     int currentRowHeight = 0;
                     int totalHeight = 0;
                     int componentCount = getComponentCount();
-
                     for (int i = 0; i < componentCount; i++) {
                         Component comp = getComponent(i);
                         if (!comp.isVisible()) continue;
-
                         Dimension pref = comp.getPreferredSize();
-
-                        // Check if this component would overflow current row
                         if (currentRowWidth + pref.width + (currentRowWidth > 0 ? hgap : 0) > targetWidth && currentRowWidth > 0) {
-                            // Move to next row
                             totalHeight += currentRowHeight + vgap;
                             currentRowWidth = 0;
                             currentRowHeight = 0;
                         }
-
-                        // Add component to current row
                         currentRowWidth += pref.width + (currentRowWidth > 0 ? hgap : 0);
                         currentRowHeight = Math.max(currentRowHeight, pref.height);
                     }
-
-                    // Add last row height
                     totalHeight += currentRowHeight;
-
-                    // Add padding
                     totalHeight += 10;
-
                     return new Dimension(targetWidth, Math.max(totalHeight, 50));
                 }
                 return super.getPreferredSize();
@@ -600,7 +577,6 @@ public class ShopPanel extends JPanel {
         playerScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         playerScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        // Style the vertical scrollbar
         JScrollBar verticalBar = playerScrollPane.getVerticalScrollBar();
         verticalBar.setBackground(new Color(60, 40, 20));
         verticalBar.setForeground(new Color(200, 160, 100));
@@ -611,7 +587,6 @@ public class ShopPanel extends JPanel {
     }
 
     private void setupShopBox() {
-        // Shopkeeper sprite - RIGHT side
         shopkeeperSpriteLabel = new JLabel();
         if (shopkeeperIdleFrames[0] != null) {
             Image scaled = shopkeeperIdleFrames[0].getScaledInstance(67, 67, Image.SCALE_SMOOTH);
@@ -622,7 +597,6 @@ public class ShopPanel extends JPanel {
         shopkeeperSpriteLabel.setVerticalAlignment(SwingConstants.CENTER);
         shopBox.add(shopkeeperSpriteLabel);
 
-        // Shopkeeper name label - RIGHT ALIGNED, left of sprite
         String shopName = shopkeeper != null ? shopkeeper.getName() : "Shopkeeper";
         JLabel shopLabel = new JLabel(shopName + "'s Shop");
         shopLabel.setFont(FONT_NAME);
@@ -631,7 +605,6 @@ public class ShopPanel extends JPanel {
         shopLabel.setBounds(45, 40, SHOP_BOX_W - 150, 30);
         shopBox.add(shopLabel);
 
-        // ===== SHOP INVENTORY GRID (WITH WRAPPING) =====
         shopGrid = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
@@ -639,33 +612,25 @@ public class ShopPanel extends JPanel {
                     FlowLayout layout = (FlowLayout) getLayout();
                     int hgap = layout.getHgap();
                     int vgap = layout.getVgap();
-
                     int targetWidth = 454 - 20;
-
                     int currentRowWidth = 0;
                     int currentRowHeight = 0;
                     int totalHeight = 0;
                     int componentCount = getComponentCount();
-
                     for (int i = 0; i < componentCount; i++) {
                         Component comp = getComponent(i);
                         if (!comp.isVisible()) continue;
-
                         Dimension pref = comp.getPreferredSize();
-
                         if (currentRowWidth + pref.width + (currentRowWidth > 0 ? hgap : 0) > targetWidth && currentRowWidth > 0) {
                             totalHeight += currentRowHeight + vgap;
                             currentRowWidth = 0;
                             currentRowHeight = 0;
                         }
-
                         currentRowWidth += pref.width + (currentRowWidth > 0 ? hgap : 0);
                         currentRowHeight = Math.max(currentRowHeight, pref.height);
                     }
-
                     totalHeight += currentRowHeight;
                     totalHeight += 10;
-
                     return new Dimension(targetWidth, Math.max(totalHeight, 50));
                 }
                 return super.getPreferredSize();
@@ -700,12 +665,8 @@ public class ShopPanel extends JPanel {
         messageBox.add(messageLabel);
     }
 
-    /**
-     * Updates the currency display with the player's current gold.
-     */
     private void updateCurrencyDisplay() {
         if (currencyLabel != null) {
-            // Try to sync with player's actual money first
             try {
                 java.lang.reflect.Method getMoney = player.getClass().getMethod("getMoney");
                 playerGold = (int) getMoney.invoke(player);
@@ -716,12 +677,8 @@ public class ShopPanel extends JPanel {
         }
     }
 
-    /**
-     * Shows sell confirmation dialog for an item.
-     */
     private void showSellConfirm(Item item, int defaultQty) {
         String message = "Sell " + item.getName() + "?";
-
         showParchmentDialog("Sell Item", message, "Yes", "No", () -> {
             if (defaultQty > 1) {
                 showSellQuantityDialog(item, defaultQty);
@@ -731,25 +688,19 @@ public class ShopPanel extends JPanel {
         });
     }
 
-    /**
-     * Shows quantity selection dialog for selling multiple items.
-     */
     private void showSellQuantityDialog(Item item, int maxQty) {
         JDialog dialog = new JDialog(parentFrame, "Sell Quantity", true);
         dialog.setUndecorated(true);
         dialog.setSize(400, 220);
         dialog.setLocationRelativeTo(parentFrame);
 
-        // Make dialog draggable
         final Point[] dragPoint = {null};
         JPanel titleBar = new JPanel();
         titleBar.setBackground(new Color(60, 40, 20));
         titleBar.setBounds(0, 0, 400, 25);
         titleBar.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
-                dragPoint[0] = e.getPoint();
-            }
+            public void mousePressed(MouseEvent e) { dragPoint[0] = e.getPoint(); }
         });
         titleBar.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -767,19 +718,13 @@ public class ShopPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
                         new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
-                        new Color[]{
-                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
-                                PARCH_WARM, PARCH_TAN, PARCH_TOP
-                        }));
+                        new Color[]{PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE, PARCH_WARM, PARCH_TAN, PARCH_TOP}));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-
                 g2.setColor(PARCH_BORDER);
                 g2.setStroke(new BasicStroke(3.0f));
                 g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
-
                 g2.dispose();
             }
         };
@@ -788,17 +733,12 @@ public class ShopPanel extends JPanel {
         contentPane.add(titleBar);
         dialog.setContentPane(contentPane);
 
-        // Title
         JLabel titleLabel = new JLabel("Sell " + item.getName() + "?");
         titleLabel.setFont(FONT_DIALOG);
         titleLabel.setForeground(TEXT_DARK);
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         titleLabel.setBounds(20, 30, 360, 25);
         contentPane.add(titleLabel);
-
-        // ===== CENTERED CONTROL GROUP =====
-        // Total group width: 60 + 40 + 40 + 40 + 24 (gaps) = 204px
-        // Centered starting X: (400 - 204) / 2 = 98
 
         JTextField qtyField = new JTextField("1");
         qtyField.setFont(FONT_STAT);
@@ -808,70 +748,50 @@ public class ShopPanel extends JPanel {
         qtyField.setForeground(TEXT_DARK);
         qtyField.setBorder(BorderFactory.createLineBorder(PARCH_BORDER, 1));
         contentPane.add(qtyField);
-
-        // Automatically select all text for easy overwriting
         SwingUtilities.invokeLater(() -> qtyField.selectAll());
 
-        // Up button
         GoldButton upBtn = new GoldButton("▲");
         upBtn.setFont(new Font("Arial", Font.BOLD, 14));
         upBtn.setMargin(new Insets(0, 0, 0, 0));
-        upBtn.setBounds(166, 85, 40, 40);  // 98 + 60 + 8
+        upBtn.setBounds(166, 85, 40, 40);
         upBtn.setContentAreaFilled(false);
         upBtn.addActionListener(e -> {
             playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
-                if (val < maxQty) {
-                    val++;
-                    qtyField.setText(String.valueOf(val));
-                }
-            } catch (NumberFormatException ex) {
-                qtyField.setText("1");
-            }
+                if (val < maxQty) { val++; qtyField.setText(String.valueOf(val)); }
+            } catch (NumberFormatException ex) { qtyField.setText("1"); }
         });
         contentPane.add(upBtn);
 
-        // Down button
         GoldButton downBtn = new GoldButton("▼");
         downBtn.setFont(new Font("Arial", Font.BOLD, 14));
         downBtn.setMargin(new Insets(0, 0, 0, 0));
-        downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
+        downBtn.setBounds(214, 85, 40, 40);
         downBtn.setContentAreaFilled(false);
         downBtn.addActionListener(e -> {
             playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
-                if (val > 1) {
-                    val--;
-                    qtyField.setText(String.valueOf(val));
-                }
-            } catch (NumberFormatException ex) {
-                qtyField.setText("1");
-            }
+                if (val > 1) { val--; qtyField.setText(String.valueOf(val)); }
+            } catch (NumberFormatException ex) { qtyField.setText("1"); }
         });
         contentPane.add(downBtn);
 
-        // MAX button
         GoldButton maxBtn = new GoldButton("MAX");
         maxBtn.setFont(new Font("Arial", Font.BOLD, 11));
         maxBtn.setMargin(new Insets(0, 0, 0, 0));
-        maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
+        maxBtn.setBounds(262, 85, 40, 40);
         maxBtn.setContentAreaFilled(false);
-        maxBtn.addActionListener(e -> {
-            playClickSFX();
-            qtyField.setText(String.valueOf(maxQty));
-        });
+        maxBtn.addActionListener(e -> { playClickSFX(); qtyField.setText(String.valueOf(maxQty)); });
         contentPane.add(maxBtn);
 
-        // Max quantity hint
         JLabel maxLabel = new JLabel("(Max: " + maxQty + ")");
         maxLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
         maxLabel.setForeground(new Color(100, 70, 40));
         maxLabel.setBounds(110, 130, 100, 15);
         contentPane.add(maxLabel);
 
-        // Earnings label
         JLabel earningsLabel = new JLabel();
         earningsLabel.setFont(FONT_STAT);
         earningsLabel.setForeground(TEXT_GREEN);
@@ -879,30 +799,21 @@ public class ShopPanel extends JPanel {
         earningsLabel.setBounds(45, 125, 360, 20);
         contentPane.add(earningsLabel);
 
-        // Update earnings label function
         Runnable updateEarnings = () -> {
             try {
                 int qty = Integer.parseInt(qtyField.getText());
                 if (qty < 1) qty = 1;
                 if (qty > maxQty) qty = maxQty;
-                int total = item.getSellingPrice() * qty;
-                earningsLabel.setText("Earnings: $" + total);
-            } catch (NumberFormatException ex) {
-                earningsLabel.setText("Earnings: $0");
-            }
+                earningsLabel.setText("Earnings: $" + (item.getSellingPrice() * qty));
+            } catch (NumberFormatException ex) { earningsLabel.setText("Earnings: $0"); }
         };
 
-        // Document listener for text field
         qtyField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { updateEarnings.run(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { updateEarnings.run(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { updateEarnings.run(); }
+            @Override public void insertUpdate(DocumentEvent e) { updateEarnings.run(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateEarnings.run(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateEarnings.run(); }
         });
 
-        // Focus listener to clamp values
         qtyField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -911,16 +822,13 @@ public class ShopPanel extends JPanel {
                     if (val < 1) val = 1;
                     if (val > maxQty) val = maxQty;
                     qtyField.setText(String.valueOf(val));
-                } catch (NumberFormatException ex) {
-                    qtyField.setText("1");
-                }
+                } catch (NumberFormatException ex) { qtyField.setText("1"); }
                 updateEarnings.run();
             }
         });
 
         updateEarnings.run();
 
-        // Sell button
         GoldButton sellBtn = new GoldButton("Sell");
         sellBtn.setBounds(80, 155, 100, 35);
         sellBtn.addActionListener(e -> {
@@ -931,14 +839,10 @@ public class ShopPanel extends JPanel {
                 if (qty > maxQty) qty = maxQty;
                 dialog.dispose();
                 executeSell(item, qty);
-            } catch (NumberFormatException ex) {
-                dialog.dispose();
-                executeSell(item, 1);
-            }
+            } catch (NumberFormatException ex) { dialog.dispose(); executeSell(item, 1); }
         });
         contentPane.add(sellBtn);
 
-        // Cancel button
         GoldButton cancelBtn = new GoldButton("Cancel");
         cancelBtn.setBounds(220, 155, 100, 35);
         cancelBtn.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
@@ -947,9 +851,6 @@ public class ShopPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    /**
-     * Shows quantity selection dialog for buying items.
-     */
     private void showBuyQuantityDialog(Item item) {
         JDialog dialog = new JDialog(parentFrame, "Buy Quantity", true);
         dialog.setUndecorated(true);
@@ -960,16 +861,13 @@ public class ShopPanel extends JPanel {
         int maxQty = Math.min(99, playerGold / price);
         if (maxQty < 1) maxQty = 1;
 
-        // Make dialog draggable
         final Point[] dragPoint = {null};
         JPanel titleBar = new JPanel();
         titleBar.setBackground(new Color(60, 40, 20));
         titleBar.setBounds(0, 0, 400, 25);
         titleBar.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
-                dragPoint[0] = e.getPoint();
-            }
+            public void mousePressed(MouseEvent e) { dragPoint[0] = e.getPoint(); }
         });
         titleBar.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -987,19 +885,13 @@ public class ShopPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
                         new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
-                        new Color[]{
-                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
-                                PARCH_WARM, PARCH_TAN, PARCH_TOP
-                        }));
+                        new Color[]{PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE, PARCH_WARM, PARCH_TAN, PARCH_TOP}));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-
                 g2.setColor(PARCH_BORDER);
                 g2.setStroke(new BasicStroke(3.0f));
                 g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
-
                 g2.dispose();
             }
         };
@@ -1008,7 +900,6 @@ public class ShopPanel extends JPanel {
         contentPane.add(titleBar);
         dialog.setContentPane(contentPane);
 
-        // Title
         JLabel titleLabel = new JLabel("Buy " + item.getName() + "?");
         titleLabel.setFont(FONT_DIALOG);
         titleLabel.setForeground(TEXT_DARK);
@@ -1016,11 +907,6 @@ public class ShopPanel extends JPanel {
         titleLabel.setBounds(20, 30, 360, 25);
         contentPane.add(titleLabel);
 
-        // ===== CENTERED CONTROL GROUP =====
-        // Total group width: 60 + 40 + 40 + 40 + 24 (gaps) = 204px
-        // Centered starting X: (400 - 204) / 2 = 98
-
-        // Quantity text field
         JTextField qtyField = new JTextField("1");
         qtyField.setFont(FONT_STAT);
         qtyField.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1030,67 +916,49 @@ public class ShopPanel extends JPanel {
         qtyField.setBorder(BorderFactory.createLineBorder(PARCH_BORDER, 1));
         contentPane.add(qtyField);
 
-        // Up button
         GoldButton upBtn = new GoldButton("▲");
         upBtn.setFont(new Font("Arial", Font.BOLD, 14));
         upBtn.setMargin(new Insets(0, 0, 0, 0));
-        upBtn.setBounds(166, 85, 40, 40);  // 98 + 60 + 8
+        upBtn.setBounds(166, 85, 40, 40);
         upBtn.setContentAreaFilled(false);
         int finalMaxQty = maxQty;
         upBtn.addActionListener(e -> {
             playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
-                if (val < finalMaxQty) {
-                    val++;
-                    qtyField.setText(String.valueOf(val));
-                }
-            } catch (NumberFormatException ex) {
-                qtyField.setText("1");
-            }
+                if (val < finalMaxQty) { val++; qtyField.setText(String.valueOf(val)); }
+            } catch (NumberFormatException ex) { qtyField.setText("1"); }
         });
         contentPane.add(upBtn);
 
-        // Down button
         GoldButton downBtn = new GoldButton("▼");
         downBtn.setFont(new Font("Arial", Font.BOLD, 14));
         downBtn.setMargin(new Insets(0, 0, 0, 0));
-        downBtn.setBounds(214, 85, 40, 40);  // 166 + 40 + 8
+        downBtn.setBounds(214, 85, 40, 40);
         downBtn.setContentAreaFilled(false);
         downBtn.addActionListener(e -> {
             playClickSFX();
             try {
                 int val = Integer.parseInt(qtyField.getText());
-                if (val > 1) {
-                    val--;
-                    qtyField.setText(String.valueOf(val));
-                }
-            } catch (NumberFormatException ex) {
-                qtyField.setText("1");
-            }
+                if (val > 1) { val--; qtyField.setText(String.valueOf(val)); }
+            } catch (NumberFormatException ex) { qtyField.setText("1"); }
         });
         contentPane.add(downBtn);
 
-        // MAX button
         GoldButton maxBtn = new GoldButton("MAX");
         maxBtn.setFont(new Font("Arial", Font.BOLD, 11));
         maxBtn.setMargin(new Insets(0, 0, 0, 0));
-        maxBtn.setBounds(262, 85, 40, 40);  // 214 + 40 + 8
+        maxBtn.setBounds(262, 85, 40, 40);
         maxBtn.setContentAreaFilled(false);
-        maxBtn.addActionListener(e -> {
-            playClickSFX();
-            qtyField.setText(String.valueOf(finalMaxQty));
-        });
+        maxBtn.addActionListener(e -> { playClickSFX(); qtyField.setText(String.valueOf(finalMaxQty)); });
         contentPane.add(maxBtn);
 
-        // Max quantity hint
         JLabel maxLabel = new JLabel("(Max: " + maxQty + ")");
         maxLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
         maxLabel.setForeground(new Color(100, 70, 40));
         maxLabel.setBounds(110, 130, 100, 15);
         contentPane.add(maxLabel);
 
-        // Total cost label
         JLabel totalLabel = new JLabel();
         totalLabel.setFont(FONT_STAT);
         totalLabel.setForeground(TEXT_GREEN);
@@ -1098,7 +966,6 @@ public class ShopPanel extends JPanel {
         totalLabel.setBounds(45, 125, 360, 20);
         contentPane.add(totalLabel);
 
-        // Update total label function
         Runnable updateTotal = () -> {
             try {
                 int qty = Integer.parseInt(qtyField.getText());
@@ -1106,30 +973,19 @@ public class ShopPanel extends JPanel {
                 if (qty > finalMaxQty) qty = finalMaxQty;
                 int total = price * qty;
                 totalLabel.setText("Total: $" + total);
-
-                // Update color based on affordability
-                if (total > playerGold) {
-                    totalLabel.setForeground(STAT_HP);
-                } else {
-                    totalLabel.setForeground(TEXT_GREEN);
-                }
+                totalLabel.setForeground(total > playerGold ? STAT_HP : TEXT_GREEN);
             } catch (NumberFormatException ex) {
                 totalLabel.setText("Total: $0");
                 totalLabel.setForeground(STAT_HP);
             }
         };
 
-        // Document listener for text field
         qtyField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { updateTotal.run(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { updateTotal.run(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { updateTotal.run(); }
+            @Override public void insertUpdate(DocumentEvent e) { updateTotal.run(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateTotal.run(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateTotal.run(); }
         });
 
-        // Focus listener to clamp values
         qtyField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -1138,16 +994,13 @@ public class ShopPanel extends JPanel {
                     if (val < 1) val = 1;
                     if (val > finalMaxQty) val = finalMaxQty;
                     qtyField.setText(String.valueOf(val));
-                } catch (NumberFormatException ex) {
-                    qtyField.setText("1");
-                }
+                } catch (NumberFormatException ex) { qtyField.setText("1"); }
                 updateTotal.run();
             }
         });
 
         updateTotal.run();
 
-        // Buy button
         GoldButton buyBtn = new GoldButton("Buy");
         buyBtn.setBounds(80, 155, 100, 35);
         buyBtn.addActionListener(e -> {
@@ -1156,64 +1009,40 @@ public class ShopPanel extends JPanel {
                 int qty = Integer.parseInt(qtyField.getText());
                 if (qty < 1) qty = 1;
                 if (qty > finalMaxQty) qty = finalMaxQty;
-
                 int totalCost = price * qty;
-                if (totalCost <= playerGold) {
-                    dialog.dispose();
-                    executeBuy(item, qty);
-                }
-            } catch (NumberFormatException ex) {
-                dialog.dispose();
-                executeBuy(item, 1);
-            }
+                if (totalCost <= playerGold) { dialog.dispose(); executeBuy(item, qty); }
+            } catch (NumberFormatException ex) { dialog.dispose(); executeBuy(item, 1); }
         });
         contentPane.add(buyBtn);
 
-        // Cancel button
         GoldButton cancelBtn = new GoldButton("Cancel");
         cancelBtn.setBounds(220, 155, 100, 35);
         cancelBtn.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
         contentPane.add(cancelBtn);
 
-        // ESC key to close
         dialog.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    dialog.dispose();
-                }
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) dialog.dispose();
             }
         });
 
         dialog.setVisible(true);
     }
 
-    /**
-     * Executes the buy transaction with specified quantity.
-     */
     private void executeBuy(Item item, int qty) {
         int price = item.getPrice();
         int totalCost = price * qty;
 
         if (playerGold >= totalCost) {
-            // Deduct gold
             playerGold -= totalCost;
-
-            // Add to player inventory
             player.getInventory().addItem(item, qty);
-
-            // Sync with player's money method if available
             try {
                 java.lang.reflect.Method setMoney = player.getClass().getMethod("setMoney", int.class);
                 setMoney.invoke(player, playerGold);
-            } catch (Exception ex) {
-                // Method doesn't exist, just use local tracking
-            }
-
-            // Refresh UI (shop items remain - infinite stock)
+            } catch (Exception ex) { /* ignore */ }
             refreshPlayerShopGrid();
             updateCurrencyDisplay();
-
             messageLabel.setText("Bought " + qty + "x " + item.getName() + " for $" + totalCost + "!");
         } else {
             showParchmentDialog("Not Enough Gold",
@@ -1222,9 +1051,6 @@ public class ShopPanel extends JPanel {
         }
     }
 
-    /**
-     * Refreshes the shop inventory grid with current items.
-     */
     public void refreshShopGrid() {
         if (shopGrid == null) return;
 
@@ -1246,35 +1072,26 @@ public class ShopPanel extends JPanel {
                 if (quantity > 0) {
                     ItemSlot slot = new ItemSlot();
                     slot.setItem(item, quantity);
-                    slot.setShopItem(true);  // Flag as shop item
+                    slot.setShopItem(true);
 
                     slot.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             slot.setHovered(true);
                             String displayText = item.getName() + " - $" + item.getPrice() + " | " + item.getDescription();
-                            if (quantity > 1) {
-                                displayText += " (x" + quantity + ")";
-                            }
+                            if (quantity > 1) displayText += " (x" + quantity + ")";
                             messageLabel.setText(displayText);
                         }
-
                         @Override
                         public void mouseExited(MouseEvent e) {
                             slot.setHovered(false);
                             messageLabel.setText("Welcome to the shop! Click on items to buy or sell.");
                         }
-
                         @Override
                         public void mouseClicked(MouseEvent e) {
                             playClickSFX();
                             int availableQty = shopkeeper.getShop().getQuantity(item);
-                            if (availableQty <= 0) {
-                                refreshShopGrid();
-                                return;
-                            }
-
-                            // Call quantity dialog instead of simple confirm
+                            if (availableQty <= 0) { refreshShopGrid(); return; }
                             showBuyQuantityDialog(item);
                         }
                     });
@@ -1287,7 +1104,6 @@ public class ShopPanel extends JPanel {
 
         shopGrid.invalidate();
         shopScrollPane.getViewport().invalidate();
-
         SwingUtilities.invokeLater(() -> {
             shopGrid.revalidate();
             shopGrid.repaint();
@@ -1299,29 +1115,15 @@ public class ShopPanel extends JPanel {
         });
     }
 
-    /**
-     * Executes the sell transaction.
-     */
     private void executeSell(Item item, int qty) {
         int totalEarnings = item.getSellingPrice() * qty;
-
-        // Add gold to player (try multiple possible method names)
         player.addMoney(totalEarnings);
-
-        // Remove items from inventory
         player.getInventory().removeItem(item, qty);
-
-        // Refresh UI
         refreshPlayerShopGrid();
         updateCurrencyDisplay();
-
-        // Show success message
         messageLabel.setText("Sold " + qty + "x " + item.getName() + " for $" + totalEarnings + "!");
     }
 
-    /**
-     * Shows a parchment-styled dialog.
-     */
     private void showParchmentDialog(String title, String message, String option1, String option2, Runnable onConfirm) {
         JDialog dialog = new JDialog(parentFrame, title, true);
         dialog.setUndecorated(true);
@@ -1334,19 +1136,13 @@ public class ShopPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
                         new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
-                        new Color[]{
-                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
-                                PARCH_WARM, PARCH_TAN, PARCH_TOP
-                        }));
+                        new Color[]{PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE, PARCH_WARM, PARCH_TAN, PARCH_TOP}));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-
                 g2.setColor(TEXT_GOLD);
                 g2.setStroke(new BasicStroke(3.0f));
                 g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
-
                 g2.dispose();
             }
         };
@@ -1363,11 +1159,7 @@ public class ShopPanel extends JPanel {
 
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
-        btn1.addActionListener(e -> {
-            playClickSFX();
-            dialog.dispose();
-            if (onConfirm != null) onConfirm.run();
-        });
+        btn1.addActionListener(e -> { playClickSFX(); dialog.dispose(); if (onConfirm != null) onConfirm.run(); });
         contentPane.add(btn1);
 
         if (option2 != null) {
@@ -1380,9 +1172,6 @@ public class ShopPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    /**
-     * Refreshes the player inventory grid with current items.
-     */
     public void refreshPlayerShopGrid() {
         if (playerGrid == null) return;
 
@@ -1396,7 +1185,6 @@ public class ShopPanel extends JPanel {
             emptyLabel.setFont(FONT_NAME);
             emptyLabel.setForeground(TEXT_GOLD);
             emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            // Set preferred size to match grid width
             emptyLabel.setPreferredSize(new Dimension(390, 50));
             playerGrid.add(emptyLabel);
         } else {
@@ -1406,15 +1194,12 @@ public class ShopPanel extends JPanel {
                     ItemSlot slot = new ItemSlot();
                     slot.setItem(item, quantity);
 
-                    // Hover and click listeners (unchanged)
                     slot.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             slot.setHovered(true);
                             String displayText = item.getName() + " - $" + item.getSellingPrice();
-                            if (quantity > 1) {
-                                displayText += " (x" + quantity + ")";
-                            }
+                            if (quantity > 1) displayText += " (x" + quantity + ")";
                             messageLabel.setText(displayText + " (Click to sell)");
                         }
                         @Override
@@ -1422,21 +1207,13 @@ public class ShopPanel extends JPanel {
                             slot.setHovered(false);
                             messageLabel.setText("Welcome to the shop! Click on items to buy or sell.");
                         }
-
                         @Override
                         public void mouseClicked(MouseEvent e) {
                             playClickSFX();
                             int availableQty = player.getInventory().getQuantity(item);
-                            if (availableQty <= 0) {
-                                refreshPlayerShopGrid();
-                                return;
-                            }
-
-                            if (availableQty == 1) {
-                                showSellConfirm(item, 1);
-                            } else {
-                                showSellConfirm(item, availableQty);
-                            }
+                            if (availableQty <= 0) { refreshPlayerShopGrid(); return; }
+                            if (availableQty == 1) showSellConfirm(item, 1);
+                            else showSellConfirm(item, availableQty);
                         }
                     });
 
@@ -1446,10 +1223,8 @@ public class ShopPanel extends JPanel {
             }
         }
 
-        // Force layout recalculation
         playerGrid.invalidate();
         playerScrollPane.getViewport().invalidate();
-
         SwingUtilities.invokeLater(() -> {
             playerGrid.revalidate();
             playerGrid.repaint();
@@ -1465,17 +1240,19 @@ public class ShopPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-        if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, null);
+        if (backgroundGif != null) {
+            // Draws current GIF frame; ImageObserver set in loadBackground()
+            // fires repaint() automatically on every new frame
+            g2.drawImage(backgroundGif.getImage(), 0, 0, WIDTH, HEIGHT, this);
         } else {
             g2.setColor(BG_COLOR);
             g2.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
         paintTitle(g2);
-
         g2.dispose();
     }
 
@@ -1485,7 +1262,7 @@ public class ShopPanel extends JPanel {
         private int quantity;
         private BufferedImage icon;
         private boolean hovered = false;
-        private boolean isShopItem = false;  // Flag for shop vs player inventory
+        private boolean isShopItem = false;
 
         public ItemSlot() {
             setPreferredSize(new Dimension(70, 70));
@@ -1502,10 +1279,7 @@ public class ShopPanel extends JPanel {
             repaint();
         }
 
-        public void setShopItem(boolean isShopItem) {
-            this.isShopItem = isShopItem;
-        }
-
+        public void setShopItem(boolean isShopItem) { this.isShopItem = isShopItem; }
         public Item getItem() { return item; }
         public int getQuantity() { return quantity; }
         public void setHovered(boolean hovered) { this.hovered = hovered; repaint(); }
@@ -1516,7 +1290,6 @@ public class ShopPanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-            // Background
             g2.setColor(new Color(60, 40, 20, 180));
             g2.fillRect(0, 0, getWidth(), getHeight());
 
@@ -1524,14 +1297,8 @@ public class ShopPanel extends JPanel {
                 g2.drawImage(icon, 11, 11, 48, 48, null);
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("Monospaced", Font.BOLD, 12));
-
-                if (isShopItem) {
-                    // Show price for shop items
-                    g2.drawString("$" + item.getPrice(), 35, 60);
-                } else {
-                    // Show quantity for player items
-                    g2.drawString("x" + quantity, 45, 60);
-                }
+                if (isShopItem) g2.drawString("$" + item.getPrice(), 35, 60);
+                else g2.drawString("x" + quantity, 45, 60);
 
                 if (hovered) {
                     g2.setColor(HOVER_GOLD);
@@ -1546,16 +1313,13 @@ public class ShopPanel extends JPanel {
                 g2.drawString("?", 33, 42);
             }
 
-            // Border
             g2.setColor(new Color(80, 50, 20));
             g2.setStroke(new BasicStroke(2.0f));
             g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-
             g2.dispose();
         }
     }
 
-    // Inner class for GoldButton
     private static class GoldButton extends JButton {
         private boolean hovered = false;
         private boolean pressed = false;
@@ -1570,33 +1334,10 @@ public class ShopPanel extends JPanel {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if (isEnabled()) {
-                        hovered = true;
-                        repaint();
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    hovered = false;
-                    repaint();
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (isEnabled()) {
-                        pressed = true;
-                        repaint();
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    pressed = false;
-                    repaint();
-                }
+                @Override public void mouseEntered(MouseEvent e) { if (isEnabled()) { hovered = true; repaint(); } }
+                @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                @Override public void mousePressed(MouseEvent e) { if (isEnabled()) { pressed = true; repaint(); } }
+                @Override public void mouseReleased(MouseEvent e) { pressed = false; repaint(); }
             });
         }
 

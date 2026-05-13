@@ -131,8 +131,8 @@ public class InventoryPanel extends JPanel {
     private ArrayList<ItemSlot> itemSlots = new ArrayList<>();
     private JLabel messageLabel;
 
-    // ── Background Image ──────────────────────────────────────────
-    private BufferedImage backgroundImage;
+    // ── Background GIF ────────────────────────────────────────────
+    private ImageIcon backgroundGif;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructor
@@ -454,9 +454,15 @@ public class InventoryPanel extends JPanel {
     // ── Setup Methods ─────────────────────────────────────────────
     private void loadBackground() {
         try {
-            backgroundImage = ImageIO.read(getClass().getResourceAsStream("/ui/inventory_bg.png"));
+            java.net.URL gifUrl = getClass().getResource("/backgrounds/inventory_bg.gif");
+            if (gifUrl != null) {
+                backgroundGif = new ImageIcon(gifUrl);
+                // Hooks the GIF animator into this panel so every
+                // new frame automatically triggers a repaint
+                backgroundGif.setImageObserver(this);
+            }
         } catch (Exception e) {
-            backgroundImage = null;
+            backgroundGif = null;
         }
     }
 
@@ -628,7 +634,6 @@ public class InventoryPanel extends JPanel {
     }
 
     private void setupCharacterPanel() {
-        // Left side: Player image
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
             Image scaled = playerIdleFrames[0].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
@@ -639,7 +644,6 @@ public class InventoryPanel extends JPanel {
         playerImageLabel.setVerticalAlignment(SwingConstants.CENTER);
         characterPanel.add(playerImageLabel);
 
-        // Right side: Equipped weapon display
         equippedWeaponPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -668,13 +672,11 @@ public class InventoryPanel extends JPanel {
         });
         characterPanel.add(equippedWeaponPanel);
 
-        // Weapon icon
         weaponIconLabel = new JLabel();
         weaponIconLabel.setBounds(36, 20, 48, 48);
         weaponIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         equippedWeaponPanel.add(weaponIconLabel);
 
-        // Weapon name label
         weaponNameLabel = new JLabel("No weapon equipped");
         weaponNameLabel.setFont(new Font("Serif", Font.BOLD, 11));
         weaponNameLabel.setForeground(TEXT_GOLD);
@@ -682,7 +684,6 @@ public class InventoryPanel extends JPanel {
         weaponNameLabel.setBounds(10, 80, 100, 40);
         equippedWeaponPanel.add(weaponNameLabel);
 
-        // Unequip hint
         JLabel unequipHint = new JLabel("(click to unequip)");
         unequipHint.setFont(new Font("Serif", Font.ITALIC, 9));
         unequipHint.setForeground(new Color(200, 200, 150));
@@ -690,7 +691,6 @@ public class InventoryPanel extends JPanel {
         unequipHint.setBounds(10, 120, 100, 20);
         equippedWeaponPanel.add(unequipHint);
 
-        // ADD THIS: Level label
         int level = player.getLevel();
         if (level < 1) level = 1;
         characterLevelLabel = new JLabel("Lv. " + level, SwingConstants.CENTER);
@@ -700,7 +700,6 @@ public class InventoryPanel extends JPanel {
         characterLevelLabel.setOpaque(false);
         characterPanel.add(characterLevelLabel);
 
-        // Stats Box Panel (semi-transparent dark with gold border)
         JPanel statsBox = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -941,10 +940,13 @@ public class InventoryPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-        if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, null);
+        if (backgroundGif != null) {
+            // Draws current GIF frame; ImageObserver set in loadBackground()
+            // fires repaint() automatically on every new frame
+            g2.drawImage(backgroundGif.getImage(), 0, 0, WIDTH, HEIGHT, this);
         } else {
             g2.setColor(BG_COLOR);
             g2.fillRect(0, 0, WIDTH, HEIGHT);

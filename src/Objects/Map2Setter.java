@@ -4295,6 +4295,24 @@ public class Map2Setter {
         gp.obj[1044].worldX = 49 * gp.tileSize; // Col 13
         gp.obj[1044].worldY = 49 * gp.tileSize; // Row 36
 
+        gp.obj[1045] = new OBJ_Grey();
+        gp.obj[1045].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1045].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[1046] = new OBJ_Grey();
+        gp.obj[1046].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1046].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[1047] = new OBJ_Grey();
+        gp.obj[1047].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1047].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[1048] = new OBJ_Grey();
+        gp.obj[1048].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1048].worldY = 4 * gp.tileSize; // Row 36
+
+
+
 
 
 

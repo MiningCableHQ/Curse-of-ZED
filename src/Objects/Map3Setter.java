@@ -4290,6 +4290,22 @@ public class Map3Setter {
         gp.obj[1045].worldX = 48 * gp.tileSize; // Col 45
         gp.obj[1045].worldY = 21 * gp.tileSize; // Row 24
 
+        gp.obj[1046] = new OBJ_Grey();
+        gp.obj[1046].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1046].worldY = 1 * gp.tileSize; // Row 36
+
+        gp.obj[1047] = new OBJ_Grey();
+        gp.obj[1047].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1047].worldY = 2 * gp.tileSize; // Row 36
+
+        gp.obj[1048] = new OBJ_Grey();
+        gp.obj[1048].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1048].worldY = 3 * gp.tileSize; // Row 36
+
+        gp.obj[1049] = new OBJ_Grey();
+        gp.obj[1049].worldX = 0 * gp.tileSize; // Col 13
+        gp.obj[1049].worldY = 4 * gp.tileSize; // Row 36
+
 
 
 
