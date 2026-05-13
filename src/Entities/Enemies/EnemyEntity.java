@@ -3,6 +3,7 @@ import Entities.Entity;
 import Entities.Characters.NPC;
 import Dialogue.DialogueTree;
 import Main.GamePanel;
+import Objects.SuperObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -126,11 +127,7 @@ public abstract class EnemyEntity extends NPC {
         double dist = getDistanceToPlayer();
 
         if (dist < battleRange) {
-            if (state != EnemyState.BATTLE_TRIGGERED && !battleTriggered) {
-                state          = EnemyState.BATTLE_TRIGGERED;
-                battleTriggered = true;
-                if (onBattleTrigger != null) onBattleTrigger.run();
-            }
+            if (!battleTriggered && onBattleTrigger != null) onBattleTrigger.run();
             return;
         }
 
@@ -141,17 +138,41 @@ public abstract class EnemyEntity extends NPC {
         int dx = px - ex;
         int dy = py - ey;
 
-        roamDir = (Math.abs(dx) > Math.abs(dy))
+        String primaryDir = (Math.abs(dx) > Math.abs(dy))
                 ? (dx > 0 ? "right" : "left")
                 : (dy > 0 ? "down"  : "up");
 
-        moveInDirection(roamDir, chaseSpeed);
+        if (!tryMove(primaryDir, chaseSpeed)) {
+            String altDir1, altDir2;
+            if (primaryDir.equals("left") || primaryDir.equals("right")) {
+                altDir1 = dy >= 0 ? "down" : "up";
+                altDir2 = dy >= 0 ? "up"   : "down";
+            } else {
+                altDir1 = dx >= 0 ? "right" : "left";
+                altDir2 = dx >= 0 ? "left"  : "right";
+            }
+            if (!tryMove(altDir1, chaseSpeed)) {
+                tryMove(altDir2, chaseSpeed);
+            }
+        }
     }
 
-    // ── Move with tile collision ──────────────────────────────────
-    private void moveInDirection(String dir, int speed) {
-        int oldX = worldX;
-        int oldY = worldY;
+    public void markBattleStarted() {
+        state           = EnemyState.BATTLE_TRIGGERED;
+        battleTriggered = true;
+    }
+
+    // ── Move with tile and object collision ───────────────────────
+    private boolean tryMove(String dir, int speed) {
+        this.direction   = dir;
+        this.entitySpeed = speed;
+        this.collisionOn = false;
+        gp.cChecker.checkTile(this);
+        if (!this.collisionOn) checkObjectCollision(dir, speed);
+
+        if (this.collisionOn) {
+            return false;
+        }
 
         switch (dir) {
             case "up":    worldY -= speed; break;
@@ -164,15 +185,37 @@ public abstract class EnemyEntity extends NPC {
                 Math.min(gp.worldWidth  - gp.tileSize * 2, worldX));
         worldY = Math.max(gp.tileSize,
                 Math.min(gp.worldHeight - gp.tileSize * 2, worldY));
+        roamDir = dir;
+        return true;
+    }
 
-        this.direction   = dir;
-        this.entitySpeed = speed;
-        this.collisionOn = false;
-        gp.cChecker.checkTile(this);
+    private void checkObjectCollision(String dir, int speed) {
+        int nextX = worldX + solidAreaDefaultX;
+        int nextY = worldY + solidAreaDefaultY;
+        switch (dir) {
+            case "up":    nextY -= speed; break;
+            case "down":  nextY += speed; break;
+            case "left":  nextX -= speed; break;
+            case "right": nextX += speed; break;
+        }
+        Rectangle nextArea = new Rectangle(nextX, nextY, solidArea.width, solidArea.height);
+        for (int i = 0; i < gp.obj.length; i++) {
+            SuperObject obj = gp.obj[i];
+            if (obj == null || obj == this || !obj.collision) continue;
+            if (obj instanceof EnemyEntity) continue;
+            Rectangle objArea = new Rectangle(
+                    obj.worldX + obj.solidAreaDefaultX,
+                    obj.worldY + obj.solidAreaDefaultY,
+                    obj.solidArea.width, obj.solidArea.height);
+            if (nextArea.intersects(objArea)) {
+                this.collisionOn = true;
+                return;
+            }
+        }
+    }
 
-        if (this.collisionOn) {
-            worldX    = oldX;
-            worldY    = oldY;
+    private void moveInDirection(String dir, int speed) {
+        if (!tryMove(dir, speed)) {
             roamTimer = roamDuration;
         }
     }
@@ -188,7 +231,7 @@ public abstract class EnemyEntity extends NPC {
     }
 
     private void updateMapImage() {
-        BufferedImage[] frames = roamDir.equals("left") ? walkLeft : walkRight;
+        BufferedImage[] frames = direction.equals("left") ? walkLeft : walkRight;
         if (walkFrame < frames.length && frames[walkFrame] != null) {
             image = frames[walkFrame];
         }

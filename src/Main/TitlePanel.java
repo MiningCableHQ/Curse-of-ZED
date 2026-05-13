@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import Audio.SFX.SFXPlayer;
 import Audio.SFX.ClickSFX;
+import Audio.Music.MainMenuMusic;
 
 // ═════════════════════════════════════════════════════════════
 //  Main Panel
@@ -51,6 +52,7 @@ import Audio.SFX.ClickSFX;
     private boolean hover = false, press = false;
     private final Rectangle btnRect = new Rectangle();
     private final SFXPlayer sfxPlayer = new SFXPlayer();
+    private final MainMenuMusic mainMenuMusic = new MainMenuMusic();
 
     // ── Constructor ──────────────────────────────────────────
     public TitlePanel() {
@@ -58,15 +60,19 @@ import Audio.SFX.ClickSFX;
         setOpaque(true);
         loadAssets();
         sfxPlayer.preloadSFX(new ClickSFX());
+        mainMenuMusic.preload();
+        mainMenuMusic.play(true);
 
         addMouseListener(new MouseAdapter() {
             @Override public void mousePressed(MouseEvent e) {
                 if (btnRect.contains(e.getPoint())) {
                     press = true;
                     sfxPlayer.playSFX(new ClickSFX());
-                    if (onStartCallback != null) {
-                        onStartCallback.run();
-                    }
+                    mainMenuMusic.stop();
+                    new Timer(80, ev -> {
+                        ((Timer) ev.getSource()).stop();
+                        if (onStartCallback != null) onStartCallback.run();
+                    }).start();
                 }
             }
             @Override public void mouseReleased(MouseEvent e) {

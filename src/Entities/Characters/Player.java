@@ -63,7 +63,7 @@ public abstract class Player extends Entity {
         setDefaultValues();
         getPlayerImage();
 
-        money = 0; // Initialize money
+        money = 800; // Initialize money
 
         level = 1;
         experience = 0;
@@ -234,10 +234,6 @@ public abstract class Player extends Entity {
         inventory.addItem(new LesserHardening(), 3);
         inventory.addItem(new LesserPower(), 3);
         //inventory.addItem(new LesserSoftening(), 2);
-
-        inventory.addItem(new AnkhStaff(5));
-        inventory.addItem(new Swiftwind());
-        inventory.addItem(new Unyielding(5));
 
         //I delete lang if tiwason ang duwa
 //        inventory.addItem(new Arcanum());

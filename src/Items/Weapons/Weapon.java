@@ -7,7 +7,6 @@ import Moves.Move;
 public abstract class Weapon extends Item {
     protected String imagePath;
     protected double attack;
-    protected int price;
     protected double tier; // 1.0, 2.0, 3.0, 4.0, 5.0
     protected String lastMessage = "";
 

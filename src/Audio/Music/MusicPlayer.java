@@ -9,6 +9,8 @@ public class MusicPlayer {
     private ShopMusic shopMusic;
     private CombatMusic combatMusic;
     private BossMusic bossMusic;
+    private RainMusic rainMusic;
+    private CutsceneMusic cutsceneMusic;
 
     private Audio currentPlayingMusic = null;
 
@@ -20,6 +22,8 @@ public class MusicPlayer {
         shopMusic = new ShopMusic();
         combatMusic = new CombatMusic();
         bossMusic = new BossMusic();
+        rainMusic = new RainMusic();
+        cutsceneMusic = new CutsceneMusic();
 
         this.gp = gp;
     }
@@ -30,6 +34,8 @@ public class MusicPlayer {
         map2Music.preload();
         combatMusic.preload();
         bossMusic.preload();
+        rainMusic.preload();
+        cutsceneMusic.preload();
     }
 
     public void playMapMusic() {
@@ -70,7 +76,6 @@ public class MusicPlayer {
     }
 
     public void resumeMapMusic() {
-        resetMapMusic();
         playMapMusic();
     }
 
@@ -80,6 +85,29 @@ public class MusicPlayer {
         shopMusic.setVolume(volume);
         combatMusic.setVolume(volume);
         bossMusic.setVolume(volume);
+        rainMusic.setVolume(volume);
+        cutsceneMusic.setVolume(volume);
+    }
+
+    public void playRainMusic() {
+        if (!rainMusic.isClipReady()) rainMusic.resetForReload();
+        rainMusic.play(true);
+    }
+
+    public void stopRainMusic() {
+        if (rainMusic.isPlaying()) rainMusic.stop();
+    }
+
+    public void playCutsceneMusic() {
+        if (currentPlayingMusic != null) currentPlayingMusic.stop();
+        if (!cutsceneMusic.isClipReady()) cutsceneMusic.resetForReload();
+        currentPlayingMusic = cutsceneMusic;
+        cutsceneMusic.play(true);
+    }
+
+    public void stopCutsceneMusic() {
+        if (cutsceneMusic.isPlaying()) cutsceneMusic.stop();
+        currentPlayingMusic = null;
     }
 
     public Map1Music getMap1Music() { return map1Music; }

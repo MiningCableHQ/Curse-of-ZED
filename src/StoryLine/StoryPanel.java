@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import Audio.SFX.SFXPlayer;
 import Audio.SFX.ClickSFX;
+import Audio.Music.CutsceneMusic;
 
 public class StoryPanel extends JPanel {
     // ── Palette ───────────────────────────────────────────────────
@@ -29,6 +30,7 @@ public class StoryPanel extends JPanel {
     private GoldButton nextBtn, backBtn, skipBtn;
     private Runnable onFinish;
     private final SFXPlayer sfxPlayer = new SFXPlayer();
+    private final CutsceneMusic cutsceneMusic = new CutsceneMusic();
     private Image[] images;
     private float panX = 0;
     private float panSpeed = 0.5f; // Adjust this for faster/slower panning
@@ -58,7 +60,8 @@ public class StoryPanel extends JPanel {
         setupButtons();
         startTypewriter();
         fadeIn();
-
+        cutsceneMusic.preload();
+        cutsceneMusic.play(true);
     }
 
     private void setupButtons() {
@@ -88,7 +91,7 @@ public class StoryPanel extends JPanel {
         displayedText = ""; charIndex = 0;
         nextBtn.setVisible(false); backBtn.setVisible(false);
         if (typewriterTimer != null) typewriterTimer.stop();
-        typewriterTimer = new Timer(25, e -> {
+        typewriterTimer = new Timer(38, e -> {
             if (charIndex < pages[currentPage].length()) {
                 displayedText += pages[currentPage].charAt(charIndex++);
                 repaint();
@@ -135,7 +138,11 @@ public class StoryPanel extends JPanel {
     private void fadeToFinish() {
         fadeTimer = new Timer(20, e -> {
             alpha += 0.05f;
-            if (alpha >= 1.0f) { ((Timer)e.getSource()).stop(); onFinish.run(); }
+            if (alpha >= 1.0f) {
+                ((Timer)e.getSource()).stop();
+                cutsceneMusic.stop();
+                onFinish.run();
+            }
             repaint();
         });
         fadeTimer.start();
@@ -158,6 +165,9 @@ public class StoryPanel extends JPanel {
 
         nextBtn.setVisible(false);
         backBtn.setVisible(false);
+
+        cutsceneMusic.stop();
+        cutsceneMusic.play(true);
 
         startPanning();    // Trigger pan for the first page reset
         startTypewriter();

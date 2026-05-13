@@ -4308,10 +4308,13 @@ public class Map3Setter {
         if (!gsm.map3EnemyDefeated) {
             Entities.Enemies.MapEnemy_Reyven reyven =
                     new Entities.Enemies.MapEnemy_Reyven(gp);
-            reyven.worldX = 20 * gp.tileSize;
-            reyven.worldY = 15 * gp.tileSize;
+            reyven.worldX = 17 * gp.tileSize;
+            reyven.worldY = 16 * gp.tileSize;
             reyven.setOnBattleTrigger(() -> {
+                if (gp.inCombat) return;
+                if (gp.postBattleCooldown) return;
                 if (gp.battleTransition.isRunning()) return;
+                reyven.markBattleStarted();
                 gp.battleTransition.start(() -> launchMap3EnemyBattle(reyven));
             });
             gp.obj[20] = reyven;
@@ -4324,7 +4327,10 @@ public class Map3Setter {
             zed.worldX = 27 * gp.tileSize;
             zed.worldY = 40 * gp.tileSize;
             zed.setOnBattleTrigger(() -> {
+                if (gp.inCombat) return;
+                if (gp.postBattleCooldown) return;
                 if (gp.battleTransition.isRunning()) return;
+                zed.markBattleStarted();
                 gp.battleTransition.start(() -> launchMap3BossBattle(zed));
             });
             gp.obj[30] = zed;
@@ -4391,6 +4397,8 @@ public class Map3Setter {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 gp.battleTransition = new Main.BattleTransition();
             });
 
@@ -4431,7 +4439,10 @@ public class Map3Setter {
                     zed.worldX = 27 * gp.tileSize;
                     zed.worldY = 40 * gp.tileSize;
                     zed.setOnBattleTrigger(() -> {
+                        if (gp.inCombat) return;
+                        if (gp.postBattleCooldown) return;
                         if (gp.battleTransition.isRunning()) return;
+                        zed.markBattleStarted();
                         gp.battleTransition.start(() -> launchMap3BossBattle(zed));
                     });
                     gp.obj[30] = zed;
@@ -4444,6 +4455,7 @@ public class Map3Setter {
             }
         });
 
+        gp.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
@@ -4471,6 +4483,8 @@ public class Map3Setter {
             gp.player.setSpeed(spdBeforeBattle);
 
             javax.swing.SwingUtilities.invokeLater(() -> {
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 frame.getContentPane().removeAll();
                 frame.revalidate();
                 frame.repaint();
@@ -4554,6 +4568,7 @@ public class Map3Setter {
             });
         });
 
+        gp.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();

@@ -18,7 +18,7 @@ public class Reyven extends Enemy{
         maxDefense = defense;
         speed = 40;
         dmgResistance = 0.30;
-        expYield = 150;
+        expYield = 450;
         goldYield = 200;
         loadMoves();
         loadSprite();

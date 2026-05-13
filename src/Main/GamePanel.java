@@ -14,6 +14,9 @@ import Tile.TileManager;
 import Objects.*;
 import Entities.Characters.NPC;
 import Dialogue.*;
+import Items.Weapons.Ranger.Mistwood;
+import Items.Weapons.Mage.AnkhStaff;
+import Items.Weapons.Swordsman.RazorEdge;
 
 import static Main.GameStateManager.Map1Phase.COLLECT_ESSENCE;
 
@@ -89,6 +92,13 @@ public class GamePanel extends JPanel implements Runnable {
     // ── Map transition state ──────────────────────────────────────
     private volatile boolean mapTransitionInProgress = false;
 
+    // ── Combat state (freeze enemy AI during battles) ─────────────
+    public boolean inCombat = false;
+    private WeatherSystem.WeatherType lastWeather = WeatherSystem.WeatherType.CLEAR;
+    public volatile boolean paused = false;
+    public boolean postBattleCooldown = false;
+    private javax.swing.Timer postBattleTimer = null;
+
     // ── Entities ──────────────────────────────────────────────────
     public Player      player;
     public SuperObject obj[] = new SuperObject[100000];
@@ -163,14 +173,17 @@ public class GamePanel extends JPanel implements Runnable {
                 case "Ranger":
                     weaponPath = "/items/archer_weapon/mistwood.png";
                     weaponName = "Mistwood";
+                    player.setWeapon(new Mistwood());
                     break;
                 case "Mage":
                     weaponPath = "/items/mage_weapon/ankh_staff.png";
                     weaponName = "Ankh Staff";
+                    player.setWeapon(new AnkhStaff());
                     break;
                 default:
                     weaponPath = "/items/warrior_weapon/razoredge_sword.png";
                     weaponName = "Razoredge Sword";
+                    player.setWeapon(new RazorEdge());
                     break;
             }
 
@@ -230,6 +243,7 @@ public class GamePanel extends JPanel implements Runnable {
                     parentFrame.add(gpRef);
                     parentFrame.revalidate();
                     parentFrame.repaint();
+                    gpRef.paused = false;
                     gpRef.setVisible(true);
                     gpRef.requestFocusInWindow();
                 });
@@ -239,6 +253,7 @@ public class GamePanel extends JPanel implements Runnable {
             // Switch to shop music when shop opens
             musicPlayer.playShopMusic();
 
+            paused = true;
             this.setVisible(false);
             parentFrame.getContentPane().removeAll();
             parentFrame.add(shopPanel);
@@ -333,6 +348,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void startGameThread() {
         sfxPlayer.preloadSFX(new Audio.SFX.ClickSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.HitSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.GameOverSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.StatRaiseSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.StatLowSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.ThunderSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.VictorySFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.DefeatSFX());
         musicPlayer.preloadAllMusic();
         gameThread = new Thread(this);
         gameThread.start();
@@ -351,7 +373,7 @@ public class GamePanel extends JPanel implements Runnable {
             lastTime = currentTime;
 
             if (delta >= 1) {
-                if (!mapTransitionInProgress) {
+                if (!mapTransitionInProgress && !paused) {
                     update();
                 }
                 repaint();
@@ -369,7 +391,11 @@ public class GamePanel extends JPanel implements Runnable {
         for (int i = 0; i < obj.length; i++) {
             if (obj[i] == null) continue;
             if (obj[i] instanceof OBJ_Torch) ((OBJ_Torch) obj[i]).updateAnimation();
-            if (obj[i] instanceof NPC)        ((NPC)       obj[i]).updateAnimation();
+            if (obj[i] instanceof Entities.Enemies.EnemyEntity) {
+                if (!inCombat) ((NPC) obj[i]).updateAnimation();
+            } else if (obj[i] instanceof NPC) {
+                ((NPC) obj[i]).updateAnimation();
+            }
         }
 
         weaponPopup.update();
@@ -382,6 +408,16 @@ public class GamePanel extends JPanel implements Runnable {
         essenceParticle.update();
         emoteSystem.update();
         weatherSystem.update(screenWidth, screenHeight);
+        if (!inCombat) {
+            WeatherSystem.WeatherType currentWeather = weatherSystem.getCurrent();
+            if (currentWeather != lastWeather) {
+                boolean isWet = currentWeather == WeatherSystem.WeatherType.RAIN
+                             || currentWeather == WeatherSystem.WeatherType.STORM;
+                if (isWet) musicPlayer.playRainMusic();
+                else { musicPlayer.stopRainMusic(); musicPlayer.resumeMapMusic(); }
+                lastWeather = currentWeather;
+            }
+        }
         gossipSystem.update(obj);
         minimap.update();
 
@@ -560,6 +596,7 @@ public class GamePanel extends JPanel implements Runnable {
     // ═════════════════════════════════════════════════════════════
     private void openInventory() {
         if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        paused = true;
         inventoryOpen = true;
         currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
                 (item, target) -> System.out.println("Cannot use items outside of combat!"),
@@ -576,6 +613,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void closeInventory() {
         inventoryOpen = false;
         currentInventoryPanel = null;
+        paused = false;
         parentFrame.getContentPane().removeAll();
         parentFrame.add(this);
         parentFrame.revalidate(); parentFrame.repaint();
@@ -585,6 +623,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void openCharacter() {
         if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        paused = true;
         characterOpen = true;
         currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
                 () -> closeCharacter()
@@ -600,6 +639,7 @@ public class GamePanel extends JPanel implements Runnable {
     public void closeCharacter() {
         characterOpen = false;
         currentCharacterPanel = null;
+        paused = false;
         parentFrame.getContentPane().removeAll();
         parentFrame.add(this);
         parentFrame.revalidate(); parentFrame.repaint();
@@ -838,8 +878,8 @@ public class GamePanel extends JPanel implements Runnable {
         if (!GameStateManager.get().map1EnemiesDefeated_masklet) {
             Entities.Enemies.MapEnemy_Masklet masklet =
                     new Entities.Enemies.MapEnemy_Masklet(this);
-            masklet.worldX = 8 * tileSize;
-            masklet.worldY = 5 * tileSize;
+            masklet.worldX = 12 * tileSize;
+            masklet.worldY = 8 * tileSize;
             setupEnemyOnMap(masklet, true);
             obj[20] = masklet;
         }
@@ -855,7 +895,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void setupEnemyOnMap(Entities.Enemies.EnemyEntity enemy, boolean isMasklet) {
         enemy.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            enemy.markBattleStarted();
             battleTransition.start(() -> launchEnemyBattle(enemy, isMasklet));
         });
     }
@@ -914,6 +957,8 @@ public class GamePanel extends JPanel implements Runnable {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 battleTransition = new BattleTransition();
                 map2PlayerFrozen = false;
             });
@@ -974,11 +1019,23 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        this.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
         frame.repaint();
         bp.requestFocusInWindow();
+    }
+
+    public void startPostBattleCooldown() {
+        postBattleCooldown = true;
+        if (postBattleTimer != null) postBattleTimer.stop();
+        postBattleTimer = new javax.swing.Timer(2000, e -> {
+            postBattleCooldown = false;
+            postBattleTimer = null;
+        });
+        postBattleTimer.setRepeats(false);
+        postBattleTimer.start();
     }
 
     private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle, double spdBeforeBattle) {
@@ -998,10 +1055,13 @@ public class GamePanel extends JPanel implements Runnable {
     private void spawnMap1Boss() {
         Entities.Enemies.MapBoss_Thorncrusher boss =
                 new Entities.Enemies.MapBoss_Thorncrusher(this);
-        boss.worldX = 20 * tileSize;
-        boss.worldY = 40 * tileSize;
+        boss.worldX = 25 * tileSize;
+        boss.worldY = 39 * tileSize;
         boss.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            boss.markBattleStarted();
             battleTransition.start(() -> launchBossBattle(boss));
         });
         obj[30] = boss;
@@ -1035,6 +1095,8 @@ public class GamePanel extends JPanel implements Runnable {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 battleTransition = new BattleTransition();
                 map2PlayerFrozen = false;
             });
@@ -1088,6 +1150,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        this.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
@@ -1118,7 +1181,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void setupMap2Enemy(Entities.Enemies.EnemyEntity enemy, boolean isSanjveil) {
         enemy.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            enemy.markBattleStarted();
             battleTransition.start(() -> launchMap2EnemyBattle(enemy, isSanjveil));
         });
     }
@@ -1182,6 +1248,8 @@ public class GamePanel extends JPanel implements Runnable {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 battleTransition = new BattleTransition();
                 map2PlayerFrozen = false;
             });
@@ -1258,6 +1326,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        this.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
@@ -1270,7 +1339,10 @@ public class GamePanel extends JPanel implements Runnable {
         sanjveil.worldX = 25 * tileSize;
         sanjveil.worldY = 18 * tileSize;
         sanjveil.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            sanjveil.markBattleStarted();
             battleTransition.start(() -> launchMap2RevisitEnemyBattle(sanjveil, true));
         });
         obj[20] = sanjveil;
@@ -1280,7 +1352,10 @@ public class GamePanel extends JPanel implements Runnable {
         razormaw.worldX = 32 * tileSize;
         razormaw.worldY = 24 * tileSize;
         razormaw.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            razormaw.markBattleStarted();
             battleTransition.start(() -> launchMap2RevisitEnemyBattle(razormaw, false));
         });
         obj[21] = razormaw;
@@ -1345,6 +1420,8 @@ public class GamePanel extends JPanel implements Runnable {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 battleTransition = new BattleTransition();
                 map2PlayerFrozen = false;
             });
@@ -1395,6 +1472,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        this.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
@@ -1406,10 +1484,13 @@ public class GamePanel extends JPanel implements Runnable {
     // ═════════════════════════════════════════════════════════════
     public void spawnMap2Boss() {
         Entities.Enemies.MapBoss_Zed zed = new Entities.Enemies.MapBoss_Zed(this);
-        zed.worldX = 5 * tileSize;
+        zed.worldX = 8 * tileSize;
         zed.worldY = 37 * tileSize;
         zed.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
             if (battleTransition.isRunning()) return;
+            zed.markBattleStarted();
             battleTransition.start(() -> launchMap2BossBattle(zed));
         });
         obj[30] = zed;
@@ -1491,6 +1572,8 @@ public class GamePanel extends JPanel implements Runnable {
 
                                 screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
 
+                                gpRef.inCombat = false;
+                                gpRef.startPostBattleCooldown();
                                 StoryLine.PostDefeatCutscene postCutscene =
                                         new StoryLine.PostDefeatCutscene(() -> {
                                             returnToMap1SecondVisit(frame, gpRef);
@@ -1512,6 +1595,7 @@ public class GamePanel extends JPanel implements Runnable {
                         });
                     });
 
+                    this.inCombat = true;
                     frame.getContentPane().removeAll();
                     frame.add(bp);
                     frame.revalidate();
@@ -1556,6 +1640,8 @@ public class GamePanel extends JPanel implements Runnable {
                 frame.revalidate();
                 frame.repaint();
                 gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
                 gpRef.battleTransition = new BattleTransition();
                 gpRef.map2PlayerFrozen = false;
             });
@@ -1599,6 +1685,7 @@ public class GamePanel extends JPanel implements Runnable {
             }
         });
 
+        this.inCombat = true;
         frame.getContentPane().removeAll();
         frame.add(bp);
         frame.revalidate();
@@ -1753,7 +1840,53 @@ public class GamePanel extends JPanel implements Runnable {
 
         minimap.draw(g2, this, weatherSystem);
 
+        drawKeybindGuide(g2);
+
         g2.dispose();
+    }
+
+    private void drawKeybindGuide(Graphics2D g2) {
+        if (dialogueSystem.isActive() || volumeOpen || inventoryOpen || characterOpen) return;
+
+        String[] keys   = {"ESC", "C", "I"};
+        String[] labels = {"Volume", "Character", "Inventory"};
+
+        int btnW = 36, btnH = 20, gap = 6, labelGap = 4;
+        Font keyFont   = new Font("Monospaced", Font.BOLD, 10);
+        Font labelFont = new Font("Serif", Font.PLAIN, 11);
+
+        g2.setFont(labelFont);
+        FontMetrics labelFm = g2.getFontMetrics();
+
+        int totalH = keys.length * (btnH + gap) - gap;
+        int startX = 10;
+        int startY = screenHeight - totalH - 10;
+
+        for (int i = 0; i < keys.length; i++) {
+            int y = startY + i * (btnH + gap);
+
+            // Button box
+            g2.setColor(new Color(20, 10, 5, 160));
+            g2.fillRoundRect(startX, y, btnW, btnH, 6, 6);
+            g2.setColor(new Color(200, 160, 50, 200));
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            g2.drawRoundRect(startX, y, btnW, btnH, 6, 6);
+
+            // Key text
+            g2.setFont(keyFont);
+            FontMetrics keyFm = g2.getFontMetrics();
+            int keyX = startX + (btnW - keyFm.stringWidth(keys[i])) / 2;
+            int keyY = y + (btnH + keyFm.getAscent() - keyFm.getDescent()) / 2;
+            g2.setColor(new Color(255, 220, 80));
+            g2.drawString(keys[i], keyX, keyY);
+
+            // Label
+            g2.setFont(labelFont);
+            int labelX = startX + btnW + labelGap;
+            int labelY = y + (btnH + labelFm.getAscent() - labelFm.getDescent()) / 2;
+            g2.setColor(new Color(240, 230, 200, 210));
+            g2.drawString(labels[i], labelX, labelY);
+        }
     }
 
     private boolean isEasterEggUnlocked() {

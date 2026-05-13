@@ -3,6 +3,7 @@ package Items.Consumables.Debuff.Blinding;
 import Entities.Entity;
 import Entities.Enemies.Enemy;
 import Items.Consumables.Consumable;
+import Items.Item;
 
 public class GreaterBlinding extends Consumable {
     protected double accuracyDebuffMultiplier;
@@ -14,6 +15,9 @@ public class GreaterBlinding extends Consumable {
 
         loadImage("/items/debuff_potions/greater_blinding_potion.png");
     }
+
+    @Override
+    public Item.TargetType getTargetType() { return Item.TargetType.ENEMY; }
 
     @Override
     public <T> void useItem(T Entity) {

@@ -55,30 +55,64 @@ public class CurseOfZed extends JFrame {
         setUndecorated(false);
         setResizable(false);
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1024, 768));
 
-        TitlePanel p = new TitlePanel();
-        p.setOnStartCallback(() -> {
-            if (this.onStartCallback != null) {
-                this.onStartCallback.run();
-            }
-        });
-        add(p);
+        add(createLoadingPanel("Game Loading"));
         pack();
         setLocationRelativeTo(null);
+
+        new SwingWorker<TitlePanel, Void>() {
+            @Override
+            protected TitlePanel doInBackground() {
+                return new TitlePanel();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    TitlePanel p = get();
+                    p.setOnStartCallback(() -> {
+                        if (onStartCallback != null) onStartCallback.run();
+                    });
+                    getContentPane().removeAll();
+                    add(p);
+                    pack();
+                    setLocationRelativeTo(null);
+                    revalidate();
+                    repaint();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.execute();
     }
 
     public void showStoryIntro() {
-        // We save the storyPanel to the class variable we just created
-        this.storyPanel = new StoryPanel(() -> {
-            showCharacterSelection();
-        });
-
         getContentPane().removeAll();
-        add(storyPanel);
+        add(createLoadingPanel("Game Loading"));
         revalidate();
         repaint();
+
+        new SwingWorker<StoryPanel, Void>() {
+            @Override
+            protected StoryPanel doInBackground() {
+                return new StoryPanel(() -> showCharacterSelection());
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    StoryPanel sp = get();
+                    CurseOfZed.this.storyPanel = sp;
+                    getContentPane().removeAll();
+                    add(sp);
+                    revalidate();
+                    repaint();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.execute();
     }
 
     /**
@@ -131,7 +165,7 @@ public class CurseOfZed extends JFrame {
 
         // Show loading screen immediately so the UI doesn't appear frozen.
         getContentPane().removeAll();
-        add(createLoadingPanel());
+        add(createLoadingPanel("Loading..."));
         revalidate();
         repaint();
 
@@ -163,10 +197,13 @@ public class CurseOfZed extends JFrame {
         loader.execute();
     }
 
-    private javax.swing.JPanel createLoadingPanel() {
+    private javax.swing.JPanel createLoadingPanel(String text) {
         return new javax.swing.JPanel() {
             {
                 setBackground(new Color(10, 5, 20));
+            }
+            @Override public java.awt.Dimension getPreferredSize() {
+                return new java.awt.Dimension(1024, 768);
             }
             @Override
             protected void paintComponent(Graphics g) {
@@ -176,7 +213,6 @@ public class CurseOfZed extends JFrame {
                 g2.setColor(new Color(252, 218, 72));
                 g2.setFont(new Font("Serif", Font.BOLD, 32));
                 FontMetrics fm = g2.getFontMetrics();
-                String text = "Loading...";
                 g2.drawString(text,
                         (getWidth() - fm.stringWidth(text)) / 2,
                         getHeight() / 2 + fm.getAscent() / 2);

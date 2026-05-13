@@ -6,6 +6,7 @@ import java.awt.event.*;
 import javax.imageio.ImageIO;
 import Main.GamePanel;
 import Audio.SFX.ClickSFX;
+import Audio.SFX.DefeatSFX;
 
 public class DefeatCutscene extends JPanel {
     private static final int W = 1024, H = 768;
@@ -49,7 +50,10 @@ public class DefeatCutscene extends JPanel {
     private JButton playAgainBtn;
     private Runnable onFinish;
     private GamePanel gamePanel;
-    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+    public void setGamePanel(GamePanel gp) {
+        this.gamePanel = gp;
+        if (gp != null) gp.musicPlayer.playCutsceneMusic();
+    }
     private void playClickSFX() {
         if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new ClickSFX());
     }
@@ -169,6 +173,7 @@ public class DefeatCutscene extends JPanel {
     private void showDefeatScreen() {
         if (typewriterTimer != null) typewriterTimer.stop();
         nextBtn.setVisible(false); backBtn.setVisible(false); skipBtn.setVisible(false);
+        if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new DefeatSFX());
         showDefeat = true; alpha = 0f;
         fadeTimer = new Timer(20, e -> {
             alpha += 0.04f;
@@ -372,6 +377,7 @@ public class DefeatCutscene extends JPanel {
         playAgainBtn.addActionListener(e -> {
             playClickSFX();
             Main.GameStateManager.reset();
+            if (gamePanel != null) gamePanel.musicPlayer.stopCutsceneMusic();
             if (onFinish != null) onFinish.run();
         });
         // --- NEW GHOST BUTTON UPGRADE END ---

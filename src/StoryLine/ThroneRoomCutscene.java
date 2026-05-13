@@ -60,7 +60,10 @@ public class ThroneRoomCutscene extends JPanel {
     private GoldButton nextBtn, backBtn, skipBtn;
     private Runnable onFinish;
     private GamePanel gamePanel;
-    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+    public void setGamePanel(GamePanel gp) {
+        this.gamePanel = gp;
+        if (gp != null) gp.musicPlayer.playCutsceneMusic();
+    }
     private void playClickSFX() {
         if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new ClickSFX());
     }
@@ -138,7 +141,7 @@ public class ThroneRoomCutscene extends JPanel {
         }
 
         String fullText = currentLines.get(lineIndex).text;
-        typewriterTimer = new Timer(7, e -> { // SPEED UP: 12ms for faster text flow
+        typewriterTimer = new Timer(20, e -> {
             if (charIndex < fullText.length()) {
                 displayedPartial += fullText.charAt(charIndex++);
                 repaint();
@@ -146,8 +149,7 @@ public class ThroneRoomCutscene extends JPanel {
                 typewriterTimer.stop();
                 lineIndex++;
 
-                // Wait slightly so player can read, then move to next line
-                Timer pause = new Timer(900, ev -> { // SPEED UP: Shorter pause between lines
+                Timer pause = new Timer(1600, ev -> {
                     if (lineIndex < currentLines.size()) {
                         startTypewriter();
                     } else {
@@ -166,7 +168,7 @@ public class ThroneRoomCutscene extends JPanel {
     private void showNavigation() { if (currentPage > 0) backBtn.setVisible(true); nextBtn.setText(currentPage == STORY_PAGES - 1 ? "BATTLE →" : "NEXT →"); nextBtn.setVisible(true); }
     private void changePage(int delta) { alpha = 0f; fadeTimer = new Timer(15, e -> { alpha += 0.08f; if (alpha >= 1f) { ((Timer)e.getSource()).stop(); loadPage(currentPage + delta); fadeIn(); } repaint(); }); fadeTimer.start(); }
     private void fadeIn() { alpha = 1f; fadeTimer = new Timer(20, e -> { alpha -= 0.05f; if (alpha <= 0f) { alpha = 0f; ((Timer)e.getSource()).stop(); } repaint(); }); fadeTimer.start(); }
-    private void fadeToBattle() { stopJitter(); nextBtn.setVisible(false); backBtn.setVisible(false); skipBtn.setVisible(false); alpha = 0f; Timer ft = new Timer(16, e -> { alpha += 0.06f; repaint(); if (alpha >= 1f) { ((Timer)e.getSource()).stop(); SwingUtilities.invokeLater(onFinish); } }); ft.start(); }
+    private void fadeToBattle() { stopJitter(); nextBtn.setVisible(false); backBtn.setVisible(false); skipBtn.setVisible(false); alpha = 0f; Timer ft = new Timer(16, e -> { alpha += 0.06f; repaint(); if (alpha >= 1f) { ((Timer)e.getSource()).stop(); if (gamePanel != null) gamePanel.musicPlayer.stopCutsceneMusic(); SwingUtilities.invokeLater(onFinish); } }); ft.start(); }
 
     @Override protected void paintComponent(Graphics g) {
         super.paintComponent(g); Graphics2D g2 = (Graphics2D) g; g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

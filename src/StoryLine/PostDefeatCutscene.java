@@ -40,7 +40,10 @@ public class PostDefeatCutscene extends JPanel {
     private GoldButton nextBtn, backBtn, skipBtn;
     private Runnable onFinish;
     private GamePanel gamePanel;
-    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+    public void setGamePanel(GamePanel gp) {
+        this.gamePanel = gp;
+        if (gp != null) gp.musicPlayer.playCutsceneMusic();
+    }
     private void playClickSFX() {
         if (gamePanel != null) gamePanel.getSFXPlayer().playSFX(new ClickSFX());
     }
@@ -101,7 +104,7 @@ public class PostDefeatCutscene extends JPanel {
         }
 
         String fullText = currentLines.get(lineIndex).t;
-        typewriterTimer = new Timer(7, e -> { // SPEED UP: 12ms for faster text flow
+        typewriterTimer = new Timer(20, e -> {
             if (charIndex < fullText.length()) {
                 displayedPartial += fullText.charAt(charIndex++);
                 repaint();
@@ -109,8 +112,7 @@ public class PostDefeatCutscene extends JPanel {
                 typewriterTimer.stop();
                 lineIndex++;
 
-                // Wait slightly so player can read, then move to next line
-                Timer pause = new Timer(900, ev -> { // SPEED UP: Shorter pause between lines
+                Timer pause = new Timer(1600, ev -> {
                     if (lineIndex < currentLines.size()) {
                         startTypewriter();
                     } else {
@@ -163,6 +165,7 @@ public class PostDefeatCutscene extends JPanel {
             if (alpha >= 1f) {
                 alpha = 1f;
                 ((Timer)e.getSource()).stop();
+                if (gamePanel != null) gamePanel.musicPlayer.stopCutsceneMusic();
                 SwingUtilities.invokeLater(onFinish);
             }
             repaint();

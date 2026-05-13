@@ -128,6 +128,7 @@ public class CharacterPanel extends JPanel {
     private JLabel playerImageLabel;
     private JLabel weaponIconLabel;
     private JLabel weaponNameLabel;
+    private JLabel goldLabel;
 
     // Move Management
     private ArrayList<MoveButton> equippedMoveButtons = new ArrayList<>();
@@ -441,6 +442,13 @@ public class CharacterPanel extends JPanel {
     }
 
     private void setupLeftPanel() {
+        // Gold display above character sprite
+        goldLabel = new JLabel("$ " + player.getMoney(), SwingConstants.CENTER);
+        goldLabel.setFont(new Font("Serif", Font.BOLD, 14));
+        goldLabel.setForeground(TEXT_GOLD);
+        goldLabel.setBounds(10, 15, 260, 22);
+        leftPanel.add(goldLabel);
+
         // Player image (left side)
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
@@ -633,6 +641,8 @@ public class CharacterPanel extends JPanel {
     }
 
     private void refreshStats() {
+        if (goldLabel != null) goldLabel.setText("$ " + player.getMoney());
+
         // HEALTH
         int currentHp = (int) player.getHp();
         int maxHp = (int) player.getMaxHp();

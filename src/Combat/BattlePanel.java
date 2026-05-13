@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 
 import Combat.StatusEffects.StatusEffect;
 import Audio.SFX.ClickSFX;
+import Audio.SFX.SFXPlayer;
 
 
 public class BattlePanel extends JPanel {
@@ -94,7 +95,6 @@ public class BattlePanel extends JPanel {
     private int uiBoxVCenter;
     private BattleButton btnFight;
     private BattleButton btnBag;
-    private BattleButton btnRun;
     private BattleButton[] moveBtns;
     private BattleButton btnBack;
     private BattleButton btnBackTarget;
@@ -455,6 +455,10 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    public SFXPlayer getSFXPlayer() {
+        return gp != null ? gp.getSFXPlayer() : null;
+    }
+
     private void playClickSFX() {
         if (gp != null) gp.getSFXPlayer().playSFX(new ClickSFX());
     }
@@ -465,11 +469,10 @@ public class BattlePanel extends JPanel {
     private void buildButtons() {
         // Main menu buttons
         int btnW = 140, btnH = 46, gap = 18;
-        int totalMainBtnWidth = (btnW * 3) + (gap * 2);
+        int totalMainBtnWidth = (btnW * 2) + gap;
         int startX = uiBoxRect.x + (uiBoxRect.width - totalMainBtnWidth) / 2;
         int rowY = uiBoxVCenter - (btnH / 2);
 
-// 2. NOW create the buttons and set their bounds
         btnFight = new BattleButton("Fight");
         btnFight.setBounds(startX, rowY, btnW, btnH);
         btnFight.addActionListener(e -> { playClickSFX(); showFightMenu(); });
@@ -517,12 +520,6 @@ public class BattlePanel extends JPanel {
             parentFrame.repaint();
         });
         add(btnBag);
-
-
-        btnRun = new BattleButton("Run");
-        btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);
-        btnRun.addActionListener(e -> { playClickSFX(); battle.handleRunAway(); });
-        add(btnRun);
 
         // Fight sub-menu moves
         ArrayList<Move> moves = playerEntity.getMoves();
@@ -621,7 +618,6 @@ public class BattlePanel extends JPanel {
             btnBack.setVisible(true);
             btnFight.setVisible(false);
             btnBag.setVisible(false);
-            btnRun.setVisible(false);
             battleMessage = "";
             setButtonsEnabled(true);
             repaint();
@@ -639,7 +635,6 @@ public class BattlePanel extends JPanel {
         // Show main menu buttons
         btnFight.setVisible(true);
         btnBag.setVisible(true);
-        btnRun.setVisible(true);
 
         // Hide move buttons
         for (BattleButton mb : moveBtns) mb.setVisible(false);
@@ -657,7 +652,6 @@ public class BattlePanel extends JPanel {
         uiState = UIState.MAIN;
         btnFight.setVisible(false);
         btnBag.setVisible(false);
-        btnRun.setVisible(false);
         repaint();
     }
 
@@ -669,7 +663,6 @@ public class BattlePanel extends JPanel {
         // Hide main menu buttons
         btnFight.setVisible(false);
         btnBag.setVisible(false);
-        btnRun.setVisible(false);
 
         // Show move buttons and Back button
         for (BattleButton mb : moveBtns) mb.setVisible(true);
@@ -725,6 +718,8 @@ public class BattlePanel extends JPanel {
         uiState = UIState.TARGET_SELECT;
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
+        btnFight.setVisible(false);
+        btnBag.setVisible(false);
         updateTargetButtonStates();
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(true);
@@ -793,7 +788,6 @@ public class BattlePanel extends JPanel {
     public void setButtonsEnabled(boolean enabled) {
         btnFight.setEnabled(enabled);
         btnBag.setEnabled(enabled);
-        btnRun.setEnabled(enabled);
         for (BattleButton btn : moveBtns) {
             btn.setEnabled(enabled);
         }
@@ -1246,7 +1240,6 @@ public class BattlePanel extends JPanel {
             // Hide all buttons
             btnFight.setVisible(false);
             btnBag.setVisible(false);
-            btnRun.setVisible(false);
 
             for (BattleButton mb : moveBtns) {
                 mb.setVisible(false);

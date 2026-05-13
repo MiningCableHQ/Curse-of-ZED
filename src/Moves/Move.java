@@ -80,6 +80,8 @@ public abstract class Move {
         return lastHealAmount;
     }
 
+    public double getLastBuffAmount() { return lastBuffAmount; }
+
     // Weapon multiplier methods
     public double getWeaponMultiplier() {
         return weaponMultiplier;

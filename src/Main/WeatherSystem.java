@@ -20,6 +20,7 @@ public class WeatherSystem {
     // Thunder flash
     private float thunderAlpha = 0f;
     private int thunderTimer = 0;
+    private boolean newThunderFlash = false;
 
     public void init(int screenW, int screenH) {
         for (int i = 0; i < drops.length; i++) {
@@ -65,10 +66,12 @@ public class WeatherSystem {
         }
 
         // Thunder flash
+        newThunderFlash = false;
         if (current == WeatherType.STORM) {
             thunderTimer++;
             if (thunderTimer % (90 + rng.nextInt(120)) == 0) {
-                thunderAlpha = 0.6f; // trigger flash
+                thunderAlpha = 0.6f;
+                newThunderFlash = true;
             }
         }
         if (thunderAlpha > 0) thunderAlpha -= 0.04f;
@@ -109,4 +112,9 @@ public class WeatherSystem {
     }
 
     public WeatherType getCurrent() { return current; }
+
+    public boolean consumeThunderFlash() {
+        if (newThunderFlash) { newThunderFlash = false; return true; }
+        return false;
+    }
 }

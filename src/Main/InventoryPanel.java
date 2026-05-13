@@ -124,6 +124,7 @@ public class InventoryPanel extends JPanel {
     private JLabel weaponIconLabel;
     private JLabel weaponNameLabel;
     private JLabel characterLevelLabel;
+    private JLabel goldLabel;
 
     // ── Inventory Grid ────────────────────────────────────────────
     private JPanel inventoryGrid;
@@ -628,13 +629,20 @@ public class InventoryPanel extends JPanel {
     }
 
     private void setupCharacterPanel() {
+        // Gold display above character sprite
+        goldLabel = new JLabel("$ " + player.getMoney(), SwingConstants.CENTER);
+        goldLabel.setFont(new Font("Serif", Font.BOLD, 14));
+        goldLabel.setForeground(TEXT_GOLD);
+        goldLabel.setBounds(10, 5, 260, 22);
+        characterPanel.add(goldLabel);
+
         // Left side: Player image
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
             Image scaled = playerIdleFrames[0].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
             playerImageLabel.setIcon(new ImageIcon(scaled));
         }
-        playerImageLabel.setBounds(15, 20, 135, 135);
+        playerImageLabel.setBounds(15, 35, 135, 135);
         playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         playerImageLabel.setVerticalAlignment(SwingConstants.CENTER);
         characterPanel.add(playerImageLabel);
@@ -656,7 +664,7 @@ public class InventoryPanel extends JPanel {
         };
         equippedWeaponPanel.setLayout(null);
         equippedWeaponPanel.setOpaque(false);
-        equippedWeaponPanel.setBounds(160, 20, 120, 150);
+        equippedWeaponPanel.setBounds(160, 35, 120, 150);
         equippedWeaponPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -696,7 +704,7 @@ public class InventoryPanel extends JPanel {
         characterLevelLabel = new JLabel("Lv. " + level, SwingConstants.CENTER);
         characterLevelLabel.setFont(FONT_STAT);
         characterLevelLabel.setForeground(TEXT_BROWN);
-        characterLevelLabel.setBounds(-40, 145, 260, 24);
+        characterLevelLabel.setBounds(-40, 160, 260, 24);
         characterLevelLabel.setOpaque(false);
         characterPanel.add(characterLevelLabel);
 
@@ -717,7 +725,7 @@ public class InventoryPanel extends JPanel {
         };
         statsBox.setLayout(null);
         statsBox.setOpaque(false);
-        statsBox.setBounds(20, 180, 260, 160);
+        statsBox.setBounds(20, 195, 260, 160);
         characterPanel.add(statsBox);
 
         int lineHeight = 23;
@@ -733,7 +741,7 @@ public class InventoryPanel extends JPanel {
         ArrayList<Move> moves = player.getMoves();
         int btnW = 135, btnH = 40;
         int gapX = 140, gapY = 52;
-        int startYButtons = 350;
+        int startYButtons = 365;
         for (int i = 0; i < moves.size() && i < 4; i++) {
             final Move move = moves.get(i);
             GoldButton moveBtn = new GoldButton(move.getName());
@@ -779,7 +787,7 @@ public class InventoryPanel extends JPanel {
     private void updateStatsPanel() {
         for (Component comp : characterPanel.getComponents()) {
             if (comp instanceof JPanel && ((JPanel) comp).getLayout() == null &&
-                    comp.getBounds().x == 20 && comp.getBounds().y == 180) {
+                    comp.getBounds().x == 20 && comp.getBounds().y == 195) {
                 JPanel statsBox = (JPanel) comp;
                 Component[] components = statsBox.getComponents();
                 for (int i = 0; i < components.length; i += 2) {
@@ -814,6 +822,9 @@ public class InventoryPanel extends JPanel {
 
         if (characterLevelLabel != null) {
             characterLevelLabel.setText("Lv. " + player.getLevel());
+        }
+        if (goldLabel != null) {
+            goldLabel.setText("$ " + player.getMoney());
         }
     }
 

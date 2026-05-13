@@ -7,6 +7,7 @@ import Entities.Characters.Ranger;
 import Entities.Characters.Mage;
 import Entities.Entity;
 import Items.Item;
+import Items.Weapons.Weapon;
 
 import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
@@ -947,6 +948,26 @@ public class ShopPanel extends JPanel {
         dialog.setVisible(true);
     }
 
+    private void handleWeaponBuy(Item item) {
+        for (Item inv : player.getInventory().getItems()) {
+            if (inv.getName().equals(item.getName())) {
+                showParchmentDialog("Already Owned",
+                        "You already have " + item.getName() + ".",
+                        "OK", null, null);
+                return;
+            }
+        }
+        if (playerGold < item.getPrice()) {
+            showParchmentDialog("Insufficient Gold",
+                    "You need $" + item.getPrice() + " but only have $" + playerGold + ".",
+                    "OK", null, null);
+            return;
+        }
+        showParchmentDialog("Buy Weapon",
+                "Buy " + item.getName() + " for $" + item.getPrice() + "?",
+                "Yes", "No", () -> executeBuy(item, 1));
+    }
+
     /**
      * Shows quantity selection dialog for buying items.
      */
@@ -957,7 +978,7 @@ public class ShopPanel extends JPanel {
         dialog.setLocationRelativeTo(parentFrame);
 
         int price = item.getPrice();
-        int maxQty = Math.min(99, playerGold / price);
+        int maxQty = (price > 0) ? Math.min(99, playerGold / price) : 99;
         if (maxQty < 1) maxQty = 1;
 
         // Make dialog draggable
@@ -1274,8 +1295,11 @@ public class ShopPanel extends JPanel {
                                 return;
                             }
 
-                            // Call quantity dialog instead of simple confirm
-                            showBuyQuantityDialog(item);
+                            if (item instanceof Weapon) {
+                                handleWeaponBuy(item);
+                            } else {
+                                showBuyQuantityDialog(item);
+                            }
                         }
                     });
 

@@ -1,5 +1,6 @@
 package Main;
 
+import Audio.Music.MainMenuMusic;
 import Audio.SFX.ClickSFX;
 import Audio.SFX.SFXPlayer;
 import Entities.Characters.*;
@@ -52,6 +53,7 @@ public class CharacterSelectionPanel extends JPanel {
     private ConfirmButton  confirmBtn;
     private BackButton     backBtn;
     private final SFXPlayer sfxPlayer = new SFXPlayer();
+    private final MainMenuMusic mainMenuMusic = new MainMenuMusic();
 
     // ── Character data ────────────────────────────────────────────
     private static final String[] NAMES  = {"swordsman", "archer", "mage"};
@@ -242,6 +244,8 @@ public class CharacterSelectionPanel extends JPanel {
         buildButtons();
         startAnimation();
         startCharacterAnimation();
+        mainMenuMusic.preload();
+        mainMenuMusic.play(true);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -395,6 +399,7 @@ public class CharacterSelectionPanel extends JPanel {
 
     private void confirmSelection() {
         if (selectedIndex < 0 || onCharacterSelected == null) return;
+        mainMenuMusic.stop();
 
         if (animationTimer != null) {
             animationTimer.stop();
@@ -417,6 +422,7 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void goBack() {
+        mainMenuMusic.stop();
         if (animationTimer != null) {
             animationTimer.stop();
         }

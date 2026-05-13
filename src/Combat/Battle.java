@@ -11,6 +11,7 @@ import Entities.Characters.Mage;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
 import Entities.Entity;
+import Audio.SFX.*;
 import Items.Item;
 import Moves.Move;
 
@@ -100,9 +101,15 @@ public class Battle {
             executeItemTurn(item, null);
 
         } else {
-            // Enemy-targeted item (debuffs etc.) — show target selection screen
-            hasPendingItem = true;
-            battlePanel.showItemTargetSelection(item);
+            // Enemy-targeted item (debuffs etc.)
+            List<Enemy> aliveEnemies = getAliveEnemies();
+            if (aliveEnemies.size() == 1) {
+                hasPendingItem = false;
+                executeItemTurn(item, aliveEnemies.get(0));
+            } else {
+                hasPendingItem = true;
+                battlePanel.showItemTargetSelection(item);
+            }
         }
     }
 
@@ -195,6 +202,9 @@ public class Battle {
                         hardeningBuffApplied = true;
                     }
 
+                    SFXPlayer sfxP = battlePanel.getSFXPlayer();
+                    if (sfxP != null && (isPowerBuff || isHardeningBuff)) sfxP.playSFX(new StatRaiseSFX());
+
                     resultMessage = item.getUseMessage();
                     if (resultMessage == null || resultMessage.isEmpty()) {
                         resultMessage = player.getName() + " used " + item.getName() + "!";
@@ -206,6 +216,11 @@ public class Battle {
                     item.useItem(target);
                     double afterHp = target.getHp();
                     double effectAmount = beforeHp - afterHp;
+
+                    SFXPlayer sfxPDebuff = battlePanel.getSFXPlayer();
+                    if (sfxPDebuff != null && item.getClass().getName().contains("Debuff")) {
+                        sfxPDebuff.playSFX(new StatLowSFX());
+                    }
 
                     player.getInventory().removeItem(item, 1);
 
@@ -627,6 +642,13 @@ public class Battle {
             enemyMove.execute(enemy);
             Move.currentTarget = null;
 
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+            if (sfxP != null) {
+                if (enemyMove.getLastDamageDealt() > 0)      sfxP.playSFX(new HitSFX());
+                else if (enemyMove.getLastBuffAmount() > 0)  sfxP.playSFX(new StatRaiseSFX());
+                else if (enemyMove.getLastBuffAmount() < 0)  sfxP.playSFX(new StatLowSFX());
+            }
+
             // Use the move's own message
             battlePanel.setBattleMessage(enemyMove.getMessage());
             battlePanel.repaint();
@@ -795,10 +817,14 @@ public class Battle {
             if (!isBattleActive) return;
 
             // Execute the move based on target type
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+
             if (move.getTargetType() == Move.TargetType.SELF) {
                 Move.currentTarget = player;
                 move.execute(player);
                 Move.currentTarget = null;
+
+                if (sfxP != null && move.getLastBuffAmount() > 0) sfxP.playSFX(new StatRaiseSFX());
 
                 // Activate after-move passive
                 if (player.getWeapon() != null) {
@@ -836,6 +862,9 @@ public class Battle {
                     player.getWeapon().onAfterMove(player, move, null);
                 }
 
+                if (sfxP != null && totalDamageDealt > 0) sfxP.playSFX(new HitSFX());
+                else if (sfxP != null && move.getLastBuffAmount() < 0) sfxP.playSFX(new StatLowSFX());
+
                 if (combinedMessage.length() > 0) {
                     battlePanel.setBattleMessage(combinedMessage.toString());
                 } else {
@@ -860,6 +889,9 @@ public class Battle {
                     Move.currentTarget = currentTarget;
                     Move.currentBattle = this;
                     move.execute(player);
+
+                    if (sfxP != null && move.getLastDamageDealt() > 0) sfxP.playSFX(new HitSFX());
+                    else if (sfxP != null && move.getLastBuffAmount() < 0) sfxP.playSFX(new StatLowSFX());
 
                     // Activate after-damage passive
                     if (player.getWeapon() != null) {
@@ -1104,6 +1136,14 @@ public class Battle {
                 : player.getName() + " has been defeated! Game Over!";
         battlePanel.setBattleMessage(endMessage);
         battlePanel.repaint();
+
+        if (!playerWon) {
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+            if (sfxP != null) {
+                boolean defeatedByZED = enemies.stream().anyMatch(e -> e instanceof ZED);
+                if (!defeatedByZED) sfxP.playSFX(new GameOverSFX());
+            }
+        }
 
         // Reset battle buffs
         if (player instanceof Swordsman) {
