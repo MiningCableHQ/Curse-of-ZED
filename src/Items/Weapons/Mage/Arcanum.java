@@ -11,13 +11,13 @@ public class Arcanum extends Weapon {
     private double currentAtkBonus = 30;
 
     public Arcanum(){
-        super("Arcanum", "Increases base ATK by 20-100 based on tier", 20, "/items/mage_weapon/arcanum_staff.png", 300);
+        super("Arcanum", "Increases base ATK by an additional 20", 20, "/items/mage_weapon/arcanum_staff.png", 300);
         loadImage("/items/mage_weapon/arcanum_staff.png");
         applyAtkBonus();
     }
 
     public Arcanum(double tier){
-        super("Arcanum", "Increases base ATK by 20-100 based on tier", 20, "/items/mage_weapon/arcanum_staff.png", 300);
+        super("Arcanum", "Increases base ATK by an additional 20", 20, "/items/mage_weapon/arcanum_staff.png", 300);
         this.tier = Math.max(1.0, Math.min(5.0, tier));
         loadImage("/items/mage_weapon/arcanum_staff.png");
         applyAtkBonus();

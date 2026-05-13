@@ -11,13 +11,13 @@ public class RazorEdge extends Weapon {
     private double currentAtkBonus = 20;
 
     public RazorEdge() {
-        super("Razor Edge", "Increases base ATK by 20-100 based on tier", 20, "/items/warrior_weapon/razoredge_sword.png", 300);
+        super("Razor Edge", "Increases base ATK by an additional 20", 20, "/items/warrior_weapon/razoredge_sword.png", 300);
         loadImage("/items/warrior_weapon/razoredge_sword.png");
         applyAtkBonus();
     }
 
     public RazorEdge(double tier) {
-        super("Razor Edge", "Increases base ATK by 20-100 based on tier", 20, "/items/warrior_weapon/razoredge_sword.png", 300);
+        super("Razor Edge", "Increases base ATK by an additional 20", 20, "/items/warrior_weapon/razoredge_sword.png", 300);
         this.tier = Math.max(1.0, Math.min(5.0, tier));
         loadImage("/items/warrior_weapon/razoredge_sword.png");
         applyAtkBonus();

@@ -11,13 +11,13 @@ public class Mistwood extends Weapon {
     private double currentSpdBonus = 5;
 
     public Mistwood() {
-        super("Mistwood", "Increases speed by 5-25 based on tier", 15, "/items/archer_weapon/mistwood.png", 265);
+        super("Mistwood", "Increases speed by an additional 25", 15, "/items/archer_weapon/mistwood.png", 265);
         loadImage("/items/archer_weapon/mistwood.png");
         applySpdBonus();
     }
 
     public Mistwood(double tier) {
-        super("Mistwood", "Increases speed by 5-25 based on tier", 15, "/items/archer_weapon/mistwood.png", 265);
+        super("Mistwood", "Increases speed by an additional 25", 15, "/items/archer_weapon/mistwood.png", 265);
         this.tier = Math.max(1.0, Math.min(5.0, tier));
         loadImage("/items/archer_weapon/mistwood.png");
         applySpdBonus();

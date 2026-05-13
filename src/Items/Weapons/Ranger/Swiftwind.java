@@ -11,13 +11,13 @@ public class Swiftwind extends Weapon {
     private double currentAtkBonus = 20;
 
     public Swiftwind() {
-        super("Swiftwind", "Increases base ATK by 20-100 based on tier", 20, "/items/archer_weapon/swiftwind.png", 300);
+        super("Swiftwind", "Increases base ATK by an additional 20", 20, "/items/archer_weapon/swiftwind.png", 300);
         loadImage("/items/archer_weapon/swiftwind.png");
         applyAtkBonus();
     }
 
     public Swiftwind(double tier) {
-        super("Swiftwind", "Increases base ATK by 20-100 based on tier", 20, "/items/archer_weapon/swiftwind.png", 300);
+        super("Swiftwind", "Increases base ATK by an additional 20", 20, "/items/archer_weapon/swiftwind.png", 300);
         this.tier = Math.max(1.0, Math.min(5.0, tier));
         loadImage("/items/archer_weapon/swiftwind.png");
         applyAtkBonus();

@@ -11,13 +11,13 @@ public class Unyielding extends Weapon {
     private double currentResistanceBonus = 0.03;
 
     public Unyielding() {
-        super("Unyielding", "Increases damage resistance by 3-15% based on tier", 10, "/items/warrior_weapon/unyielding_sword.png", 225);
+        super("Unyielding", "Increases damage resistance by 15%", 10, "/items/warrior_weapon/unyielding_sword.png", 225);
         loadImage("/items/warrior_weapon/unyielding_sword.png");
         applyResistanceBonus();
     }
 
     public Unyielding(double tier) {
-        super("Unyielding", "Increases damage resistance by 3-15% based on tier", 10, "/items/warrior_weapon/unyielding_sword.png", 225);
+        super("Unyielding", "Increases damage resistance by 15%", 10, "/items/warrior_weapon/unyielding_sword.png", 225);
         this.tier = Math.max(1.0, Math.min(5.0, tier));
         loadImage("/items/warrior_weapon/unyielding_sword.png");
         applyResistanceBonus();
