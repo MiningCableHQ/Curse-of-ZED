@@ -64,6 +64,12 @@ public class TitlePanel extends JPanel {
     private final SFXPlayer sfxPlayer = new SFXPlayer();
     private final MainMenuMusic mainMenuMusic = new MainMenuMusic();
 
+    // Add with the other button state variables
+    private boolean quitHover = false, quitPress = false;
+
+    // Add with startRect and credsRect
+    private final Rectangle quitRect = new Rectangle();
+
     // ── Constructor ──────────────────────────────────────────
     public TitlePanel() {
         setPreferredSize(new Dimension(W, H));
@@ -88,16 +94,21 @@ public class TitlePanel extends JPanel {
                         ((Timer) ev.getSource()).stop();
                         if (onStartCallback != null) onStartCallback.run();
                     }).start();
-                    if (onStartCallback != null) onStartCallback.run();
+                    //if (onStartCallback != null) onStartCallback.run();
                 } else if (credsRect.contains(e.getPoint())) {
                     credsPress = true;
                     sfxPlayer.playSFX(new ClickSFX());
                     showingCredits = true;
+                } else if (quitRect.contains(e.getPoint())) {
+                    quitPress = true;
+                    sfxPlayer.playSFX(new ClickSFX());
+                    System.exit(0);  // Exit the application
                 }
             }
             @Override public void mouseReleased(MouseEvent e) {
                 startPress = false;
                 credsPress = false;
+                quitPress = false;
             }
         });
 
@@ -109,6 +120,7 @@ public class TitlePanel extends JPanel {
                 }
                 startHover = startRect.contains(e.getPoint());
                 credsHover = credsRect.contains(e.getPoint());
+                quitHover = quitRect.contains(e.getPoint());
                 setCursor((startHover || credsHover)
                         ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                         : Cursor.getDefaultCursor());
@@ -189,13 +201,15 @@ public class TitlePanel extends JPanel {
             // ── Compute base Y positions (centred as a pair, same maths as original) ──
             // The original single button sat at:  by = (H - BTN_H) / 2
             // We stack two buttons with a gap, centred around the same midpoint.
-            int totalH    = BTN_H * 2 + BTN_GAP;
-            int startByBase = (H - totalH) / 2;          // top of the pair block
-            int credsBaseY  = startByBase + BTN_H + BTN_GAP;
+            int totalH    = BTN_H * 3 + BTN_GAP * 2;
+            int startByBase = (H - totalH) / 2;              // top of the button stack
+            int credsBaseY = startByBase + BTN_H + BTN_GAP;
+            int quitBaseY  = credsBaseY + BTN_H + BTN_GAP;
 
             // Update hit-rects at the un-offset positions so mouse tests are exact
             startRect.setBounds((W - BTN_W) / 2, startByBase, BTN_W, BTN_H);
-            credsRect.setBounds((W - BTN_W) / 2, credsBaseY,  BTN_W, BTN_H);
+            credsRect.setBounds((W - BTN_W) / 2, credsBaseY, BTN_W, BTN_H);
+            quitRect.setBounds((W - BTN_W) / 2, quitBaseY, BTN_W, BTN_H);
 
             // ── Half-res pixel buffer (same pattern as original) ──
             int SCALE = 2;
@@ -214,6 +228,7 @@ public class TitlePanel extends JPanel {
             paintTitle(lg, scrollCY + (int) floatY);
             paintButtonShape(lg, startByBase, startHover, startPress);
             paintButtonShape(lg, credsBaseY,  credsHover, credsPress);
+            paintButtonShape(g2, quitBaseY, quitHover, quitPress);
             rbTitle = savedTitle;
             rbBtn   = savedBtn;
             lg.dispose();
@@ -225,6 +240,7 @@ public class TitlePanel extends JPanel {
             // Crisp labels drawn at full resolution (same as original)
             paintButtonLabel(g2, "Start Game", startByBase, startHover, startPress, true);
             paintButtonLabel(g2, "Credits",    credsBaseY,  credsHover, credsPress, true);
+            paintButtonLabel(g2, "Quit", quitBaseY, quitHover, quitPress, true);
         }
 
         g2.dispose();

@@ -27,7 +27,6 @@ public class Ranger extends Player {
         speed = 50;
         dmgResistance = 0.10;
         loadMoves();
-        //setWeapon(new Swiftwind(5));
     }
 
     @Override
