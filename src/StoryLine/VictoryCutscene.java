@@ -335,8 +335,8 @@ public class VictoryCutscene extends JPanel {
         skipBtn.setBounds(840, 30, 120, 40);
         skipBtn.addActionListener(e -> { playClickSFX(); showVictoryScreen(); });
 
-        // --- ENHANCED "PLAY AGAIN" BUTTON WITH VICTORY-STYLE COLORS ---
-        playAgainBtn = new JButton("Play Again") {
+        // --- ENHANCED "NEXT" BUTTON WITH VICTORY-STYLE COLORS ---
+        playAgainBtn = new JButton("Next") {
             private boolean hovered = false;
             {
                 addMouseListener(new java.awt.event.MouseAdapter() {

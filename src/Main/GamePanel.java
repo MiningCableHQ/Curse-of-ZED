@@ -95,6 +95,18 @@ public class GamePanel extends JPanel implements Runnable {
     // ── Map transition state ──────────────────────────────────────
     private volatile boolean mapTransitionInProgress = false;
 
+    // ── Playtime tracking ──────────────────────────────────────────
+    private long startTime = 0;
+
+    public void recordStartTime() {
+        this.startTime = System.currentTimeMillis();
+    }
+
+    public long getTotalPlayTimeMs() {
+        if (startTime == 0) return 0;
+        return System.currentTimeMillis() - startTime;
+    }
+
     // ── Combat state (freeze enemy AI during battles) ─────────────
     public boolean inCombat = false;
     private WeatherSystem.WeatherType lastWeather = WeatherSystem.WeatherType.CLEAR;
@@ -359,6 +371,7 @@ public class GamePanel extends JPanel implements Runnable {
         sfxPlayer.preloadSFX(new Audio.SFX.VictorySFX());
         sfxPlayer.preloadSFX(new Audio.SFX.DefeatSFX());
         musicPlayer.preloadAllMusic();
+        recordStartTime();
         gameThread = new Thread(this);
         gameThread.start();
         musicPlayer.playMapMusic();

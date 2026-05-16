@@ -4538,21 +4538,48 @@ public class Map3Setter {
                     javax.swing.Timer t = new javax.swing.Timer(500, e -> {
                         StoryLine.VictoryCutscene victory =
                                 new StoryLine.VictoryCutscene(() -> {
-                                    Main.GameStateManager.reset();
                                     javax.swing.SwingUtilities.invokeLater(() -> {
-                                        if (frame instanceof Main.CurseOfZed) {
-                                            Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
-                                            Main.TitlePanel tp = new Main.TitlePanel();
-                                            tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
-                                            cozFrame.getContentPane().removeAll();
-                                            cozFrame.add(tp);
-                                            cozFrame.revalidate();
-                                            cozFrame.repaint();
-                                        } else {
-                                            Main.CurseOfZed coz = new Main.CurseOfZed();
-                                            coz.setVisible(true);
-                                            frame.dispose();
-                                        }
+                                        Main.LeaderboardPanel lbPanel = new Main.LeaderboardPanel(
+                                            frame,
+                                            gp.player,
+                                            gp.getTotalPlayTimeMs(),
+                                            () -> {
+                                                // Play Again — go to character selection
+                                                Main.GameStateManager.reset();
+                                                javax.swing.SwingUtilities.invokeLater(() -> {
+                                                    if (frame instanceof Main.CurseOfZed) {
+                                                        ((Main.CurseOfZed) frame).showCharacterSelection();
+                                                    } else {
+                                                        Main.CurseOfZed coz = new Main.CurseOfZed();
+                                                        coz.setVisible(true);
+                                                        frame.dispose();
+                                                    }
+                                                });
+                                            },
+                                            () -> {
+                                                // Quit to Title — return to the title screen
+                                                Main.GameStateManager.reset();
+                                                javax.swing.SwingUtilities.invokeLater(() -> {
+                                                    if (frame instanceof Main.CurseOfZed) {
+                                                        Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
+                                                        Main.TitlePanel tp = new Main.TitlePanel();
+                                                        tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                                                        cozFrame.getContentPane().removeAll();
+                                                        cozFrame.add(tp);
+                                                        cozFrame.revalidate();
+                                                        cozFrame.repaint();
+                                                    } else {
+                                                        Main.CurseOfZed coz = new Main.CurseOfZed();
+                                                        coz.setVisible(true);
+                                                        frame.dispose();
+                                                    }
+                                                });
+                                            }
+                                        );
+                                        frame.getContentPane().removeAll();
+                                        frame.add(lbPanel);
+                                        frame.revalidate();
+                                        frame.repaint();
                                     });
                                 });
                         victory.setGamePanel(gpRef);
