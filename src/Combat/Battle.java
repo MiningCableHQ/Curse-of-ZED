@@ -11,6 +11,7 @@ import Entities.Characters.Mage;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
 import Entities.Entity;
+import Audio.SFX.*;
 import Items.Item;
 import Moves.Move;
 
@@ -64,6 +65,8 @@ public class Battle {
     private List<Entity> frozenEntities = new ArrayList<>();
     private List<Entity> stunnedEntities = new ArrayList<>();
     private List<Entity> slowedEntities = new ArrayList<>();
+    private boolean powerBuffApplied = false;
+    private boolean hardeningBuffApplied = false;
 
     // Store original accuracy for stunned entities to restore later
     private java.util.Map<Entity, Double> originalAccuracyMap = new java.util.HashMap<>();
@@ -85,16 +88,28 @@ public class Battle {
     }
 
     public void setPendingItem(Item item, Enemy target) {
-        if (target != null) {
-            // Target already selected (for self-targeting items)
-            pendingItem = item;
+        pendingItem = item;
+
+        if (item.getTargetType() == Item.TargetType.SELF) {
+            // Self-targeting item (potions, buffs, heals) — apply directly to player
             hasPendingItem = false;
-            executeItemTurn(item, target);
+            executeItemTurn(item, null);
+
+        } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
+            // AoE item — no target selection needed, hits all enemies
+            hasPendingItem = false;
+            executeItemTurn(item, null);
+
         } else {
-            // Need target selection
-            pendingItem = item;
-            hasPendingItem = true;
-            battlePanel.showItemTargetSelection(item);
+            // Enemy-targeted item (debuffs etc.)
+            List<Enemy> aliveEnemies = getAliveEnemies();
+            if (aliveEnemies.size() == 1) {
+                hasPendingItem = false;
+                executeItemTurn(item, aliveEnemies.get(0));
+            } else {
+                hasPendingItem = true;
+                battlePanel.showItemTargetSelection(item);
+            }
         }
     }
 
@@ -143,59 +158,109 @@ public class Battle {
             if (!isBattleActive) return;
 
             String resultMessage;
+            boolean shouldConsumeTurn = true;
 
-            // Check item target type
-            if (item.getTargetType() == Item.TargetType.SELF) {
-                // Self-targeting item
-                item.useItem(player);
-                // USE THE ITEM'S MESSAGE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + "!";
-                }
+            // Check if player still has the item (in case quantity changed)
+            int currentQuantity = player.getInventory().getQuantity(item);
+            if (currentQuantity <= 0) {
+                resultMessage = player.getName() + " has no " + item.getName() + " left!";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
 
-            } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
-                // Single enemy target
-                double beforeHp = target.getHp();
-                item.useItem(target);
-                double afterHp = target.getHp();
-                double effectAmount = beforeHp - afterHp;
+                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+                nextTimer.setRepeats(false);
+                nextTimer.start();
+                return;
+            }
 
-                // USE THE ITEM'S MESSAGE OR CREATE ONE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    if (effectAmount > 0) {
-                        resultMessage = player.getName() + " used " + item.getName() + " on " +
-                                target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
-                    } else {
-                        resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
-                    }
-                }
+            // Check for buff limits
+            String itemName = item.getName().toLowerCase();
+            boolean isPowerBuff = itemName.contains("power");
+            boolean isHardeningBuff = itemName.contains("hardening");
 
-            } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
-                // AoE item
-                for (Enemy enemy : enemies) {
-                    if (enemy.getHp() > 0) {
-                        item.useItem(enemy);
-                    }
-                }
-                // USE THE ITEM'S MESSAGE
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
-                }
-
+            if (isPowerBuff && powerBuffApplied) {
+                resultMessage = player.getName() + " tried to use " + item.getName() + " but the Power buff is already active! (Max 1 stack)";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+                shouldConsumeTurn = false; // Don't consume a turn
+            } else if (isHardeningBuff && hardeningBuffApplied) {
+                resultMessage = player.getName() + " tried to use " + item.getName() + " but the Hardening buff is already active! (Max 1 stack)";
+                battlePanel.setBattleMessage(resultMessage);
+                battlePanel.repaint();
+                shouldConsumeTurn = false; // Don't consume a turn
             } else {
-                // Default case
-                resultMessage = item.getUseMessage();
-                if (resultMessage == null || resultMessage.isEmpty()) {
-                    resultMessage = player.getName() + " used " + item.getName() + "!";
+                // Check item target type and apply
+                if (item.getTargetType() == Item.TargetType.SELF) {
+                    // Self-targeting item
+                    item.useItem(player);
+                    player.getInventory().removeItem(item, 1);
+
+                    // Mark buff as applied
+                    if (isPowerBuff) {
+                        powerBuffApplied = true;
+                    } else if (isHardeningBuff) {
+                        hardeningBuffApplied = true;
+                    }
+
+                    SFXPlayer sfxP = battlePanel.getSFXPlayer();
+                    if (sfxP != null && (isPowerBuff || isHardeningBuff)) sfxP.playSFX(new StatRaiseSFX());
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + "!";
+                    }
+
+                } else if (item.getTargetType() == Item.TargetType.ENEMY && target != null) {
+                    // Single enemy target
+                    double beforeHp = target.getHp();
+                    item.useItem(target);
+                    double afterHp = target.getHp();
+                    double effectAmount = beforeHp - afterHp;
+
+                    SFXPlayer sfxPDebuff = battlePanel.getSFXPlayer();
+                    if (sfxPDebuff != null && item.getClass().getName().contains("Debuff")) {
+                        sfxPDebuff.playSFX(new StatLowSFX());
+                    }
+
+                    player.getInventory().removeItem(item, 1);
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        if (effectAmount > 0) {
+                            resultMessage = player.getName() + " used " + item.getName() + " on " +
+                                    target.getName() + " and dealt " + String.format("%d", (int)effectAmount) + " damage!";
+                        } else {
+                            resultMessage = player.getName() + " used " + item.getName() + " on " + target.getName();
+                        }
+                    }
+
+                } else if (item.getTargetType() == Item.TargetType.ALL_ENEMIES) {
+                    // AoE item
+                    for (Enemy enemy : enemies) {
+                        if (enemy.getHp() > 0) {
+                            item.useItem(enemy);
+                        }
+                    }
+                    player.getInventory().removeItem(item, 1);
+
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + " on all enemies!";
+                    }
+
+                } else {
+                    // Default case
+                    resultMessage = item.getUseMessage();
+                    if (resultMessage == null || resultMessage.isEmpty()) {
+                        resultMessage = player.getName() + " used " + item.getName() + "!";
+                    }
                 }
             }
 
             battlePanel.setBattleMessage(resultMessage);
             battlePanel.repaint();
             battlePanel.updateTargetButtonStates();
+            battlePanel.refreshInventoryDisplay();
 
             // Check if battle should end
             if (getAliveEnemies().isEmpty()) {
@@ -203,10 +268,24 @@ public class Battle {
                 return;
             }
 
-            // Move to next turn
-            Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
-            nextTimer.setRepeats(false);
-            nextTimer.start();
+            // Move to next turn ONLY if a turn was consumed
+            if (shouldConsumeTurn) {
+                Timer nextTimer = new Timer(TURN_DELAY, ev -> moveToNextTurn());
+                nextTimer.setRepeats(false);
+                nextTimer.start();
+            } else {
+                // No turn consumed, just go back to player input
+                Timer resetTimer = new Timer(TURN_DELAY, ev -> {
+                    isExecutingTurn = false;
+                    isWaitingForPlayerInput = true;
+                    battlePanel.showMainMenu();
+                    battlePanel.setButtonsEnabled(true);
+                    battlePanel.setBattleMessage(player.getName() + "'s turn! What will you do?");
+                    battlePanel.repaint();
+                });
+                resetTimer.setRepeats(false);
+                resetTimer.start();
+            }
         });
         executeTimer.setRepeats(false);
         executeTimer.start();
@@ -219,6 +298,8 @@ public class Battle {
     /** Start the battle */
     public void startBattle() {
         isBattleActive = true;
+        powerBuffApplied = false;
+        hardeningBuffApplied = false;
         startNewCycle();
     }
 
@@ -561,6 +642,13 @@ public class Battle {
             enemyMove.execute(enemy);
             Move.currentTarget = null;
 
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+            if (sfxP != null) {
+                if (enemyMove.getLastDamageDealt() > 0)      sfxP.playSFX(new HitSFX());
+                else if (enemyMove.getLastBuffAmount() > 0)  sfxP.playSFX(new StatRaiseSFX());
+                else if (enemyMove.getLastBuffAmount() < 0)  sfxP.playSFX(new StatLowSFX());
+            }
+
             // Use the move's own message
             battlePanel.setBattleMessage(enemyMove.getMessage());
             battlePanel.repaint();
@@ -729,22 +817,59 @@ public class Battle {
             if (!isBattleActive) return;
 
             // Execute the move based on target type
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+
             if (move.getTargetType() == Move.TargetType.SELF) {
                 Move.currentTarget = player;
                 move.execute(player);
                 Move.currentTarget = null;
+
+                if (sfxP != null && move.getLastBuffAmount() > 0) sfxP.playSFX(new StatRaiseSFX());
+
+                // Activate after-move passive
+                if (player.getWeapon() != null) {
+                    player.getWeapon().onAfterMove(player, move, null);
+                }
+
                 battlePanel.setBattleMessage(move.getMessage());
                 battlePanel.repaint();
 
             } else if (move.getTargetType() == Move.TargetType.ALL_ENEMIES) {
+                StringBuilder combinedMessage = new StringBuilder();
+                double totalDamageDealt = 0;
+
                 for (Enemy enemy : enemies) {
                     if (enemy.getHp() > 0) {
                         Move.currentTarget = enemy;
                         move.execute(player);
+                        totalDamageDealt += move.getLastDamageDealt();
+
+                        // Activate after-damage passive for each enemy
+                        if (player.getWeapon() != null) {
+                            player.getWeapon().onAfterDamage(player, move, enemy, move.getLastDamageDealt());
+                        }
+
+                        if (move.getMessage() != null && !move.getMessage().isEmpty()) {
+                            if (combinedMessage.length() > 0) combinedMessage.append(" ");
+                            combinedMessage.append(move.getMessage());
+                        }
                     }
                 }
                 Move.currentTarget = null;
-                battlePanel.setBattleMessage(move.getMessage());
+
+                // Activate after-move passive once after all enemies
+                if (player.getWeapon() != null) {
+                    player.getWeapon().onAfterMove(player, move, null);
+                }
+
+                if (sfxP != null && totalDamageDealt > 0) sfxP.playSFX(new HitSFX());
+                else if (sfxP != null && move.getLastBuffAmount() < 0) sfxP.playSFX(new StatLowSFX());
+
+                if (combinedMessage.length() > 0) {
+                    battlePanel.setBattleMessage(combinedMessage.toString());
+                } else {
+                    battlePanel.setBattleMessage(move.getMessage());
+                }
                 battlePanel.repaint();
                 battlePanel.updateTargetButtonStates();
 
@@ -762,10 +887,18 @@ public class Battle {
 
                 if (currentTarget != null && currentTarget.getHp() > 0) {
                     Move.currentTarget = currentTarget;
-                    // mao ni bai
                     Move.currentBattle = this;
-                    // -----
                     move.execute(player);
+
+                    if (sfxP != null && move.getLastDamageDealt() > 0) sfxP.playSFX(new HitSFX());
+                    else if (sfxP != null && move.getLastBuffAmount() < 0) sfxP.playSFX(new StatLowSFX());
+
+                    // Activate after-damage passive
+                    if (player.getWeapon() != null) {
+                        player.getWeapon().onAfterDamage(player, move, currentTarget, move.getLastDamageDealt());
+                        player.getWeapon().onAfterMove(player, move, currentTarget);
+                    }
+
                     Move.currentTarget = null;
                     battlePanel.setBattleMessage(move.getMessage());
                     battlePanel.repaint();
@@ -949,6 +1082,33 @@ public class Battle {
     // ─────────────────────────────────────────────────────────────
     // Helper Methods
     // ─────────────────────────────────────────────────────────────
+    /**
+     * Check if a Power buff has already been applied this battle
+     */
+    public boolean isPowerBuffApplied() {
+        return powerBuffApplied;
+    }
+
+    /**
+     * Check if a Hardening buff has already been applied this battle
+     */
+    public boolean isHardeningBuffApplied() {
+        return hardeningBuffApplied;
+    }
+
+    /**
+     * Mark Power buff as applied
+     */
+    public void setPowerBuffApplied(boolean applied) {
+        this.powerBuffApplied = applied;
+    }
+
+    /**
+     * Mark Hardening buff as applied
+     */
+    public void setHardeningBuffApplied(boolean applied) {
+        this.hardeningBuffApplied = applied;
+    }
 
     /** Get list of alive enemies */
     private List<Enemy> getAliveEnemies() {
@@ -961,7 +1121,6 @@ public class Battle {
         return alive;
     }
 
-    /** End the battle */
     private void endBattle(boolean playerWon) {
         if (!isBattleActive) return;
 
@@ -969,10 +1128,22 @@ public class Battle {
         isWaitingForPlayerInput = false;
         isExecutingTurn = false;
 
-        String endMessage = playerWon ? "All enemies have been defeated! You win!" :
-                player.getName() + " has been defeated! Game Over!";
+        powerBuffApplied = false;
+        hardeningBuffApplied = false;
+
+        String endMessage = playerWon
+                ? "All enemies defeated! Victory!"
+                : player.getName() + " has been defeated! Game Over!";
         battlePanel.setBattleMessage(endMessage);
         battlePanel.repaint();
+
+        if (!playerWon) {
+            SFXPlayer sfxP = battlePanel.getSFXPlayer();
+            if (sfxP != null) {
+                boolean defeatedByZED = enemies.stream().anyMatch(e -> e instanceof ZED);
+                if (!defeatedByZED) sfxP.playSFX(new GameOverSFX());
+            }
+        }
 
         // Reset battle buffs
         if (player instanceof Swordsman) {
@@ -983,12 +1154,15 @@ public class Battle {
             ((Mage) player).resetBattleBuffs();
         }
 
-        Timer endTimer = new Timer(2000, e -> {
+        int delay = playerWon ? 1500 : 2500;
+
+        Timer endTimer = new Timer(delay, e -> {
             if (onBattleEnd != null) {
-                onBattleEnd.run();
+                onBattleEnd.run(); // This handles BOTH win and lose — GamePanel decides
             }
+            // Only dispose if no callback handled it
             Window window = SwingUtilities.getWindowAncestor(battlePanel);
-            if (window != null) {
+            if (window != null && onBattleEnd == null) {
                 window.dispose();
             }
         });

@@ -150,8 +150,7 @@ public abstract class Entity {
 
     // Stat buff/debuff methods
     public void buffAttack(double amount) {
-        double newAttack = this.attack + amount;
-        this.attack = Math.min(newAttack, maxAttack * 2);
+        this.attack += amount;
     }
 
     public void debuffAttack(double multiplier) {
@@ -160,8 +159,7 @@ public abstract class Entity {
     }
 
     public void buffDefense(double amount) {
-        double newDefense = this.defense + amount;
-        this.defense = Math.min(newDefense, 500);
+        this.defense += amount;
     }
 
     public void debuffDefense(double multiplier) {
@@ -171,7 +169,7 @@ public abstract class Entity {
 
     public void buffSpeed(double amount) {
         double newSpeed = this.speed + amount;
-        this.speed = Math.min(newSpeed, 200); // Cap at 200 speed
+        this.speed = Math.min(newSpeed, 300); // Cap at 300 speed
     }
 
     public void debuffSpeed(double multiplier) {

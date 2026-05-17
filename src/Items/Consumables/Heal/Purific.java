@@ -6,7 +6,7 @@ import Items.Consumables.Consumable;
 public class Purific extends Consumable {
 
     public Purific(){
-        super("Purific Potion", "Cures all status effects", 300);
+        super("Purific Potion", "Cures poison", 60);
         useMessage = "Used Purific Potion!";
 
         loadImage("/items/healing_potions/purifying_potion.png");

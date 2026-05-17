@@ -1,6 +1,7 @@
 package Entities.Characters;
 
 import Items.Consumables.Heal.Healing;
+import Items.Weapons.Ranger.*;
 import Main.*;
 import Moves.Ranger.*;
 
@@ -16,7 +17,7 @@ public class Ranger extends Player {
 
     public Ranger(GamePanel gp, KeyHandler keyH) {
         super(gp, keyH);
-        name = "Ranger";
+        name = "Archer";
         hp = 880;
         maxHp = hp;
         attack = 240;
@@ -143,10 +144,10 @@ public class Ranger extends Player {
     public void addHarmonyStack() {
         if (harmonyStacks < 3) {
             harmonyStacks++;
-            // Increase attack by 12 per stack
-            flatAttackBonus = 12 * harmonyStacks;
-            // Increase defense by 12 per stack
-            flatDefenseBonus = 12 * harmonyStacks;
+            // Increase attack by 15 per stack
+            flatAttackBonus = 15;
+            // Increase defense by 15 per stack
+            flatDefenseBonus = 15;
             recalculateStats();
         }
     }
@@ -164,7 +165,7 @@ public class Ranger extends Player {
         }
     }
 
-    // Methods to add flat bonuses (from potions)
+    // Methods to add flat bonuses
     public void addFlatAttackBonus(double bonus) {
         flatAttackBonus += bonus;
         recalculateStats();
@@ -192,15 +193,27 @@ public class Ranger extends Player {
     private void recalculateStats() {
         // Recalculate attack
         this.attack = attack + flatAttackBonus;
-        if (this.attack > maxAttack * 2) {
-            this.attack = maxAttack * 2;
-        }
 
         // Recalculate defense
         this.defense = defense + flatDefenseBonus;
-        if (this.defense > maxDefense * 4) {
-            this.defense = maxDefense * 4;
-        }
+    }
+
+    //For mistwood weapon passive
+    private double flatSpeedBonus = 0;
+
+    public void addFlatSpeedBonus(double bonus) {
+        flatSpeedBonus += bonus;
+        recalculateSpeed();
+    }
+
+    public void removeFlatSpeedBonus(double bonus) {
+        flatSpeedBonus -= bonus;
+        if (flatSpeedBonus < 0) flatSpeedBonus = 0;
+        recalculateSpeed();
+    }
+
+    private void recalculateSpeed() {
+        this.speed = speed + flatSpeedBonus;
     }
 
     // Getters

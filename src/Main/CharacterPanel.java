@@ -7,6 +7,7 @@ import Entities.Characters.Mage;
 import Items.Weapons.Weapon;
 import Moves.Move;
 
+import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -99,6 +100,7 @@ public class CharacterPanel extends JPanel {
     private final Player player;
     private final boolean fromCombat;
     private final Runnable onBackPressed;
+    private GamePanel gamePanel;
 
     // UI Components
     private JPanel leftPanel;
@@ -126,6 +128,7 @@ public class CharacterPanel extends JPanel {
     private JLabel playerImageLabel;
     private JLabel weaponIconLabel;
     private JLabel weaponNameLabel;
+    private JLabel goldLabel;
 
     // Move Management
     private ArrayList<MoveButton> equippedMoveButtons = new ArrayList<>();
@@ -136,8 +139,8 @@ public class CharacterPanel extends JPanel {
 
     private Map<MoveButton, Move> availableMoveButtonMap = new HashMap<>();
 
-    // Background Image
-    private BufferedImage backgroundImage;
+    // ── Background GIF ────────────────────────────────────────────
+    private ImageIcon backgroundGif;
 
     // Constructor
     public CharacterPanel(JFrame parentFrame, Player player, boolean fromCombat, Runnable onBackPressed) {
@@ -159,7 +162,6 @@ public class CharacterPanel extends JPanel {
         startTitleAnimation();
 
         refreshUI();
-
         syncMoveButtonStates();
 
         addKeyListener(new KeyAdapter() {
@@ -184,6 +186,14 @@ public class CharacterPanel extends JPanel {
         }
         if (titleAnimTimer != null) {
             titleAnimTimer.stop();
+        }
+    }
+
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+
+    private void playClickSFX() {
+        if (gamePanel != null) {
+            gamePanel.getSFXPlayer().playSFX(new ClickSFX());
         }
     }
 
@@ -215,7 +225,7 @@ public class CharacterPanel extends JPanel {
             if (floatY < -5f) floatDir = 1f;
             shimmer -= 0.005f;
             if (shimmer < -0.4f) shimmer = 1.4f;
-            repaint();
+            // repaint is driven by the GIF ImageObserver — no need to call it here
         });
         titleAnimTimer.start();
     }
@@ -265,9 +275,13 @@ public class CharacterPanel extends JPanel {
 
     private void loadBackground() {
         try {
-            backgroundImage = ImageIO.read(getClass().getResourceAsStream("/ui/inventory_bg.png"));
+            java.net.URL gifUrl = getClass().getResource("/backgrounds/character_bg.gif");
+            if (gifUrl != null) {
+                backgroundGif = new ImageIcon(gifUrl);
+                backgroundGif.setImageObserver(this);
+            }
         } catch (Exception e) {
-            backgroundImage = null;
+            backgroundGif = null;
         }
     }
 
@@ -347,9 +361,7 @@ public class CharacterPanel extends JPanel {
     }
 
     private void startAnimationTimer() {
-        if (animationTimer != null) {
-            animationTimer.cancel();
-        }
+        if (animationTimer != null) animationTimer.cancel();
         animationTimer = new Timer();
         animationTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -360,6 +372,7 @@ public class CharacterPanel extends JPanel {
                         Image scaled = playerIdleFrames[currentPlayerFrame].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
                         playerImageLabel.setIcon(new ImageIcon(scaled));
                     }
+                    // repaint is driven by the GIF ImageObserver — no need to call it here
                 });
             }
         }, 0, 120);
@@ -381,10 +394,9 @@ public class CharacterPanel extends JPanel {
         backButton = new GoldButton("← Back");
         backButton.setBounds(BACK_BTN_X, BACK_BTN_Y, BACK_BTN_W, BACK_BTN_H);
         backButton.addActionListener(e -> {
+            playClickSFX();
             cleanup();
-            if (onBackPressed != null) {
-                onBackPressed.run();
-            }
+            if (onBackPressed != null) onBackPressed.run();
         });
         add(backButton);
     }
@@ -430,6 +442,13 @@ public class CharacterPanel extends JPanel {
     }
 
     private void setupLeftPanel() {
+        // Gold display above character sprite
+        goldLabel = new JLabel("$ " + player.getMoney(), SwingConstants.CENTER);
+        goldLabel.setFont(new Font("Serif", Font.BOLD, 14));
+        goldLabel.setForeground(TEXT_GOLD);
+        goldLabel.setBounds(10, 15, 260, 22);
+        leftPanel.add(goldLabel);
+
         // Player image (left side)
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
@@ -441,7 +460,6 @@ public class CharacterPanel extends JPanel {
         playerImageLabel.setVerticalAlignment(SwingConstants.CENTER);
         leftPanel.add(playerImageLabel);
 
-        // Equipped weapon panel (right side of top row)
         JPanel equippedWeaponPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -482,7 +500,6 @@ public class CharacterPanel extends JPanel {
         characterLevelLabel.setOpaque(false);
         leftPanel.add(characterLevelLabel);
 
-        // Stats Container
         setupStatsContainer();
     }
 
@@ -493,16 +510,11 @@ public class CharacterPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Semi-transparent dark background
                 g2.setColor(new Color(0, 0, 0, 150));
                 g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 12, 12));
-
-                // Gold border
                 g2.setColor(TEXT_GOLD);
                 g2.setStroke(new BasicStroke(2.0f));
                 g2.draw(new RoundRectangle2D.Float(2, 2, getWidth() - 4, getHeight() - 4, 10, 10));
-
                 g2.dispose();
             }
         };
@@ -511,66 +523,56 @@ public class CharacterPanel extends JPanel {
         statsContainer.setBounds(15, 235, 270, 170);
         leftPanel.add(statsContainer);
 
-        // HEALTH Label
         JLabel hpLabel = new JLabel("HEALTH");
         hpLabel.setFont(FONT_STAT);
         hpLabel.setForeground(STAT_HP);
         hpLabel.setBounds(10, 10, 60, 18);
         statsContainer.add(hpLabel);
 
-        // HEALTH Bar Panel
         hpBarPanel = new StatBarPanel(STAT_HP);
         hpBarPanel.setBounds(75, 14, 170, 14);
         statsContainer.add(hpBarPanel);
 
-        // HEALTH Value Label
         hpValueLabel = new JLabel("0 / 0", SwingConstants.RIGHT);
         hpValueLabel.setFont(FONT_STAT_VALUE);
         hpValueLabel.setForeground(STAT_VALUE);
         hpValueLabel.setBounds(150, 31, 95, 14);
         statsContainer.add(hpValueLabel);
 
-        // EXPERIENCE Label
         JLabel expLabel = new JLabel("EXP");
         expLabel.setFont(FONT_STAT);
         expLabel.setForeground(STAT_EXP);
         expLabel.setBounds(10, 44, 60, 18);
         statsContainer.add(expLabel);
 
-        // EXPERIENCE Bar Panel
         expBarPanel = new StatBarPanel(STAT_EXP);
         expBarPanel.setBounds(75, 48, 170, 14);
         statsContainer.add(expBarPanel);
 
-        // EXPERIENCE Value Label
         expValueLabel = new JLabel("0 / 0", SwingConstants.RIGHT);
         expValueLabel.setFont(FONT_STAT_VALUE);
         expValueLabel.setForeground(STAT_VALUE);
         expValueLabel.setBounds(150, 65, 95, 14);
         statsContainer.add(expValueLabel);
 
-        // ATTACK Label (text only)
         atkLabel = new JLabel("ATTACK: 0 / 0");
         atkLabel.setFont(FONT_STAT);
         atkLabel.setForeground(STAT_ATK);
         atkLabel.setBounds(10, 80, 250, 18);
         statsContainer.add(atkLabel);
 
-        // DEFENSE Label (text only)
         defLabel = new JLabel("DEFENSE: 0 / 0");
         defLabel.setFont(FONT_STAT);
         defLabel.setForeground(STAT_DEF);
         defLabel.setBounds(10, 100, 250, 18);
         statsContainer.add(defLabel);
 
-        // SPEED Label (text only)
         spdLabel = new JLabel("SPEED: 0");
         spdLabel.setFont(FONT_STAT);
         spdLabel.setForeground(STAT_SPD);
         spdLabel.setBounds(10, 120, 250, 18);
         statsContainer.add(spdLabel);
 
-        // ACCURACY Label (text only)
         accLabel = new JLabel("ACCURACY: 0.0%");
         accLabel.setFont(FONT_STAT);
         accLabel.setForeground(STAT_ACC);
@@ -598,99 +600,72 @@ public class CharacterPanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int w = getWidth();
-            int h = getHeight();
-
-            // Background
+            int w = getWidth(), h = getHeight();
             g2.setColor(new Color(30, 30, 30, 200));
             g2.fill(new RoundRectangle2D.Float(0, 0, w, h, 5, 5));
 
-            // Fill
             int fillWidth = (int) (w * fillPercent);
             if (fillWidth > 0) {
                 g2.setColor(barColor);
                 g2.fill(new RoundRectangle2D.Float(0, 0, fillWidth, h, 5, 5));
             }
 
-            // Border
             g2.setColor(new Color(60, 60, 60));
             g2.setStroke(new BasicStroke(1.0f));
             g2.draw(new RoundRectangle2D.Float(0, 0, w - 1, h - 1, 5, 5));
-
             g2.dispose();
         }
     }
 
     private void refreshStats() {
+        if (goldLabel != null) goldLabel.setText("$ " + player.getMoney());
+
         // HEALTH
         int currentHp = (int) player.getHp();
-        int maxHp = (int) player.getMaxHp();
-        maxHp = Math.max(1, maxHp);
-        float hpPercent = (float) currentHp / maxHp;
-        hpBarPanel.setFillPercent(hpPercent);
+        int maxHp = Math.max(1, (int) player.getMaxHp());
+        hpBarPanel.setFillPercent((float) currentHp / maxHp);
         hpValueLabel.setText(currentHp + " / " + maxHp);
 
-        // EXPERIENCE
         int currentExp = player.getExperience();
-        int neededExp = player.getExpNeeded();
-        neededExp = Math.max(1, neededExp);
-        float expPercent = (float) currentExp / neededExp;
-        expBarPanel.setFillPercent(expPercent);
+        int neededExp = Math.max(1, player.getExpNeeded());
+        expBarPanel.setFillPercent((float) currentExp / neededExp);
         expValueLabel.setText(currentExp + " / " + neededExp);
 
-        // ATTACK
-        int currentAtk = (int) player.getAttack();
-        int maxAtk = (int) player.getMaxAttack();
-        atkLabel.setText("ATTACK: " + currentAtk + " / " + maxAtk);
-
-        // DEFENSE
-        int currentDef = (int) player.getDefense();
-        int maxDef = (int) player.getMaxDefense();
-        defLabel.setText("DEFENSE: " + currentDef + " / " + maxDef);
-
-        // SPEED
-        int currentSpd = (int) player.getSpeed();
-        spdLabel.setText("SPEED: " + currentSpd);
-
-        // ACCURACY
-        double accuracy = player.getAccuracy();
-        accLabel.setText(String.format("ACCURACY: %.1f%%", accuracy * 100));
+        atkLabel.setText("ATTACK: " + (int) player.getAttack() + " / " + (int) player.getMaxAttack());
+        defLabel.setText("DEFENSE: " + (int) player.getDefense() + " / " + (int) player.getMaxDefense());
+        spdLabel.setText("SPEED: " + (int) player.getSpeed());
+        accLabel.setText(String.format("ACCURACY: %.1f%%", player.getAccuracy() * 100));
     }
 
     private void setupRightPanel() {
-        // Equipped Moves Section
         JLabel equippedLabel = new JLabel("EQUIPPED MOVES");
         equippedLabel.setFont(FONT_SECTION);
         equippedLabel.setForeground(TEXT_BROWN);
         equippedLabel.setBounds(20, 15, 200, 25);
         rightPanel.add(equippedLabel);
 
-        // Create 4 equipped move buttons in 2x2 grid
         for (int i = 0; i < 4; i++) {
             int row = i / 2;
             int col = i % 2;
             MoveButton btn = new MoveButton("");
             btn.setBounds(20 + (col * 155), 50 + (row * 52), 140, 42);
             final int index = i;
-            btn.addActionListener(e -> handleEquippedMoveClick(index));
+            btn.addActionListener(e -> { playClickSFX(); handleEquippedMoveClick(index); });
             equippedMoveButtons.add(btn);
             rightPanel.add(btn);
         }
 
-        // Divider line
         JSeparator divider1 = new JSeparator();
         divider1.setBounds(20, 160, 620, 2);
         divider1.setForeground(TEXT_GOLD);
         rightPanel.add(divider1);
 
-        // Available Moves Section
         JLabel availableLabel = new JLabel("AVAILABLE MOVES");
         availableLabel.setFont(FONT_SECTION);
         availableLabel.setForeground(TEXT_BROWN);
         availableLabel.setBounds(20, 170, 200, 25);
         rightPanel.add(availableLabel);
 
-        // Create available move buttons
         List<Move> moveset = player.getMoveset();
         List<Move> equippedMoves = player.getMoves();
         int col = 0, row = 0;
@@ -699,36 +674,27 @@ public class CharacterPanel extends JPanel {
                 MoveButton btn = new MoveButton(move.getName());
                 btn.setMove(move);
                 btn.setBounds(20 + (col * 155), 205 + (row * 52), 140, 42);
-                btn.addActionListener(e -> handleAvailableMoveClick(move));
+                btn.addActionListener(e -> { playClickSFX(); handleAvailableMoveClick(move); });
                 availableMoveButtons.add(btn);
-
                 availableMoveButtonMap.put(btn, move);
-
                 rightPanel.add(btn);
-
                 col++;
-                if (col >= 4) {
-                    col = 0;
-                    row++;
-                }
+                if (col >= 4) { col = 0; row++; }
             }
         }
 
-        // Divider line
         int availableSectionHeight = 205 + (row + 1) * 52;
         JSeparator divider2 = new JSeparator();
         divider2.setBounds(20, availableSectionHeight + 10, 620, 2);
         divider2.setForeground(TEXT_GOLD);
         rightPanel.add(divider2);
 
-        // Locked Moves Section
         JLabel lockedLabel = new JLabel("LOCKED MOVES");
         lockedLabel.setFont(FONT_SECTION);
         lockedLabel.setForeground(TEXT_BROWN);
         lockedLabel.setBounds(20, availableSectionHeight + 20, 200, 25);
         rightPanel.add(lockedLabel);
 
-        // Create locked move buttons
         col = 0; row = 0;
         for (Move move : moveset) {
             if (!move.hasUnlocked()) {
@@ -737,31 +703,19 @@ public class CharacterPanel extends JPanel {
                 btn.setEnabled(false);
                 btn.setBounds(20 + (col * 155), availableSectionHeight + 55 + (row * 52), 140, 42);
                 lockedMoveButtons.add(btn);
-
                 availableMoveButtonMap.put(btn, move);
-
                 rightPanel.add(btn);
-
                 col++;
-                if (col >= 4) {
-                    col = 0;
-                    row++;
-                }
+                if (col >= 4) { col = 0; row++; }
             }
         }
     }
 
-    /**
-     * Synchronizes the state of available move buttons with currently equipped moves.
-     * Disables buttons for moves that are already equipped and updates tooltips.
-     */
     private void syncMoveButtonStates() {
-        // Build a set of equipped move names for quick lookup
         Set<String> equippedMoveNames = player.getMoves().stream()
                 .map(Move::getName)
                 .collect(Collectors.toSet());
 
-        // Iterate through all available move buttons
         for (Map.Entry<MoveButton, Move> entry : availableMoveButtonMap.entrySet()) {
             MoveButton btn = entry.getKey();
             Move move = entry.getValue();
@@ -770,17 +724,14 @@ public class CharacterPanel extends JPanel {
             boolean isLocked = !move.hasUnlocked();
 
             if (isLocked) {
-                // Locked moves - disabled, dark styling
                 btn.setEnabled(false);
                 btn.setToolTipText("LOCKED - Requires level progression");
                 btn.setForeground(new Color(120, 100, 70));
             } else if (isEquipped) {
-                // Already equipped moves - disabled, distinct styling
                 btn.setEnabled(false);
                 btn.setToolTipText("Already equipped");
                 btn.setForeground(new Color(120, 100, 70));
             } else {
-                // Available moves - enabled, normal styling
                 btn.setEnabled(true);
                 btn.setToolTipText("Click to equip");
                 btn.setForeground(BTN_TEXT_DARK);
@@ -799,7 +750,6 @@ public class CharacterPanel extends JPanel {
                     cancelReplacement();
                     return;
                 }
-
                 Move oldMove = playerMoves.get(index);
                 playerMoves.set(index, pendingSwapMove);
                 messageLabel.setText("Replaced " + oldMove.getName() + " with " + pendingSwapMove.getName());
@@ -813,9 +763,7 @@ public class CharacterPanel extends JPanel {
     }
 
     private void handleAvailableMoveClick(Move move) {
-        if (isReplacingMove) {
-            return;
-        }
+        if (isReplacingMove) return;
 
         List<Move> playerMoves = player.getMoves();
 
@@ -831,17 +779,13 @@ public class CharacterPanel extends JPanel {
             messageLabel.setText("Equipped " + move.getName());
             refreshUI();
         } else {
-            String confirmMessage = "Equip " + move.getName() + "?\n" +
-                    move.getDescription() + "\nMultiplier: " +
-                    String.format("%.0f%%", move.getAttack() * 100);
-            showParchmentDialog("Equip Move", confirmMessage, "Yes", "No", () -> {
+            showParchmentDialog("Equip Move", "Equip " + move.getName() + "?\n" + move.getDescription(), "Yes", "No", () -> {
                 if (player.getMoves().contains(move)) {
                     showParchmentDialog("Already Equipped",
                             move.getName() + " is already equipped!", "OK", null, null);
                     refreshUI();
                     return;
                 }
-
                 isReplacingMove = true;
                 pendingSwapMove = move;
                 messageLabel.setText("Choose a move to replace with " + move.getName());
@@ -858,9 +802,7 @@ public class CharacterPanel extends JPanel {
     }
 
     private void highlightEquippedButtons(boolean highlight) {
-        for (MoveButton btn : equippedMoveButtons) {
-            btn.setHighlighted(highlight);
-        }
+        for (MoveButton btn : equippedMoveButtons) btn.setHighlighted(highlight);
     }
 
     private void setupMessagePanel() {
@@ -873,7 +815,6 @@ public class CharacterPanel extends JPanel {
     }
 
     private void refreshUI() {
-        // Update weapon display
         Weapon equipped = player.getWeapon();
         if (equipped != null) {
             BufferedImage weaponImg = equipped.getImage();
@@ -889,7 +830,6 @@ public class CharacterPanel extends JPanel {
             weaponNameLabel.setText("No weapon");
         }
 
-        // Update equipped move buttons
         List<Move> playerMoves = player.getMoves();
         for (int i = 0; i < 4; i++) {
             if (i < playerMoves.size()) {
@@ -905,8 +845,6 @@ public class CharacterPanel extends JPanel {
         }
 
         syncMoveButtonStates();
-
-        // Refresh stats
         refreshStats();
     }
 
@@ -922,19 +860,13 @@ public class CharacterPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 g2.setPaint(new LinearGradientPaint(0, 0, 0, getHeight(),
                         new float[]{0f, 0.08f, 0.22f, 0.50f, 0.78f, 0.92f, 1f},
-                        new Color[]{
-                                PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE,
-                                PARCH_WARM, PARCH_TAN, PARCH_TOP
-                        }));
+                        new Color[]{PARCH_TOP, PARCH_TAN, PARCH_WARM, PARCH_CENTRE, PARCH_WARM, PARCH_TAN, PARCH_TOP}));
                 g2.fillRect(0, 0, getWidth(), getHeight());
-
                 g2.setColor(TEXT_GOLD);
                 g2.setStroke(new BasicStroke(3.0f));
                 g2.drawRect(5, 5, getWidth() - 10, getHeight() - 10);
-
                 g2.dispose();
             }
         };
@@ -951,19 +883,13 @@ public class CharacterPanel extends JPanel {
 
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
-        btn1.addActionListener(e -> {
-            dialog.dispose();
-            if (onConfirm != null) onConfirm.run();
-        });
+        btn1.addActionListener(e -> { playClickSFX(); dialog.dispose(); if (onConfirm != null) onConfirm.run(); });
         contentPane.add(btn1);
 
         if (option2 != null) {
             GoldButton btn2 = new GoldButton(option2);
             btn2.setBounds(220, 130, 100, 40);
-            btn2.addActionListener(e -> {
-                dialog.dispose();
-                cancelReplacement();
-            });
+            btn2.addActionListener(e -> { playClickSFX(); dialog.dispose(); cancelReplacement(); });
             contentPane.add(btn2);
         }
 
@@ -974,17 +900,19 @@ public class CharacterPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-        if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, null);
+        if (backgroundGif != null) {
+            // Draws current GIF frame; ImageObserver set in loadBackground()
+            // fires repaint() automatically on every new frame
+            g2.drawImage(backgroundGif.getImage(), 0, 0, WIDTH, HEIGHT, this);
         } else {
             g2.setColor(BG_COLOR);
             g2.fillRect(0, 0, WIDTH, HEIGHT);
         }
 
         paintTitle(g2);
-
         g2.dispose();
     }
 
@@ -1010,61 +938,31 @@ public class CharacterPanel extends JPanel {
                     if (isEnabled()) {
                         hovered = true;
                         if (move != null) {
-                            String displayText;
-
-                            displayText = move.getName() + " | " + move.getDescription();
-                            displayText += " | Multiplier: " + String.format("%.0f%%", move.getAttack() * 100);
-
+                            String displayText = move.getName() + " | " + move.getDescription();
                             if (!move.hasUnlocked()) {
                                 displayText = move.getName() + " | LOCKED | Requires level progression";
-                            } else {
-                                // Check if this move is currently equipped
-                                boolean isEquipped = player.getMoves().stream()
-                                        .anyMatch(m -> m.getName().equals(move.getName()));
                             }
                             messageLabel.setText(displayText);
                         }
                         repaint();
                     }
                 }
-
                 @Override
                 public void mouseExited(MouseEvent e) {
                     hovered = false;
-                    if (!isReplacingMove) {
-                        messageLabel.setText("Hover over a move for info");
-                    }
+                    if (!isReplacingMove) messageLabel.setText("Hover over a move for info");
                     repaint();
                 }
-
                 @Override
-                public void mousePressed(MouseEvent e) {
-                    if (isEnabled()) {
-                        pressed = true;
-                        repaint();
-                    }
-                }
-
+                public void mousePressed(MouseEvent e) { if (isEnabled()) { pressed = true; repaint(); } }
                 @Override
-                public void mouseReleased(MouseEvent e) {
-                    pressed = false;
-                    repaint();
-                }
+                public void mouseReleased(MouseEvent e) { pressed = false; repaint(); }
             });
         }
 
-        public void setMove(Move move) {
-            this.move = move;
-        }
-
-        public Move getMove() {
-            return move;
-        }
-
-        public void setHighlighted(boolean highlighted) {
-            this.highlighted = highlighted;
-            repaint();
-        }
+        public void setMove(Move move) { this.move = move; }
+        public Move getMove() { return move; }
+        public void setHighlighted(boolean highlighted) { this.highlighted = highlighted; repaint(); }
 
         @Override
         protected void paintComponent(Graphics g) {
@@ -1088,13 +986,11 @@ public class CharacterPanel extends JPanel {
                                 (hovered ? BTN_GOLD_HOVER : BTN_GOLD_NORMAL));
                 g2.setColor(fill);
                 g2.fill(oct);
-
                 if (hovered && !pressed) {
                     g2.setColor(new Color(255, 255, 255, 40));
                     Polygon topOct = makeOctagon(0, 0, w, h / 2, c);
                     g2.fill(topOct);
                 }
-
                 g2.setColor(BTN_BORDER_CLR);
                 g2.setStroke(new BasicStroke(2.0f));
                 g2.draw(oct);
@@ -1102,11 +998,9 @@ public class CharacterPanel extends JPanel {
 
             FontMetrics fm = g2.getFontMetrics(getFont());
             String displayText = getText();
-
             int tx = (w - fm.stringWidth(displayText)) / 2;
             int ty = (h + fm.getAscent() - fm.getDescent()) / 2;
             g2.setFont(getFont());
-
             if (!isEnabled()) {
                 g2.setColor(new Color(150, 150, 150));
             } else {
@@ -1139,33 +1033,10 @@ public class CharacterPanel extends JPanel {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if (isEnabled()) {
-                        hovered = true;
-                        repaint();
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    hovered = false;
-                    repaint();
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    if (isEnabled()) {
-                        pressed = true;
-                        repaint();
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    pressed = false;
-                    repaint();
-                }
+                @Override public void mouseEntered(MouseEvent e) { if (isEnabled()) { hovered = true; repaint(); } }
+                @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                @Override public void mousePressed(MouseEvent e) { if (isEnabled()) { pressed = true; repaint(); } }
+                @Override public void mouseReleased(MouseEvent e) { pressed = false; repaint(); }
             });
         }
 

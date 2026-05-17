@@ -13,6 +13,7 @@ import Items.Consumables.Debuff.Clumsiness.*;
 import Items.Consumables.Debuff.Blinding.*;
 import Moves.Move;
 
+import Audio.SFX.ClickSFX;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -106,6 +107,7 @@ public class InventoryPanel extends JPanel {
     private final BiConsumer<Item, Enemy> onItemSelected;
     private final Runnable onBackPressed;
     private Combat.Battle battle;
+    private GamePanel gamePanel;
 
     // ── UI Components ─────────────────────────────────────────────
     private JPanel characterPanel;
@@ -122,6 +124,7 @@ public class InventoryPanel extends JPanel {
     private JLabel weaponIconLabel;
     private JLabel weaponNameLabel;
     private JLabel characterLevelLabel;
+    private JLabel goldLabel;
 
     // ── Inventory Grid ────────────────────────────────────────────
     private JPanel inventoryGrid;
@@ -129,8 +132,8 @@ public class InventoryPanel extends JPanel {
     private ArrayList<ItemSlot> itemSlots = new ArrayList<>();
     private JLabel messageLabel;
 
-    // ── Background Image ──────────────────────────────────────────
-    private BufferedImage backgroundImage;
+    // ── Background GIF ────────────────────────────────────────────
+    private ImageIcon backgroundGif;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructor
@@ -189,6 +192,14 @@ public class InventoryPanel extends JPanel {
                 }
             }
         });
+    }
+
+    public void setGamePanel(GamePanel gp) { this.gamePanel = gp; }
+
+    private void playClickSFX() {
+        if (gamePanel != null) {
+            gamePanel.getSFXPlayer().playSFX(new ClickSFX());
+        }
     }
 
     public void requestPanelFocus() {
@@ -375,6 +386,7 @@ public class InventoryPanel extends JPanel {
         GoldButton btn1 = new GoldButton(option1);
         btn1.setBounds(option2 == null ? 150 : 80, 130, option2 == null ? 100 : 100, 40);
         btn1.addActionListener(e -> {
+            playClickSFX();
             dialog.dispose();
             if (onConfirm != null) onConfirm.run();
         });
@@ -383,7 +395,7 @@ public class InventoryPanel extends JPanel {
         if (option2 != null) {
             GoldButton btn2 = new GoldButton(option2);
             btn2.setBounds(220, 130, 100, 40);
-            btn2.addActionListener(e -> dialog.dispose());
+            btn2.addActionListener(e -> { playClickSFX(); dialog.dispose(); });
             contentPane.add(btn2);
         }
 
@@ -443,9 +455,15 @@ public class InventoryPanel extends JPanel {
     // ── Setup Methods ─────────────────────────────────────────────
     private void loadBackground() {
         try {
-            backgroundImage = ImageIO.read(getClass().getResourceAsStream("/ui/inventory_bg.png"));
+            java.net.URL gifUrl = getClass().getResource("/backgrounds/inventory_bg.gif");
+            if (gifUrl != null) {
+                backgroundGif = new ImageIcon(gifUrl);
+                // Hooks the GIF animator into this panel so every
+                // new frame automatically triggers a repaint
+                backgroundGif.setImageObserver(this);
+            }
         } catch (Exception e) {
-            backgroundImage = null;
+            backgroundGif = null;
         }
     }
 
@@ -559,6 +577,7 @@ public class InventoryPanel extends JPanel {
         backButton = new GoldButton("← Back");
         backButton.setBounds(BACK_BTN_X, BACK_BTN_Y, BACK_BTN_W, BACK_BTN_H);
         backButton.addActionListener(e -> {
+            playClickSFX();
             if (animationTimer != null) {
                 animationTimer.cancel();
                 animationTimer = null;
@@ -616,18 +635,24 @@ public class InventoryPanel extends JPanel {
     }
 
     private void setupCharacterPanel() {
+        // Gold display above character sprite
+        goldLabel = new JLabel("$ " + player.getMoney(), SwingConstants.CENTER);
+        goldLabel.setFont(new Font("Serif", Font.BOLD, 14));
+        goldLabel.setForeground(TEXT_GOLD);
+        goldLabel.setBounds(10, 5, 260, 22);
+        characterPanel.add(goldLabel);
+
         // Left side: Player image
         playerImageLabel = new JLabel();
         if (playerIdleFrames[0] != null) {
             Image scaled = playerIdleFrames[0].getScaledInstance(135, 135, Image.SCALE_SMOOTH);
             playerImageLabel.setIcon(new ImageIcon(scaled));
         }
-        playerImageLabel.setBounds(15, 20, 135, 135);
+        playerImageLabel.setBounds(15, 35, 135, 135);
         playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         playerImageLabel.setVerticalAlignment(SwingConstants.CENTER);
         characterPanel.add(playerImageLabel);
 
-        // Right side: Equipped weapon display
         equippedWeaponPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -644,24 +669,23 @@ public class InventoryPanel extends JPanel {
         };
         equippedWeaponPanel.setLayout(null);
         equippedWeaponPanel.setOpaque(false);
-        equippedWeaponPanel.setBounds(160, 20, 120, 150);
+        equippedWeaponPanel.setBounds(160, 35, 120, 150);
         equippedWeaponPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (!fromCombat && player.getWeapon() != null) {
+                    playClickSFX();
                     unequipWeapon();
                 }
             }
         });
         characterPanel.add(equippedWeaponPanel);
 
-        // Weapon icon
         weaponIconLabel = new JLabel();
         weaponIconLabel.setBounds(36, 20, 48, 48);
         weaponIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         equippedWeaponPanel.add(weaponIconLabel);
 
-        // Weapon name label
         weaponNameLabel = new JLabel("No weapon equipped");
         weaponNameLabel.setFont(new Font("Serif", Font.BOLD, 11));
         weaponNameLabel.setForeground(TEXT_GOLD);
@@ -669,7 +693,6 @@ public class InventoryPanel extends JPanel {
         weaponNameLabel.setBounds(10, 80, 100, 40);
         equippedWeaponPanel.add(weaponNameLabel);
 
-        // Unequip hint
         JLabel unequipHint = new JLabel("(click to unequip)");
         unequipHint.setFont(new Font("Serif", Font.ITALIC, 9));
         unequipHint.setForeground(new Color(200, 200, 150));
@@ -677,17 +700,15 @@ public class InventoryPanel extends JPanel {
         unequipHint.setBounds(10, 120, 100, 20);
         equippedWeaponPanel.add(unequipHint);
 
-        // ADD THIS: Level label
         int level = player.getLevel();
         if (level < 1) level = 1;
         characterLevelLabel = new JLabel("Lv. " + level, SwingConstants.CENTER);
         characterLevelLabel.setFont(FONT_STAT);
         characterLevelLabel.setForeground(TEXT_BROWN);
-        characterLevelLabel.setBounds(-40, 145, 260, 24);
+        characterLevelLabel.setBounds(-40, 160, 260, 24);
         characterLevelLabel.setOpaque(false);
         characterPanel.add(characterLevelLabel);
 
-        // Stats Box Panel (semi-transparent dark with gold border)
         JPanel statsBox = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -704,7 +725,7 @@ public class InventoryPanel extends JPanel {
         };
         statsBox.setLayout(null);
         statsBox.setOpaque(false);
-        statsBox.setBounds(20, 180, 260, 160);
+        statsBox.setBounds(20, 195, 260, 160);
         characterPanel.add(statsBox);
 
         int lineHeight = 23;
@@ -720,7 +741,7 @@ public class InventoryPanel extends JPanel {
         ArrayList<Move> moves = player.getMoves();
         int btnW = 135, btnH = 40;
         int gapX = 140, gapY = 52;
-        int startYButtons = 350;
+        int startYButtons = 365;
         for (int i = 0; i < moves.size() && i < 4; i++) {
             final Move move = moves.get(i);
             GoldButton moveBtn = new GoldButton(move.getName());
@@ -730,6 +751,7 @@ public class InventoryPanel extends JPanel {
             int y = startYButtons + row * gapY;
             moveBtn.setBounds(x, y, btnW, btnH);
             moveBtn.addActionListener(e -> {
+                playClickSFX();
                 if (!fromCombat) {
                     messageLabel.setText(move.getName() + ": " + move.getDescription());
                 }
@@ -765,7 +787,7 @@ public class InventoryPanel extends JPanel {
     private void updateStatsPanel() {
         for (Component comp : characterPanel.getComponents()) {
             if (comp instanceof JPanel && ((JPanel) comp).getLayout() == null &&
-                    comp.getBounds().x == 20 && comp.getBounds().y == 180) {
+                    comp.getBounds().x == 20 && comp.getBounds().y == 195) {
                 JPanel statsBox = (JPanel) comp;
                 Component[] components = statsBox.getComponents();
                 for (int i = 0; i < components.length; i += 2) {
@@ -801,10 +823,21 @@ public class InventoryPanel extends JPanel {
         if (characterLevelLabel != null) {
             characterLevelLabel.setText("Lv. " + player.getLevel());
         }
+        if (goldLabel != null) {
+            goldLabel.setText("$ " + player.getMoney());
+        }
     }
 
     private void setupInventoryPanel() {
-        inventoryGrid = new JPanel();
+        inventoryGrid = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                Container parent = SwingUtilities.getAncestorOfClass(JViewport.class, this);
+                if (parent != null) d.width = parent.getWidth();
+                return d;
+            }
+        };
         inventoryGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
         inventoryGrid.setOpaque(false);
 
@@ -852,7 +885,7 @@ public class InventoryPanel extends JPanel {
                             slot.setHovered(true);
                             String displayText = item.getName() + " x" + quantity;
                             if (item instanceof Weapon) {
-                                displayText += " - ATK: +" + (int)((Weapon)item).getAttack();
+                                displayText += " - ATK: +" + (int)((Weapon)item).getAttack() + " | " + ((Weapon)item).getPassiveDescription();
                             } else {
                                 displayText += " - " + item.getDescription();
                             }
@@ -867,6 +900,7 @@ public class InventoryPanel extends JPanel {
 
                         @Override
                         public void mouseClicked(MouseEvent e) {
+                            playClickSFX();
                             if (fromCombat) {
                                 if (item instanceof Weapon) {
                                     showParchmentDialog("Cannot Equip", "Cannot equip or unequip weapons during combat!", "OK", null, null);
@@ -918,10 +952,13 @@ public class InventoryPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-        if (backgroundImage != null) {
-            g2.drawImage(backgroundImage, 0, 0, WIDTH, HEIGHT, null);
+        if (backgroundGif != null) {
+            // Draws current GIF frame; ImageObserver set in loadBackground()
+            // fires repaint() automatically on every new frame
+            g2.drawImage(backgroundGif.getImage(), 0, 0, WIDTH, HEIGHT, this);
         } else {
             g2.setColor(BG_COLOR);
             g2.fillRect(0, 0, WIDTH, HEIGHT);

@@ -3,6 +3,7 @@ package Combat;
 import Entities.Characters.*;
 import Entities.Enemies.Enemy;
 import Entities.Enemies.*;
+import Main.GamePanel;
 import Moves.Move;
 
 import javax.imageio.ImageIO;
@@ -17,7 +18,11 @@ import java.util.List;
 import Items.Item;
 import Main.InventoryPanel;
 import java.util.function.BiConsumer;
+
 import Combat.StatusEffects.StatusEffect;
+import Audio.SFX.ClickSFX;
+import Audio.SFX.SFXPlayer;
+
 
 public class BattlePanel extends JPanel {
 
@@ -79,14 +84,16 @@ public class BattlePanel extends JPanel {
     private BufferedImage[] playerIdleFrames = new BufferedImage[5];
     private int currentPlayerFrame = 0;
     private Timer animationTimer;
+    private Timer enemyAnimationTimer;
+    private boolean showStatusEffects = true;
 
     // ── GIF placeholder labels (enemies only) ─────────────────────
     private final List<JLabel> enemyGifLabels = new ArrayList<>();
 
     // ── Buttons ───────────────────────────────────────────────────
+    private int uiBoxVCenter;
     private BattleButton btnFight;
     private BattleButton btnBag;
-    private BattleButton btnRun;
     private BattleButton[] moveBtns;
     private BattleButton btnBack;
     private BattleButton btnBackTarget;
@@ -104,30 +111,56 @@ public class BattlePanel extends JPanel {
     // ── Item selection callback ───────────────────────────────────
     private BiConsumer<Item, Enemy> itemSelectionCallback;
 
-    // ── Status Effect Display ─────────────────────────────────────
-    private boolean showStatusEffects = true;
+    // ── Game Panel ─────────────────────────────────────
+    private GamePanel gp;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
-    public BattlePanel(Player player, Enemy enemy) {
-        this(player, List.of(enemy));
+    public BattlePanel(Player player, Enemy enemy, GamePanel gp) {
+        this(player, List.of(enemy), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2) {
-        this(player, List.of(enemy1, enemy2));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2), gp);
     }
 
-    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3) {
-        this(player, List.of(enemy1, enemy2, enemy3));
+    public BattlePanel(Player player, Enemy enemy1, Enemy enemy2, Enemy enemy3, GamePanel gp) {
+        this(player, List.of(enemy1, enemy2, enemy3), gp);
     }
 
-    private BattlePanel(Player player, List<Enemy> enemies) {
+    private BattlePanel(Player player, List<Enemy> enemies, GamePanel gp) {
         this.playerEntity = player;
         this.enemies = new ArrayList<>(enemies);
+        this.gp = gp;
 
         if (this.enemies.isEmpty()) {
             throw new IllegalArgumentException("At least one enemy is required");
+        }
+
+        // Customize tooltip appearance
+        ToolTipManager.sharedInstance().setInitialDelay(300);  // Show after 300ms
+        ToolTipManager.sharedInstance().setDismissDelay(8000); // Show for 8 seconds
+        ToolTipManager.sharedInstance().setReshowDelay(500);   // Reshow after 500ms
+
+        // Style the tooltips
+        UIManager.put("ToolTip.background", new Color(60, 30, 5, 240));
+        UIManager.put("ToolTip.foreground", new Color(255, 245, 200));
+        UIManager.put("ToolTip.border", BorderFactory.createLineBorder(new Color(255, 220, 80), 2));
+        UIManager.put("ToolTip.font", new Font("Serif", Font.PLAIN, 12));
+
+        // Stop whatever music is playing and start battle music immediately
+        boolean isBossBattle = this.enemies.stream().anyMatch(e -> e instanceof Entities.Enemies.Boss);
+        if (gp != null && gp.musicPlayer != null) {
+            System.out.println("[BattlePanel] stopMapMusic() called");
+            gp.musicPlayer.stopMapMusic();
+            if (isBossBattle) {
+                System.out.println("[BattlePanel] getBossMusic().play() called");
+                gp.musicPlayer.getBossMusic().play(true);
+            } else {
+                System.out.println("[BattlePanel] getCombatMusic().play() called");
+                gp.musicPlayer.getCombatMusic().play(true);
+            }
         }
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -136,15 +169,27 @@ public class BattlePanel extends JPanel {
 
         computeLayout();
         loadPlayerAnimations();
+        loadEnemySprites();
         buildEnemyLabels();
         buildButtons();
-        loadBackgroundImage();
+        loadBackgroundImage(gp.currentMap);
         startAnimationTimer();
+        startEnemyAnimationTimer();
 
         // Initialize battle system
         this.battle = new Battle(this, playerEntity, this.enemies);
         this.battle.setOnBattleEnd(() -> {
             stopAnimationTimer();
+            stopEnemyAnimationTimer();
+            if (gp != null && gp.musicPlayer != null) {
+                if (isBossBattle) {
+                    System.out.println("[BattlePanel] getBossMusic().stop() called");
+                    gp.musicPlayer.getBossMusic().stop();
+                } else {
+                    System.out.println("[BattlePanel] getCombatMusic().stop() called");
+                    gp.musicPlayer.getCombatMusic().stop();
+                }
+            }
             if (onBattleEnd != null) {
                 onBattleEnd.run();
             }
@@ -155,13 +200,20 @@ public class BattlePanel extends JPanel {
     }
 
     /** Load the background image */
-    private void loadBackgroundImage() {
+    private void loadBackgroundImage(int mapNum) {
+        String path;
+        switch (mapNum) {
+            case 0:  path = "/map1assets/combat_bg_map1.gif";   break;
+            case 1:  path = "/map2assets/combat_bg_map2v2.gif"; break;
+            case 2:  path = "/map3assets/combat_bg_map3.gif";   break;
+            default: path = "/map2assets/combat_bg_map2v2.gif"; break;
+        }
         try {
-            java.net.URL imgUrl = getClass().getResource("/map2assets/combat_bg_map2v2.gif");
+            java.net.URL imgUrl = getClass().getResource(path);
             if (imgUrl != null) {
                 backgroundImage = new ImageIcon(imgUrl).getImage();
             } else {
-                backgroundImage = new ImageIcon("/map2assets/combat_bg_map2v2.gif").getImage();
+                backgroundImage = new ImageIcon(path).getImage();
             }
         } catch (Exception e) {
             System.err.println("Failed to load background image: " + e.getMessage());
@@ -201,6 +253,53 @@ public class BattlePanel extends JPanel {
         if (!anyFrameLoaded) {
             createPlaceholderFrames();
         }
+    }
+
+    private void loadEnemySprites() {
+        for (Enemy enemy : enemies) {
+            enemy.loadSprite();
+        }
+    }
+
+    private void startEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) enemyAnimationTimer.stop();
+        enemyAnimationTimer = new Timer(100, e -> {
+            for (Enemy enemy : enemies) {
+                if (enemy.getHp() > 0) enemy.updateAnimation();
+            }
+            repaint();
+        });
+        enemyAnimationTimer.start();
+    }
+
+    private void stopEnemyAnimationTimer() {
+        if (enemyAnimationTimer != null) {
+            enemyAnimationTimer.stop();
+            enemyAnimationTimer = null;
+        }
+    }
+
+    private void paintEnemySprite(Graphics2D g2, int index, Enemy enemy) {
+        Rectangle rect = enemyImgRects.get(index);
+        if (enemy.hasSprite()) {
+            BufferedImage currentFrame = enemy.getCurrentFrame();
+            if (currentFrame != null) {
+                g2.drawImage(currentFrame, rect.x, rect.y, rect.width, rect.height, null);
+            } else {
+                drawEnemyTextFallback(g2, rect, enemy.getName());
+            }
+        } else {
+            drawEnemyTextFallback(g2, rect, enemy.getName());
+        }
+    }
+
+    private void drawEnemyTextFallback(Graphics2D g2, Rectangle rect, String name) {
+        g2.setColor(Color.GRAY);
+        g2.fillRect(rect.x, rect.y, rect.width, rect.height);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Serif", Font.BOLD, 20));
+        String display = name.length() > 2 ? name.substring(0, 2) : name;
+        g2.drawString(display, rect.x + rect.width/2 - 15, rect.y + rect.height/2 + 10);
     }
 
     private String getCharacterClassName() {
@@ -283,7 +382,7 @@ public class BattlePanel extends JPanel {
         animationTimer.start();
     }
 
-    private void stopAnimationTimer() {
+    public void stopAnimationTimer() {
         if (animationTimer != null) {
             animationTimer.stop();
             animationTimer = null;
@@ -333,6 +432,7 @@ public class BattlePanel extends JPanel {
 
         // UI box
         uiBoxRect = new Rectangle(10, uiY, WIDTH - 20, uiH);
+        uiBoxVCenter = uiBoxRect.y + (uiBoxRect.height / 2);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -349,6 +449,7 @@ public class BattlePanel extends JPanel {
             enemyGifLabel.setBounds(enemyImgRects.get(i));
             add(enemyGifLabel);
             enemyGifLabels.add(enemyGifLabel);
+            enemyGifLabel.setVisible(false);
         }
     }
 
@@ -360,44 +461,57 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    public SFXPlayer getSFXPlayer() {
+        return gp != null ? gp.getSFXPlayer() : null;
+    }
+
+    private void playClickSFX() {
+        if (gp != null) gp.getSFXPlayer().playSFX(new ClickSFX());
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  Button construction
     // ─────────────────────────────────────────────────────────────
     private void buildButtons() {
         // Main menu buttons
         int btnW = 140, btnH = 46, gap = 18;
-        int rowY = uiBoxRect.y + uiBoxRect.height - btnH - 20;
-        int startX = uiBoxRect.x + 20;
+        int totalMainBtnWidth = (btnW * 2) + gap;
+        int startX = uiBoxRect.x + (uiBoxRect.width - totalMainBtnWidth) / 2;
+        int rowY = uiBoxVCenter - (btnH / 2);
 
         btnFight = new BattleButton("Fight");
         btnFight.setBounds(startX, rowY, btnW, btnH);
-        btnFight.addActionListener(e -> showFightMenu());
+        btnFight.addActionListener(e -> { playClickSFX(); showFightMenu(); });
         add(btnFight);
 
         btnBag = new BattleButton("Bag");
         btnBag.setBounds(startX + (btnW + gap), rowY, btnW, btnH);
         btnBag.addActionListener(e -> {
+            playClickSFX();
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(BattlePanel.this);
 
-            InventoryPanel invPanel = new InventoryPanel(parentFrame, playerEntity, true,
-                    (item, target) -> {
-                        System.out.println("Item selected: " + item.getName() + ", target: " + (target != null ? target.getName() : "null"));
-                        battle.setPendingItem(item, target);
+            itemSelectionCallback = (item, target) -> {
+                System.out.println("Item selected: " + item.getName()
+                        + ", target: " + (target != null ? target.getName() : "null"));
 
-                        parentFrame.getContentPane().removeAll();
-                        parentFrame.add(BattlePanel.this);
-                        parentFrame.revalidate();
-                        parentFrame.repaint();
+                parentFrame.getContentPane().removeAll();
+                parentFrame.add(BattlePanel.this);
+                parentFrame.revalidate();
+                parentFrame.repaint();
 
-                        battle.executeItemTurn();
-                    },
+                battle.setPendingItem(item, target);
+            };
+
+            InventoryPanel invPanel = new InventoryPanel(
+                    parentFrame,
+                    playerEntity,
+                    true,
+                    itemSelectionCallback,
                     () -> {
-                        // Back button callback - return to battle
                         parentFrame.getContentPane().removeAll();
                         parentFrame.add(BattlePanel.this);
                         parentFrame.revalidate();
                         parentFrame.repaint();
-                        battle.startBattle();
                     }
             );
             invPanel.setBattle(battle);
@@ -406,16 +520,8 @@ public class BattlePanel extends JPanel {
             parentFrame.add(invPanel);
             parentFrame.revalidate();
             parentFrame.repaint();
-
-            // CRITICAL: Request focus for the inventory panel after it's added to the frame
-            invPanel.requestPanelFocus();
         });
         add(btnBag);
-
-        btnRun = new BattleButton("Run");
-        btnRun.setBounds(startX + (btnW + gap) * 2, rowY, btnW, btnH);
-        btnRun.addActionListener(e -> battle.handleRunAway());
-        add(btnRun);
 
         // Fight sub-menu moves
         ArrayList<Move> moves = playerEntity.getMoves();
@@ -426,25 +532,54 @@ public class BattlePanel extends JPanel {
             if (n != null && !n.isBlank()) moveNames[i] = n;
         }
 
+        // Initialize the array
         moveBtns = new BattleButton[4];
+
         int mW = 195, mH = 42, mGapX = 16, mGapY = 10;
-        int mX = uiBoxRect.x + 20;
-        int mY = uiBoxRect.y + 38;
+        int totalMoveGridWidth = (mW * 2) + mGapX;
+        int mX = uiBoxRect.x + (uiBoxRect.width - totalMoveGridWidth) / 2;
+        int mY = uiBoxRect.y + 35;
 
         for (int i = 0; i < 4; i++) {
             int col = i % 2, row = i / 2;
+
+            // Create the button with move name
             moveBtns[i] = new BattleButton(moveNames[i]);
+
+            // Set tooltip with move description if available
+            if (i < moves.size() && moves.get(i) != null) {
+                Move move = moves.get(i);
+                String description = move.getDescription();
+                if (description != null && !description.isEmpty()) {
+                    // Format the description nicely with HTML
+                    String formattedDesc = "<html><div style='width:250px; padding:5px;'>" +
+                            "<b>" + move.getName() + "</b><br>" +
+                            "<span style='font-size:11px;'>" + description + "</span>" +
+                            "</div></html>";
+                    moveBtns[i].setTooltipText(formattedDesc);
+                } else {
+                    moveBtns[i].setTooltipText("<html><i>No description available</i></html>");
+                }
+            } else {
+                moveBtns[i].setTooltipText("<html><i>Move not available</i></html>");
+            }
+
             moveBtns[i].setBounds(mX + col * (mW + mGapX), mY + row * (mH + mGapY), mW, mH);
+            moveBtns[i].setVisible(false);
+
             final int idx = i;
-            moveBtns[i].addActionListener(e -> onMoveSelected(idx));
+            moveBtns[i].addActionListener(e -> { playClickSFX(); onMoveSelected(idx); });
             add(moveBtns[i]);
         }
 
         int backW = 140, backH = 46;
-        int backY = mY + 2 * (mH + mGapY) + 6;
+        int backX = uiBoxRect.x + 45;
+        int backY = uiBoxRect.y + uiBoxRect.height - backH - 25;
+
         btnBack = new BattleButton("← Back");
-        btnBack.setBounds(mX, backY, backW, backH);
-        btnBack.addActionListener(e -> showMainMenu());
+        btnBack.setBounds(backX, backY, backW, backH);
+        btnBack.addActionListener(e -> { playClickSFX(); showMainMenu(); });
+        btnBack.setVisible(false);
         add(btnBack);
 
         // Target selection buttons
@@ -458,7 +593,9 @@ public class BattlePanel extends JPanel {
 
         int totalButtonsWidth = (enemyCount * btnW) + ((enemyCount - 1) * gap);
         int startX = uiBoxRect.x + (uiBoxRect.width - totalButtonsWidth) / 2;
-        int btnY = uiBoxRect.y + 70;
+        btnW = 195;
+        btnH = 42;
+        int btnY = uiBoxVCenter - (btnH / 2);
 
         for (int i = 0; i < enemyCount; i++) {
             final int enemyIndex = i;
@@ -466,7 +603,7 @@ public class BattlePanel extends JPanel {
 
             BattleButton targetBtn = new BattleButton(enemies.get(i).getName());
             targetBtn.setBounds(btnX, btnY, btnW, btnH);
-            targetBtn.addActionListener(e -> onTargetSelected(enemyIndex));
+            targetBtn.addActionListener(e -> { playClickSFX(); onTargetSelected(enemyIndex); });
             targetBtn.setVisible(false);
             add(targetBtn);
             targetButtons.add(targetBtn);
@@ -479,6 +616,7 @@ public class BattlePanel extends JPanel {
         btnBackTarget = new BattleButton("← Back");
         btnBackTarget.setBounds(backBtnX, backBtnY, backBtnW, backBtnH);
         btnBackTarget.addActionListener(e -> {
+            playClickSFX();
             System.out.println("Back button pressed during target selection - resetting UI");
 
             if (battle.hasPendingItem()) {
@@ -493,7 +631,6 @@ public class BattlePanel extends JPanel {
             btnBack.setVisible(true);
             btnFight.setVisible(false);
             btnBag.setVisible(false);
-            btnRun.setVisible(false);
             battleMessage = "";
             setButtonsEnabled(true);
             repaint();
@@ -511,7 +648,6 @@ public class BattlePanel extends JPanel {
         // Show main menu buttons
         btnFight.setVisible(true);
         btnBag.setVisible(true);
-        btnRun.setVisible(true);
 
         // Hide move buttons
         for (BattleButton mb : moveBtns) mb.setVisible(false);
@@ -529,7 +665,6 @@ public class BattlePanel extends JPanel {
         uiState = UIState.MAIN;
         btnFight.setVisible(false);
         btnBag.setVisible(false);
-        btnRun.setVisible(false);
         repaint();
     }
 
@@ -541,7 +676,6 @@ public class BattlePanel extends JPanel {
         // Hide main menu buttons
         btnFight.setVisible(false);
         btnBag.setVisible(false);
-        btnRun.setVisible(false);
 
         // Show move buttons and Back button
         for (BattleButton mb : moveBtns) mb.setVisible(true);
@@ -597,6 +731,8 @@ public class BattlePanel extends JPanel {
         uiState = UIState.TARGET_SELECT;
         for (BattleButton mb : moveBtns) mb.setVisible(false);
         btnBack.setVisible(false);
+        btnFight.setVisible(false);
+        btnBag.setVisible(false);
         updateTargetButtonStates();
         for (BattleButton targetBtn : targetButtons) {
             targetBtn.setVisible(true);
@@ -665,7 +801,6 @@ public class BattlePanel extends JPanel {
     public void setButtonsEnabled(boolean enabled) {
         btnFight.setEnabled(enabled);
         btnBag.setEnabled(enabled);
-        btnRun.setEnabled(enabled);
         for (BattleButton btn : moveBtns) {
             btn.setEnabled(enabled);
         }
@@ -726,6 +861,7 @@ public class BattlePanel extends JPanel {
         // Enemy stat boxes
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
+            paintEnemySprite(g2, i, enemy);
             if (enemy.getHp() > 0) {
                 paintStatBox(g2, enemyStatRects.get(i),
                         enemy.getName() != null ? enemy.getName() : "Enemy " + (i + 1),
@@ -837,90 +973,91 @@ public class BattlePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.drawString(hp + " / " + maxHp, barX, ty);
 
-        if (showExp && expLine != null) {
-            ty += 12;
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-            g2.setColor(new Color(50, 50, 160));
-            g2.drawString(expLine, tx, ty);
-        }
-
-        // Player buffs and status effects
+        // ========== PLAYER SECTION (showExp = true) ==========
         if (showExp) {
-            int tyOffset = 0;
+            int buffsOffset = 0;
 
-            // Player class buffs
+            // --- BUFFS FIRST (Class buffs like Iron Stance, Harmony, Empower) ---
             if (playerEntity instanceof Swordsman) {
                 Swordsman swordsman = (Swordsman) playerEntity;
                 int stacks = swordsman.getIronStanceStacks();
                 if (stacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(100, 150, 255));
-                    g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Iron Stance: " + stacks + "/3", tx, ty + buffsOffset);
                 }
             }
             if (playerEntity instanceof Ranger) {
                 Ranger ranger = (Ranger) playerEntity;
                 int harmonyStacks = ranger.getHarmonyStacks();
                 if (harmonyStacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(100, 200, 100));
-                    g2.drawString("Harmony: " + harmonyStacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Harmony: " + harmonyStacks + "/3", tx, ty + buffsOffset);
                 }
             }
             if (playerEntity instanceof Mage) {
                 Mage mage = (Mage) playerEntity;
                 int stacks = mage.getEmpowerStacks();
                 if (stacks > 0) {
-                    tyOffset += 12;
+                    buffsOffset += 12;
                     g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(255, 150, 100));
-                    g2.drawString("Empower: " + stacks + "/3", tx, ty + tyOffset);
+                    g2.drawString("Empower: " + stacks + "/3", tx, ty + buffsOffset);
                 }
             }
 
-            // Player status effects
-            List<Combat.StatusEffects.StatusEffect> playerEffects = playerEntity.getStatusEffects();
+            // --- STATUS EFFECTS BELOW BUFFS (Start after buffs) ---
+            List<StatusEffect> playerEffects = playerEntity.getStatusEffects();
             if (!playerEffects.isEmpty()) {
-                tyOffset += 12;
-                g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                for (Combat.StatusEffects.StatusEffect effect : playerEffects) {
+                int statusOffset = buffsOffset;
+                for (StatusEffect effect : playerEffects) {
+                    statusOffset += 12;
+                    g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                     g2.setColor(new Color(255, 100, 100));
-                    g2.drawString(effect.toString(), tx, ty + tyOffset);
-                    tyOffset += 10;
+                    String effectText = effect.toString();
+                    if (effectText.length() > 25) {
+                        effectText = effectText.substring(0, 22) + "...";
+                    }
+                    g2.drawString(effectText, tx, ty + statusOffset);
                 }
             }
         }
 
-        // Enemy buffs and status effects
+        // ========== ENEMY SECTION (showExp = false) ==========
         if (!showExp && enemies.size() > 0) {
             for (int i = 0; i < enemies.size(); i++) {
                 if (enemies.get(i).getName().equals(name)) {
                     Enemy enemy = enemies.get(i);
-                    int tyOffset = 0;
+                    int buffsOffset = 0;
 
-                    // DEF buffs for Final Boss
+                    // --- BUFFS FIRST (Enemy-specific buffs like ZED's DEF increase) ---
                     if (enemy instanceof ZED) {
                         ZED zed = (ZED) enemy;
                         int stacks = zed.getDefBuffStacks();
                         if (stacks > 0) {
-                            tyOffset += 12;
+                            buffsOffset += 12;
                             g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 200, 100));
-                            g2.drawString("DEF: +" + (stacks * 8), tx, ty + tyOffset);
+                            g2.drawString("DEF: +" + (stacks * 10), tx, ty + buffsOffset);
                         }
                     }
 
-                    // Enemy status effects
-                    List<Combat.StatusEffects.StatusEffect> enemyEffects = enemy.getStatusEffects();
+                    // --- STATUS EFFECTS BELOW BUFFS (Start after buffs) ---
+                    List<StatusEffect> enemyEffects = enemy.getStatusEffects();
                     if (!enemyEffects.isEmpty()) {
-                        tyOffset += 12;
-                        g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
-                        for (Combat.StatusEffects.StatusEffect effect : enemyEffects) {
+                        int statusOffset = buffsOffset;
+                        for (StatusEffect effect : enemyEffects) {
+                            statusOffset += 12;
+                            g2.setFont(new Font("Monospaced", Font.PLAIN, 10));
                             g2.setColor(new Color(255, 100, 100));
-                            g2.drawString(effect.toString(), tx, ty + tyOffset);
-                            tyOffset += 10;
+                            String effectText = effect.toString();
+                            if (effectText.length() > 25) {
+                                effectText = effectText.substring(0, 22) + "...";
+                            }
+                            g2.drawString(effectText, tx, ty + statusOffset);
                         }
                     }
                     break;
@@ -1108,7 +1245,6 @@ public class BattlePanel extends JPanel {
             // Hide all buttons
             btnFight.setVisible(false);
             btnBag.setVisible(false);
-            btnRun.setVisible(false);
 
             for (BattleButton mb : moveBtns) {
                 mb.setVisible(false);
@@ -1129,12 +1265,17 @@ public class BattlePanel extends JPanel {
         }
     }
 
+    public void refreshInventoryDisplay() {
+        System.out.println("Inventory updated - item quantity changed");
+    }
+
     // ─────────────────────────────────────────────────────────────
-    //  Inner class: BattleButton with Gold Octagon styling
+    //  Inner class: BattleButton with Gold Octagon styling + Tooltip
     // ─────────────────────────────────────────────────────────────
     private static class BattleButton extends JButton {
         private boolean hovered = false;
         private boolean pressed = false;
+        private String tooltipText = "";
 
         BattleButton(String text) {
             super(text);
@@ -1145,28 +1286,44 @@ public class BattlePanel extends JPanel {
             setForeground(BTN_TEXT_DARK);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+            // Enable tooltips
+            setToolTipText("");
+
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered (MouseEvent e) {
+                @Override
+                public void mouseEntered(MouseEvent e) {
                     if (isEnabled()) {
                         hovered = true;
                         repaint();
+                        // Show custom tooltip with description
+                        if (!tooltipText.isEmpty()) {
+                            setToolTipText(tooltipText);
+                        }
                     }
                 }
-                @Override public void mouseExited  (MouseEvent e) {
+                @Override
+                public void mouseExited(MouseEvent e) {
                     hovered = false;
                     repaint();
                 }
-                @Override public void mousePressed (MouseEvent e) {
+                @Override
+                public void mousePressed(MouseEvent e) {
                     if (isEnabled()) {
                         pressed = true;
                         repaint();
                     }
                 }
-                @Override public void mouseReleased(MouseEvent e) {
+                @Override
+                public void mouseReleased(MouseEvent e) {
                     pressed = false;
                     repaint();
                 }
             });
+        }
+
+        public void setTooltipText(String text) {
+            this.tooltipText = text;
+            super.setToolTipText(text);
         }
 
         @Override

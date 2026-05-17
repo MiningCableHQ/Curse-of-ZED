@@ -23,7 +23,7 @@ public class Swordsman extends Player {
         defense = 40;
         maxDefense = defense;
         speed = 28;
-        dmgResistance = 0.15;
+        dmgResistance = 0.05;
         loadMoves();
     }
 
@@ -142,8 +142,8 @@ public class Swordsman extends Player {
     public void addIronStanceStack() {
         if (ironStanceStacks < 3) {
             ironStanceStacks++;
-            // Increase defense by flat 15 per stack
-            flatDefenseBonus = 15 * ironStanceStacks;
+            // Increase defense by flat 30 per stack
+            flatDefenseBonus = 30;
             recalculateDefense();
         }
     }
@@ -176,10 +176,42 @@ public class Swordsman extends Player {
     // Recalculate total defense based on original defense + flat bonuses
     private void recalculateDefense() {
         this.defense = defense + flatDefenseBonus;
-        // Cap at maxDefense * 4 (as you had before)
-        if (this.defense > maxDefense * 4) {
-            this.defense = maxDefense * 4;
-        }
+    }
+
+    //For RazorEgde weapon passive
+    private double flatAttackBonus = 0;
+
+    public void addFlatAttackBonus(double bonus) {
+        flatAttackBonus += bonus;
+        recalculateAttack();
+    }
+
+    public void removeFlatAttackBonus(double bonus) {
+        flatAttackBonus -= bonus;
+        if (flatAttackBonus < 0) flatAttackBonus = 0;
+        recalculateAttack();
+    }
+
+    private void recalculateAttack() {
+        this.attack = attack + flatAttackBonus;
+    }
+
+    //For Unyielding weapon passive
+    private double flatResistanceBonus = 0;
+
+    public void addDamageResistance(double bonus) {
+        flatResistanceBonus += bonus;
+        recalculateResistance();
+    }
+
+    public void removeDamageResistance(double bonus) {
+        flatResistanceBonus -= bonus;
+        if (flatResistanceBonus < 0) flatResistanceBonus = 0;
+        recalculateResistance();
+    }
+
+    private void recalculateResistance() {
+        this.dmgResistance = dmgResistance + flatResistanceBonus;
     }
 
     @Override

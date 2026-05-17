@@ -17,7 +17,10 @@ public class Masklet extends Enemy{
         maxDefense = defense;
         speed = 20;
         dmgResistance = 0.05;
+        expYield = 150;
+        goldYield = 50;
         loadMoves();
+        loadSprite();
     }
 
     @Override

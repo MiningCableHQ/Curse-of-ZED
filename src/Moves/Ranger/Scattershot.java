@@ -13,7 +13,7 @@ public class Scattershot extends Move {
     public Scattershot() {
         super("Scattershot", 20, TargetType.ALL_ENEMIES);
         hasUnlocked = true;
-        description = "Deal 55% of ATK to all enemies";
+        description = "Deal 120% of ATK to all enemies";
     }
 
     @Override
@@ -34,7 +34,7 @@ public class Scattershot extends Move {
                 totalATK += this.attack; //this move's atk
 
                 //multiply sum to dmg multiplier
-                double damage = totalATK * 0.55;
+                double damage = totalATK * 1.20;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
                 setDamageDealt(actualDamage);

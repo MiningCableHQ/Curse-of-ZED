@@ -18,7 +18,7 @@ public class Mage extends Player {
         name = "Mage";
         hp = 800;
         maxHp = hp;
-        attack = 335;
+        attack = 3350   ;
         maxAttack = attack;
         defense = 10;
         maxDefense = defense;
@@ -142,8 +142,8 @@ public class Mage extends Player {
     public void addEmpowerStack() {
         if (empowerStacks < 3) {
             empowerStacks++;
-            // Increase attack by flat 25 per stack
-            flatAttackBonus = 25 * empowerStacks;
+            // Increase attack by flat 30 per stack
+            flatAttackBonus = 30;
             recalculateAttack();
         }
     }
@@ -160,7 +160,7 @@ public class Mage extends Player {
         }
     }
 
-    // Method to add a flat attack bonus (from potions)
+    // Method to add a flat attack bonus
     public void addFlatAttackBonus(double bonus) {
         flatAttackBonus += bonus;
         recalculateAttack();
@@ -176,10 +176,6 @@ public class Mage extends Player {
     // Recalculate total attack based on original attack + flat bonuses
     private void recalculateAttack() {
         this.attack = attack + flatAttackBonus;
-        // Cap at maxAttack * 2
-        if (this.attack > maxAttack * 2) {
-            this.attack = maxAttack * 2;
-        }
     }
 
     @Override

@@ -7,7 +7,7 @@ public class IronStance extends Move {
     public IronStance(){
         super("Iron Stance", 0, TargetType.SELF);
         hasUnlocked = true;
-        description = "Increases DEF by 10% (max 3 stacks)";
+        description = "Increases DEF by 30 (max 3 stacks)";
     }
 
     @Override

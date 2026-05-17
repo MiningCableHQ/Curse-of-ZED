@@ -1,5 +1,8 @@
 package Main;
 
+import Audio.Music.MainMenuMusic;
+import Audio.SFX.ClickSFX;
+import Audio.SFX.SFXPlayer;
 import Entities.Characters.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -49,6 +52,8 @@ public class CharacterSelectionPanel extends JPanel {
     private SelectButton[] selectBtns = new SelectButton[3];
     private ConfirmButton  confirmBtn;
     private BackButton     backBtn;
+    private final SFXPlayer sfxPlayer = new SFXPlayer();
+    private final MainMenuMusic mainMenuMusic = new MainMenuMusic();
 
     // ── Character data ────────────────────────────────────────────
     private static final String[] NAMES  = {"swordsman", "archer", "mage"};
@@ -218,7 +223,7 @@ public class CharacterSelectionPanel extends JPanel {
     private Timer titleAnimTimer;
 
     // ── Background ────────────────────────────────────────────────
-    private BufferedImage bgImage;
+    private Image  bgImage;
 
     // ─────────────────────────────────────────────────────────────
     //  Constructors
@@ -239,6 +244,8 @@ public class CharacterSelectionPanel extends JPanel {
         buildButtons();
         startAnimation();
         startCharacterAnimation();
+        mainMenuMusic.preload();
+        mainMenuMusic.play(true);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -277,11 +284,27 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void loadImages() {
-        try {
-            bgImage = ImageIO.read(new java.io.File("background.jpg"));
-        } catch (Exception e) {
-            bgImage = null;
+        // Try loading from the file system first (same folder as the .jar / project root)
+        java.io.File f = new java.io.File("backgroundd.gif");
+        if (f.exists()) {
+            // ImageIcon uses Java's Toolkit which supports animated GIFs natively
+            ImageIcon icon = new ImageIcon(f.getAbsolutePath());
+            // Register this panel as the observer so repaints fire on each GIF frame
+            icon.setImageObserver(this);
+            bgImage = icon.getImage();
+            return;
         }
+
+        // Fallback: try loading from classpath resources
+        java.net.URL url = getClass().getResource("/backgroundd.gif");
+        if (url != null) {
+            ImageIcon icon = new ImageIcon(url);
+            icon.setImageObserver(this);
+            bgImage = icon.getImage();
+            return;
+        }
+
+        bgImage = null; // will use gradient fallback in paintBackground()
     }
 
     private void initAnimations() {
@@ -312,7 +335,7 @@ public class CharacterSelectionPanel extends JPanel {
             final int idx = i;
             selectBtns[i] = new SelectButton("Select");
             selectBtns[i].setBounds(btnX, btnY, 140, 42);
-            selectBtns[i].addActionListener(e -> selectCharacter(idx));
+            selectBtns[i].addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); selectCharacter(idx); });
             add(selectBtns[i]);
         }
 
@@ -322,13 +345,13 @@ public class CharacterSelectionPanel extends JPanel {
         confirmBtn = new ConfirmButton("Confirm Selection");
         confirmBtn.setBounds(confirmX, confirmY, 220, 50);
         confirmBtn.setVisible(false);
-        confirmBtn.addActionListener(e -> confirmSelection());
+        confirmBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); confirmSelection(); });
         add(confirmBtn);
 
         // Back button — always visible, positioned at bottom left
         backBtn = new BackButton("← Back");
         backBtn.setBounds(20, H - 80, 140, 50);
-        backBtn.addActionListener(e -> goBack());
+        backBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); goBack(); });
         add(backBtn);
     }
 
@@ -376,6 +399,7 @@ public class CharacterSelectionPanel extends JPanel {
 
     private void confirmSelection() {
         if (selectedIndex < 0 || onCharacterSelected == null) return;
+        mainMenuMusic.stop();
 
         if (animationTimer != null) {
             animationTimer.stop();
@@ -398,6 +422,7 @@ public class CharacterSelectionPanel extends JPanel {
     }
 
     private void goBack() {
+        mainMenuMusic.stop();
         if (animationTimer != null) {
             animationTimer.stop();
         }
@@ -459,7 +484,7 @@ public class CharacterSelectionPanel extends JPanel {
     // ── Background ────────────────────────────────────────────────
     private void paintBackground(Graphics2D g2) {
         if (bgImage != null) {
-            double ia = (double) bgImage.getWidth() / bgImage.getHeight();
+            double ia = (double) bgImage.getWidth(this) / bgImage.getHeight(this);
             double pa = (double) W / H;
             int bw, bh;
             if (ia > pa) { bh = H; bw = (int)(H * ia); }

@@ -3,6 +3,7 @@ package Items.Consumables.Debuff.Clumsiness;
 import Entities.Entity;
 import Entities.Enemies.Enemy;
 import Items.Consumables.Consumable;
+import Items.Item;
 
 public class LesserClumsiness extends Consumable {
     protected double speedDebuffMultiplier;
@@ -14,6 +15,9 @@ public class LesserClumsiness extends Consumable {
 
         loadImage("/items/debuff_potions/lesser_clumsiness_potion.png");
     }
+
+    @Override
+    public Item.TargetType getTargetType() { return Item.TargetType.ENEMY; }
 
     @Override
     public <T> void useItem(T Entity) {

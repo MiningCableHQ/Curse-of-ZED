@@ -11,15 +11,15 @@ public class LifeLeech extends Move {
     Random rand = new Random();
 
     public LifeLeech() {
-        super("Life Leech", 30, TargetType.ENEMY);
+        super("Life Leech", 30, TargetType.ENEMY, 3);
         hasUnlocked = false;
-        description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
+        description = "Deals 130% of ATK as damage to a single target and heals 5-15% of MaxHP";
     }
 
     public LifeLeech(boolean hasUnlocked) {
-        super("Life Leech", 30);
+        super("Life Leech", 30, TargetType.ENEMY, 3);
         this.hasUnlocked = hasUnlocked;
-        description = "Deals 110% of ATK as damage to a single target and heals 15% of MaxHP";
+        description = "Deals 130% of ATK as damage to a single target and heals 5-15% of MaxHP";
     }
 
     @Override
@@ -43,12 +43,12 @@ public class LifeLeech extends Move {
                 totalATK += this.attack; // this move's atk
 
                 // Multiply sum to damage multiplier
-                double damage = totalATK * 1.10;
+                double damage = totalATK * 1.50;
                 double actualDamage = enemy.takeDamage(damage, enemy.getDefense(), enemy.getDmgResistance());
 
                 // --- Self Heal Part --------------------------------------------------------------------------------------
                 double maxHp = mage.getMaxHp();
-                double healAmount = maxHp * 0.15; // 15% of MaxHP heal
+                double healAmount = maxHp * (0.05 + (Math.random() * 0.10));
                 mage.heal(healAmount);
 
                 // Calculate actual heal amount

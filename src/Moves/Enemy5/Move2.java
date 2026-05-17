@@ -33,6 +33,10 @@ public class Move2 extends Move {
                 setDamageDealt(actualDamage);
                 setMessage(reyven.getName() + " used " + this.name + " and dealt " +
                         (int)actualDamage + " damage (" + hits + " hits)!");
+
+                if(rand.nextDouble() <= 0.30){
+                    Move.currentBattle.applySlow(target);
+                }
             } else  {
                 setDamageDealt(0);
                 setMessage(reyven.getName() + " used " + this.name + " but missed!");

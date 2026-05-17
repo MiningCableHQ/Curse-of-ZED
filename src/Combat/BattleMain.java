@@ -23,10 +23,10 @@ public class BattleMain {
             GamePanel  gp = new GamePanel();
             KeyHandler keyH = new KeyHandler();
 
-            Player testPlayer = new Ranger(gp, keyH);
+            Player testPlayer = new Mage(gp, keyH);
 
             // ── Build the battle panel ──────────────────────────
-            BattlePanel battlePanel = new BattlePanel(testPlayer, new ZED());
+            BattlePanel battlePanel = new BattlePanel(testPlayer, new Thorncrusher(), gp);
 
             // React when the player escapes (optional callback)
             battlePanel.setOnBattleEnd(() ->

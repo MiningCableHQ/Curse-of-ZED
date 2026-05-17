@@ -111,6 +111,16 @@ public class TileManager {
             tile[38].image = ImageIO.read(getClass().getResourceAsStream("/map2tiles/grasspurpleedgel.png"));
             tile[39] = new Tile();
             tile[39].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/water32x32.png"));
+            tile[40] = new Tile();
+            tile[40].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/bwater_tile_32x32.gif"));
+            tile[41] = new Tile();
+            tile[41].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/bwater2_32x32.png"));
+            tile[42] = new Tile();
+            tile[42].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/waterfall2_32x32.png"));
+            tile[43] = new Tile();
+            tile[43].image = ImageIO.read(getClass().getResourceAsStream("/map1tiles/splash1_32x32.png"));
+
+
 
             System.out.println("Image loaded finished");
         } catch (IOException e) {
@@ -166,7 +176,14 @@ public class TileManager {
 // 2. THE ANIMATION SWAP
             if (tileNum == 13 && spriteNum == 2) {
                 tileNum = 14; // Visually replace frame 1 with frame 2
+            } else if (tileNum == 40 && spriteNum == 2) {
+                tileNum = 41;
+            } else if (tileNum == 16 && spriteNum == 2) {
+                tileNum = 42;
+            } else if (tileNum == 19 && spriteNum == 2) {
+                tileNum = 43;
             }
+
             int worldX = worldCol * gp.tileSize;
             int worldY = worldRow * gp.tileSize;
             int screenX = worldX - gp.player.worldX + gp.player.screenX;

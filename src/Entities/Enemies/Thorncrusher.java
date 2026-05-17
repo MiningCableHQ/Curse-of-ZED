@@ -12,13 +12,16 @@ public class Thorncrusher extends Boss{
         level = 10;
         hp = 2000;
         maxHp = hp;
-        attack = 120;
+        attack = 220;
         maxAttack = attack;
-        defense = 5;
+        defense = 30;
         maxDefense = defense;
         speed = 28;
-        dmgResistance = 0.10;
+        dmgResistance = 0.50;
+        expYield = 300;
+        goldYield = 100;
         loadMoves();
+        loadSprite();
     }
 
     @Override
@@ -33,10 +36,10 @@ public class Thorncrusher extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 60% chance for Move1, 30% chance for Move2, 10% for ult
-        if (randomValue < 60) {
+        // 55% chance for Move1, 15% chance for Move2, 30% for ult
+        if (randomValue < 55) {
             return moveset.get(0); // Move1
-        } else if(randomValue < 90) {
+        } else if(randomValue < 70) {
             return moveset.get(1); // Move2
         } else {
             return moveset.get(2); // Move3 (Ult)

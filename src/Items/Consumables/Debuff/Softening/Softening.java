@@ -3,6 +3,7 @@ package Items.Consumables.Debuff.Softening;
 import Entities.Entity;
 import Entities.Enemies.Enemy;
 import Items.Consumables.Consumable;
+import Items.Item;
 
 public class Softening extends Consumable {
     protected double defenseDebuffMultiplier;
@@ -14,6 +15,9 @@ public class Softening extends Consumable {
 
         loadImage("/items/debuff_potions/softening_potion.png");
     }
+
+    @Override
+    public Item.TargetType getTargetType() { return Item.TargetType.ENEMY; }
 
     @Override
     public <T> void useItem(T Entity) {

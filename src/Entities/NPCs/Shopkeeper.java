@@ -16,6 +16,15 @@ import Items.Consumables.Heal.Healing;
 import Items.Consumables.Heal.LesserHealing;
 import Items.Consumables.Heal.Purific;
 import Items.Inventory;
+import Items.Weapons.Mage.AnkhStaff;
+import Items.Weapons.Mage.Arcanum;
+import Items.Weapons.Mage.ElementalCodex;
+import Items.Weapons.Ranger.Mistwood;
+import Items.Weapons.Ranger.Slowstring;
+import Items.Weapons.Ranger.Swiftwind;
+import Items.Weapons.Swordsman.RazorEdge;
+import Items.Weapons.Swordsman.Stunblade;
+import Items.Weapons.Swordsman.Unyielding;
 
 public class Shopkeeper extends NPC{
     Inventory shop;
@@ -31,7 +40,7 @@ public class Shopkeeper extends NPC{
             getShop1();
         }else if(player.getLevel() <= 6){
             getShop2();
-        }else if(player.getLevel() <= 9){
+        }else if(player.getLevel() <= 10){
             getShop3();
         }
     }
@@ -44,6 +53,15 @@ public class Shopkeeper extends NPC{
         shop.addItem(new LesserBlinding());
         shop.addItem(new LesserDulling());
         shop.addItem(new LesserSoftening());
+        shop.addItem(new RazorEdge(1));
+        shop.addItem(new Stunblade(5));
+        shop.addItem(new Slowstring(5));
+        shop.addItem(new Mistwood(5));
+        shop.addItem(new Arcanum(1));
+        shop.addItem(new ElementalCodex(5));
+        shop.addItem(new AnkhStaff(5));
+        shop.addItem(new Swiftwind());
+        shop.addItem(new Unyielding(5));
     }
     public void getShop2(){
         shop.addItem(new Healing());
@@ -53,6 +71,15 @@ public class Shopkeeper extends NPC{
         shop.addItem(new Blinding());
         shop.addItem(new Dulling());
         shop.addItem(new Softening());
+        shop.addItem(new RazorEdge(1));
+        shop.addItem(new Stunblade(5));
+        shop.addItem(new Slowstring(5));
+        shop.addItem(new Mistwood(5));
+        shop.addItem(new Arcanum(1));
+        shop.addItem(new ElementalCodex(5));
+        shop.addItem(new AnkhStaff(5));
+        shop.addItem(new Swiftwind());
+        shop.addItem(new Unyielding(5));
     }
     public void getShop3(){
         shop.addItem(new GreaterHealing());
@@ -62,6 +89,15 @@ public class Shopkeeper extends NPC{
         shop.addItem(new GreaterBlinding());
         shop.addItem(new GreaterDulling());
         shop.addItem(new GreaterSoftening());
+        shop.addItem(new RazorEdge(1));
+        shop.addItem(new Stunblade(5));
+        shop.addItem(new Slowstring(5));
+        shop.addItem(new Mistwood(5));
+        shop.addItem(new Arcanum(1));
+        shop.addItem(new ElementalCodex(5));
+        shop.addItem(new AnkhStaff(5));
+        shop.addItem(new Swiftwind());
+        shop.addItem(new Unyielding(5));
     }
 
     public Inventory getShop(){

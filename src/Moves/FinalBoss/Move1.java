@@ -1,5 +1,6 @@
 package Moves.FinalBoss;
 
+import Combat.StatusEffects.Burn;
 import Entities.Enemies.ZED;
 import Entities.Entity;
 import Moves.Move;
@@ -30,7 +31,10 @@ public class Move1 extends Move {
 
                 setDamageDealt(actualDamage);
                 setMessage(zed.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
-                //TODO FRANK 15% chance to inflict burn
+
+                if(rand.nextDouble() <= 0.50){
+                    target.addStatusEffect(new Burn(1));
+                }
             } else  {
                 setDamageDealt(0);
                 setMessage(zed.getName() + " used " + this.name + " but missed!");

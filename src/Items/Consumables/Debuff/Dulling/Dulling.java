@@ -3,6 +3,7 @@ package Items.Consumables.Debuff.Dulling;
 import Entities.Entity;
 import Entities.Enemies.Enemy;
 import Items.Consumables.Consumable;
+import Items.Item;
 
 public class Dulling extends Consumable {
     protected double attackDebuffMultiplier;
@@ -14,6 +15,9 @@ public class Dulling extends Consumable {
 
         loadImage("/items/debuff_potions/dulling_potion.png");
     }
+
+    @Override
+    public Item.TargetType getTargetType() { return Item.TargetType.ENEMY; }
 
     @Override
     public <T> void useItem(T Entity) {

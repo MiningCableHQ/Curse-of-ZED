@@ -9,22 +9,47 @@ import java.util.Random;
 public class ZED extends Boss{
     private int defBuffStacks = 0;
     private double originalDefense;
+    private boolean isStrongVersion;
 
+    // Constructor for weak version (first encounter)
     public ZED(){
+        this(false);
+    }
+
+    public ZED(boolean isStrongVersion){
+        this.isStrongVersion = isStrongVersion;
+
         name = "Zed";
         level = 999;
-        hp = 10000;
-        maxHp = hp;
-        attack = 320;
-        maxAttack = attack;
-        defense = 30;
-        maxDefense = defense;
-        speed = 45;
-        dmgResistance = 0.25;
+
+        if (isStrongVersion) {
+            hp = 10000;
+            maxHp = hp;
+            attack = 350;
+            maxAttack = attack;
+            defense = 50;
+            maxDefense = defense;
+            speed = 61;
+            dmgResistance = 0.35;
+            expYield = 300;
+            goldYield = 400;
+        } else {
+            hp = 5000;
+            maxHp = hp;
+            attack = 320;
+            maxAttack = attack;
+            defense = 30;
+            maxDefense = defense;
+            speed = 45;
+            dmgResistance = 0.30;
+            expYield = 300;
+            goldYield = 500;
+        }
 
         originalDefense = defense;
 
         loadMoves();
+        loadSprite();
     }
 
     @Override
@@ -39,27 +64,32 @@ public class ZED extends Boss{
         Random random = new Random();
         double randomValue = random.nextDouble() * 100; // 0-100
 
-        // 40% chance for Move1, 35% chance for Move2, 25% for ult
-        if (randomValue < 40) {
+        // 45% chance for Move1, 25% chance for Move2, 30% for ult
+        if (randomValue < 45) {
             return moveset.get(0); // Move1
-        } else if(randomValue < 75) {
+        } else if(randomValue < 70) {
             return moveset.get(1); // Move2
         } else {
             return moveset.get(2); // Move3 (Ult)
         }
     }
 
-    //Getters
+    // Getters
     public int getDefBuffStacks() {
         return defBuffStacks;
     }
 
-    //Unique methods for final boss
+    public boolean isStrongVersion() {
+        return isStrongVersion;
+    }
+
+    // Unique methods for final boss
     public void addDefBuff() {
         defBuffStacks++;
-        // Increase defense by 8 per stack
-        defense = originalDefense + (defBuffStacks * 8);
+        // Increase defense by 10 per stack
+        defense = originalDefense + (defBuffStacks * 10);
     }
+
     public void resetBattleBuffs() {
         defBuffStacks = 0;
         defense = originalDefense;

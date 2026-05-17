@@ -2,146 +2,499 @@ package Main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.Random;
+
+import Audio.Music.MusicPlayer;
+import Audio.SFX.SFXPlayer;
 import Entities.Characters.*;
 import Tile.TileManager;
 import Objects.*;
+import Entities.Characters.NPC;
+import Dialogue.*;
+import Items.Weapons.Ranger.Mistwood;
+import Items.Weapons.Mage.AnkhStaff;
+import Items.Weapons.Swordsman.RazorEdge;
+
+import static Main.GameStateManager.Map1Phase.COLLECT_ESSENCE;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    // System
-    public TileManager tileM;
-    public KeyHandler keyH;
-    public CollisionChecker cChecker;
-    public AssetSetter aSetter;
-    Thread gameThread;
+    // ── Systems ───────────────────────────────────────────────────
+    public TileManager       tileM;
+    public KeyHandler        keyH;
+    public CollisionChecker  cChecker;
+    public AssetSetter       aSetter;
+    volatile Thread gameThread;
+    public DialogueSystem    dialogueSystem;
+    public InteractionPrompt interactionPrompt;
+    public MapLabel          mapLabel;
+    public GameStateManager  gsm;
+    public WeaponPopup       weaponPopup;
+    public ScreenMessage     screenMessage;
+    public ObjectivesHUD     objectivesHUD;
+    public BattleTransition  battleTransition;
+    public EmoteSystem       emoteSystem;
+    public WeatherSystem     weatherSystem;
+    public GossipSystem      gossipSystem;
+    public PetCompanion      pet;
+    public Minimap           minimap;
 
-    // Screen Settings
-    public final int originalTileSize = 32;
-    public final int scale = 2;
-    public final int tileSize = originalTileSize * scale;
-    public final int maxScreenCol = 16;
-    public final int maxScreenRow = 12;
-    public final int screenWidth = tileSize * maxScreenCol;
-    public final int screenHeight = tileSize * maxScreenRow;
+    private NPC              nearbyNPC   = null;
+    private OBJ_NoticeBoard  nearbyBoard = null;
+    private boolean ePressedLastFrame    = false;
+    private String lastInteractedNPCName = "Frank";
 
-    // World Settings
-    public final int maxWorldCol = 50;
-    public final int maxWorldRow = 50;
-    public final int worldWidth = tileSize * maxWorldCol;
-    public final int worldHeight = tileSize * maxWorldRow;
 
-    // FPS
-    int FPS = 60;
+    // Map 2 intro
+    private boolean map2PlayerFrozen = false;
+    private boolean map2ExploreShown = false;
+    private boolean map2ExploreReady = false;
 
-    // Entities and Objects
-    public Player player;
-    public SuperObject obj[] = new SuperObject[100000];
-    public int currentMap = 0;
+    private EssenceParticle essenceParticle = new EssenceParticle();
 
     // Inventory management
     private InventoryPanel currentInventoryPanel;
     private boolean inventoryOpen = false;
     private JFrame parentFrame;
 
+    private java.awt.image.BufferedImage loadingBgImage;
+
+
     // Character management
     private CharacterPanel currentCharacterPanel;
     private boolean characterOpen = false;
 
-    /**
-     * No-arg constructor for compatibility.
-     * Creates a default Swordsman with a new KeyHandler.
-     * WARNING: This creates a temporary GamePanel reference that will be replaced.
-     * Use the parameterized constructor for proper initialization.
-     */
-    public GamePanel() {
-        this(null, new KeyHandler());
+    // Volume management
+    private VolumePanel volumePanel;
+    private boolean volumeOpen = false;
+
+    // ── Screen settings ───────────────────────────────────────────
+    public final int originalTileSize = 32;
+    public final int scale            = 2;
+    public final int tileSize         = originalTileSize * scale;
+    public final int maxScreenCol     = 16;
+    public final int maxScreenRow     = 12;
+    public final int screenWidth      = tileSize * maxScreenCol;
+    public final int screenHeight     = tileSize * maxScreenRow;
+
+    // ── World settings ────────────────────────────────────────────
+    public final int maxWorldCol = 50;
+    public final int maxWorldRow = 50;
+    public final int worldWidth  = tileSize * maxWorldCol;
+    public final int worldHeight = tileSize * maxWorldRow;
+
+    public int FPS = 60;
+
+    // ── Audio Players ───────────────────────────────────────────
+    public MusicPlayer musicPlayer = new MusicPlayer(this);
+    private SFXPlayer sfxPlayer = new SFXPlayer();
+
+    // ── Map transition state ──────────────────────────────────────
+    private volatile boolean mapTransitionInProgress = false;
+
+    // ── Playtime tracking ──────────────────────────────────────────
+    private long startTime = 0;
+
+    public void recordStartTime() {
+        this.startTime = System.currentTimeMillis();
     }
 
-    /**
-     * Constructor that accepts a pre-selected player and a KeyHandler.
-     *
-     * @param selectedPlayer The player character to use in the game
-     * @param keyH The KeyHandler for input processing
-     */
+    public long getTotalPlayTimeMs() {
+        if (startTime == 0) return 0;
+        return System.currentTimeMillis() - startTime;
+    }
+
+    // ── Combat state (freeze enemy AI during battles) ─────────────
+    public boolean inCombat = false;
+    private WeatherSystem.WeatherType lastWeather = WeatherSystem.WeatherType.CLEAR;
+    public volatile boolean paused = false;
+    public boolean postBattleCooldown = false;
+    private javax.swing.Timer postBattleTimer = null;
+
+    // ── Entities ──────────────────────────────────────────────────
+    public Player      player;
+    public SuperObject obj[] = new SuperObject[100000];
+    public int         currentMap = 0;
+
+    // ─────────────────────────────────────────────────────────────
+    public GamePanel() { this(null, new KeyHandler()); }
+
     public GamePanel(Player selectedPlayer, KeyHandler keyH) {
         this.keyH = keyH;
 
-        // Initialize systems that depend on 'this'
-        this.tileM = new TileManager(this);
-        this.cChecker = new CollisionChecker(this);
-        this.aSetter = new AssetSetter(this);
+        this.tileM        = new TileManager(this);
+        this.cChecker     = new CollisionChecker(this);
+        this.aSetter      = new AssetSetter(this);
+        this.weatherSystem = new WeatherSystem();
+        this.gossipSystem  = new GossipSystem();
+        this.pet           = new PetCompanion();
+        this.minimap       = new Minimap();
 
-        // Set up the panel
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);
         this.addKeyListener(this.keyH);
         this.setFocusable(true);
 
-        // Set the player
+        // ── Player ────────────────────────────────────────────────
         if (selectedPlayer != null) {
             this.player = selectedPlayer;
-            // Update the player's GamePanel reference using reflection
             try {
-                java.lang.reflect.Field gpField = this.player.getClass().getSuperclass().getDeclaredField("gp");
+                java.lang.reflect.Field gpField =
+                        this.player.getClass().getSuperclass().getDeclaredField("gp");
                 gpField.setAccessible(true);
                 gpField.set(this.player, this);
             } catch (Exception e) {
-                System.err.println("Warning: Could not set GamePanel reference in player: " + e.getMessage());
+                System.err.println("Warning: Could not set gp in player: " + e.getMessage());
             }
         } else {
-            // Create a default player with proper GamePanel reference
             this.player = new Swordsman(this, this.keyH);
+        }
+
+        // ── Core systems ──────────────────────────────────────────
+        this.dialogueSystem    = new DialogueSystem();
+        this.dialogueSystem.setGamePanel(this);
+        this.interactionPrompt = new InteractionPrompt();
+
+        gossipSystem.setDialogueSystem(this.dialogueSystem);
+
+        // ── Single mouse listener ─────────────────────────────────
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (emoteSystem.handleClick(e.getX(), e.getY())) return;
+                if (dialogueSystem.isActive()) {
+                    dialogueSystem.handleClick(e.getX(), e.getY());
+                }
+            }
+        });
+
+        // ── Phase change callback ─────────────────────────────────
+        dialogueSystem.setOnPhaseChangeCallback(() -> {
+            GameStateManager.Map1Phase phase = GameStateManager.get().map1Phase;
+            if (phase == GameStateManager.Map1Phase.TALK_TO_RANGER) {
+                objectivesHUD.setSimpleObjective("Talk to the Ranger");
+            }
+        });
+
+        // ── Weapon popup callback ─────────────────────────────────
+        dialogueSystem.setWeaponPopupCallback(() -> {
+            String cls = player.getClass().getSimpleName();
+            String weaponPath, weaponName;
+            switch (cls) {
+                case "Ranger":
+                    weaponPath = "/items/archer_weapon/mistwood.png";
+                    weaponName = "Mistwood";
+                    player.setWeapon(new Mistwood(5));
+                    break;
+                case "Mage":
+                    weaponPath = "/items/mage_weapon/ankh_staff.png";
+                    weaponName = "Ankh Staff";
+                    player.setWeapon(new AnkhStaff(5));
+                    break;
+                default:
+                    weaponPath = "/items/warrior_weapon/razoredge_sword.png";
+                    weaponName = "Razoredge Sword";
+                    player.setWeapon(new RazorEdge(1));
+                    break;
+            }
+
+            for (int i = 0; i < obj.length; i++) {
+                if (obj[i] instanceof NPC) {
+                    NPC npc = (NPC) obj[i];
+                    if (npc.npcName.equals("Chief") || npc.npcName.equals("Ranger")) {
+                        npc.available = false;
+                    }
+                }
+            }
+
+            weaponPopup.show(weaponPath, weaponName, "Given by the Ranger", () -> {
+                GameStateManager.get().map1Phase = GameStateManager.Map1Phase.FIGHT_ENEMIES;
+                objectivesHUD.setObjective("Fight the enemies", 0, 2);
+                spawnMap1Enemies();
+            });
+        });
+
+        // ── Essence callback ──────────────────────────────────────
+        dialogueSystem.setOnEssenceGranted(npcName -> {
+            int npcIndex = getEssenceIndex(npcName);
+            if (npcIndex >= 0) {
+                GameStateManager.get().collectEssence(npcIndex);
+                int count = GameStateManager.get().essenceCount;
+                objectivesHUD.updateProgress(count);
+                essenceParticle.trigger(screenWidth / 2, screenHeight / 2);
+
+                if (GameStateManager.get().allEssenceCollected()) {
+                    screenMessage.show("Full Essence Complete!", "Ready for Round 2!", 220, false);
+                    javax.swing.Timer t = new javax.swing.Timer(3000, e -> {
+                        GameStateManager.get().isMap2Revisit = true;
+                        objectivesHUD.setSimpleObjective("Return to Map 2");
+                        screenMessage.show("Map 2 is now accessible!",
+                                "Head there to continue.", 160, false);
+                    });
+                    t.setRepeats(false);
+                    t.start();
+                }
+            }
+        });
+
+        // ── Shop callback ─────────────────────────────────────────
+        dialogueSystem.setOnOpenShop(() -> {
+            if (parentFrame == null)
+                parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            final Entities.NPCs.Shopkeeper sk = new Entities.NPCs.Shopkeeper(lastInteractedNPCName);
+            final GamePanel gpRef = this;
+
+            ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
+                // Restore map music (and rain if still raining) when shop closes
+                musicPlayer.stopMapMusic();
+                resumeMapMusic();
+                SwingUtilities.invokeLater(() -> {
+                    parentFrame.getContentPane().removeAll();
+                    parentFrame.add(gpRef);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                    gpRef.paused = false;
+                    gpRef.setVisible(true);
+                    gpRef.requestFocusInWindow();
+                });
+            });
+            shopPanel.setGamePanel(this);
+
+            // Switch to shop music when shop opens
+            musicPlayer.playShopMusic();
+
+            paused = true;
+            this.setVisible(false);
+            parentFrame.getContentPane().removeAll();
+            parentFrame.add(shopPanel);
+            parentFrame.revalidate();
+            parentFrame.repaint();
+            shopPanel.requestPanelFocus();
+        });
+
+        // ── Other systems ─────────────────────────────────────────
+        this.gsm            = GameStateManager.get();
+        this.weaponPopup    = new WeaponPopup();
+        this.screenMessage  = new ScreenMessage();
+        this.objectivesHUD  = new ObjectivesHUD();
+        this.battleTransition = new BattleTransition();
+        this.emoteSystem    = new EmoteSystem();
+
+        emoteSystem.setOnEmotePicked(emote -> {
+            pet.reactToEmote(emote);
+            emoteSystem.spawnEmote(emote,
+                    player.worldX + tileSize / 2,
+                    player.worldY - tileSize / 2);
+        });
+
+        emoteSystem.setOnCustomizePet(() -> pet.openCustomizeDialog(this));
+
+        this.mapLabel = new MapLabel("Map 1", "The Neverwinter Village");
+        objectivesHUD.setSimpleObjective("Talk to the Chief");
+        objectivesHUD.setEggCodeObjective("Solve the secret code");
+
+        // ── Player portrait ───────────────────────────────────────
+        try {
+            String cls         = player.getClass().getSimpleName().toLowerCase();
+            String portraitName = cls.equals("ranger") ? "archer" : cls;
+            java.awt.image.BufferedImage pp = javax.imageio.ImageIO.read(
+                    getClass().getResourceAsStream(
+                            "/player/" + portraitName + "_portrait.png"));
+            dialogueSystem.setPlayerPortrait(pp);
+        } catch (Exception e) {
+            System.err.println("Player portrait not found.");
+        }
+
+        this.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                emoteSystem.updateMouse(e.getX(), e.getY());
+                if (dialogueSystem.isActive()) {
+                    dialogueSystem.handleHover(e.getX(), e.getY());
+                }
+            }
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                emoteSystem.updateMouse(e.getX(), e.getY());
+            }
+        });
+
+        //Volume Panel
+        volumePanel = new VolumePanel(this, musicPlayer.getMap1Music(), () -> {
+            SwingUtilities.invokeLater(() -> {
+                if (volumeOpen) {
+                    // Just hide and flag, don't remove from layered pane here
+                    volumePanel.setVisible(false);
+                    volumeOpen = false;
+                    GamePanel.this.setFocusable(true);
+                    GamePanel.this.requestFocusInWindow();
+                }
+            });
+        });
+        volumePanel.setSize(350, 220);
+        volumeOpen = false;
+
+    }
+
+    public SFXPlayer getSFXPlayer() { return sfxPlayer; }
+
+    public void resumeMapMusic() {
+        musicPlayer.resumeMapMusic();
+        WeatherSystem.WeatherType w = weatherSystem.getCurrent();
+        if (w == WeatherSystem.WeatherType.RAIN || w == WeatherSystem.WeatherType.STORM) {
+            musicPlayer.playRainMusic();
         }
     }
 
-    public void setupGame() {
-        aSetter.setObject();
+    // ─────────────────────────────────────────────────────────────
+    private int getEssenceIndex(String npcName) {
+        switch (npcName) {
+            case "Healer":         return 0;
+            case "Ranger":         return 1;
+            case "Woman Villager": return 2;
+            case "Farmer":         return 3;
+            case "Chief":          return 4;
+            default:               return -1;
+        }
     }
 
+    public void setupGame()      { aSetter.setObject(); }
+
     public void startGameThread() {
+        sfxPlayer.preloadSFX(new Audio.SFX.ClickSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.HitSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.GameOverSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.StatRaiseSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.StatLowSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.ThunderSFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.VictorySFX());
+        sfxPlayer.preloadSFX(new Audio.SFX.DefeatSFX());
+        musicPlayer.preloadAllMusic();
+        recordStartTime();
         gameThread = new Thread(this);
         gameThread.start();
+        musicPlayer.playMapMusic();
+    }
+
+    public void stopGameThread() {
+        gameThread = null;
     }
 
     @Override
     public void run() {
-        double drawInterval = 1000000000 / FPS;
-        double delta = 0;
-        long lastTime = System.nanoTime();
-        long currentTime;
+        double drawInterval = 1_000_000_000.0 / FPS;
+        double delta   = 0;
+        long lastTime  = System.nanoTime();
 
         while (gameThread != null) {
-            currentTime = System.nanoTime();
+            long currentTime = System.nanoTime();
             delta += (currentTime - lastTime) / drawInterval;
             lastTime = currentTime;
+            if (delta > 3) delta = 1; // Prevent catch-up after game thread is blocked by modal dialogs
 
             if (delta >= 1) {
-                update();
+                if (!mapTransitionInProgress && !paused) {
+                    update();
+                }
                 repaint();
                 delta--;
             }
         }
     }
 
+    // ═════════════════════════════════════════════════════════════
+    //  UPDATE
+    // ═════════════════════════════════════════════════════════════
     public void update() {
-        if (player != null) {
-            player.update();
+        checkMapTransition();
+
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] == null) continue;
+            if (obj[i] instanceof OBJ_Torch) ((OBJ_Torch) obj[i]).updateAnimation();
+            if (obj[i] instanceof Entities.Enemies.EnemyEntity) {
+                if (!inCombat) ((NPC) obj[i]).updateAnimation();
+            } else if (obj[i] instanceof NPC) {
+                ((NPC) obj[i]).updateAnimation();
+            }
         }
 
-        // Handle inventory key press
+        weaponPopup.update();
+        screenMessage.update();
+        objectivesHUD.update();
+        battleTransition.update();
+        mapLabel.update();
+        dialogueSystem.update();
+        interactionPrompt.update();
+        essenceParticle.update();
+        emoteSystem.update();
+        weatherSystem.update(screenWidth, screenHeight);
+        if (!inCombat) {
+            WeatherSystem.WeatherType currentWeather = weatherSystem.getCurrent();
+            if (currentWeather != lastWeather) {
+                boolean isWet = currentWeather == WeatherSystem.WeatherType.RAIN
+                             || currentWeather == WeatherSystem.WeatherType.STORM;
+                if (isWet) musicPlayer.playRainMusic();
+                else { musicPlayer.stopRainMusic(); musicPlayer.resumeMapMusic(); }
+                lastWeather = currentWeather;
+            }
+        }
+        gossipSystem.update(obj);
+        minimap.update();
+
+        pet.update(player.worldX, player.worldY,
+                player.screenX, player.screenY);
+
+        // ── Find nearby NPC ───────────────────────────────────────
+        nearbyNPC = null;
+        if (!dialogueSystem.isActive()) {
+            for (SuperObject o : obj) {
+                if (o instanceof NPC) {
+                    NPC npc = (NPC) o;
+                    if (npc.available && npc.isPlayerNearby()) {
+                        nearbyNPC = npc;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ── Find nearby Notice Board ──────────────────────────────
+        nearbyBoard = null;
+        for (SuperObject o : obj) {
+            if (o instanceof OBJ_NoticeBoard) {
+                OBJ_NoticeBoard board = (OBJ_NoticeBoard) o;
+                if (board.isPlayerNearby(this)) {
+                    nearbyBoard = board;
+                    break;
+                }
+            }
+        }
+
+        // ── Player movement ───────────────────────────────────────
+        if (!dialogueSystem.isActive() && !map2PlayerFrozen) {
+            player.update();
+        } else if (dialogueSystem.isActive() && !map2PlayerFrozen) {
+            player.updateIdleAnimation();
+        }
+
+        // ── Inventory key press ───────────────────────────────────
         if (keyH.iPressed) {
-            if (!inventoryOpen && !characterOpen) {
+            if (!volumeOpen && !inventoryOpen && !characterOpen) {
                 openInventory();
             } else if (inventoryOpen) {
                 closeInventory();
             }
-            keyH.iPressed = false; // Reset to prevent multiple toggles
+            keyH.iPressed = false;
         }
 
-        // Handle character panel key press
+        // ── Character panel key press ─────────────────────────────
         if (keyH.cPressed) {
-            if (!characterOpen && !inventoryOpen) {
+            if (!volumeOpen && !characterOpen && !inventoryOpen) {
                 openCharacter();
             } else if (characterOpen) {
                 closeCharacter();
@@ -149,159 +502,1304 @@ public class GamePanel extends JPanel implements Runnable {
             keyH.cPressed = false;
         }
 
-        checkMapTransition();
-        // ANIMATE OBJECTS
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null && obj[i] instanceof OBJ_Torch) {
-                ((OBJ_Torch) obj[i]).updateAnimation();
+        // ── Volume panel key press ─────────────────────────────
+        if(keyH.escPressed){
+            if(volumeOpen){
+                closeVolumePanel();
+            } else if(!characterOpen && !inventoryOpen){
+                showVolumePanel();
             }
+            keyH.escPressed = false;
+        }
+
+
+        // ── E key interactions ────────────────────────────────────
+        if (keyH.ePressed && !ePressedLastFrame && !dialogueSystem.isActive()) {
+
+            if (nearbyBoard != null) {
+                // ── Notice board interaction gate ─────────────────
+                // Blocked during essence collection (Map 1 revisit) — puzzle already solved
+                if (GameStateManager.get().map1Phase == COLLECT_ESSENCE) {
+                    screenMessage.show("Already Solved!",
+                            "Focus on collecting the Essence.", 80, false);
+
+                    // Blocked before boss is defeated (still in first run of Map 1)
+                } else if (!GameStateManager.get().map1BossDefeated) {
+                    screenMessage.show("Defeat Boss First!",
+                            "Then return for the code mystery...", 120, false);
+
+                    // Normal interaction — Map 1 boss defeated, not yet in essence phase
+                } else {
+                    nearbyBoard.interact(this);
+                }
+
+                ePressedLastFrame = keyH.ePressed;
+                return;
+            }
+
+            // ── NPC interactions ──────────────────────────────────
+            if (nearbyNPC != null) {
+                GameStateManager.Map1Phase phase = GameStateManager.get().map1Phase;
+                boolean canInteract             = false;
+                boolean shouldShowLockedMessage = false;
+
+                if (nearbyNPC.npcName.equals("Frank")
+                        || nearbyNPC.npcName.equals("Bukog")) {
+                    canInteract = true;
+
+                } else if (nearbyNPC.npcName.equals("Chief")) {
+                    if (phase == GameStateManager.Map1Phase.TALK_TO_CHIEF) {
+                        canInteract = true;
+                    } else if (phase == COLLECT_ESSENCE && !nearbyNPC.interacted) {
+                        canInteract = true;
+                    } else {
+                        shouldShowLockedMessage = true;
+                    }
+
+                } else if (nearbyNPC.npcName.equals("Ranger")) {
+                    if (phase == GameStateManager.Map1Phase.TALK_TO_RANGER) {
+                        canInteract = true;
+                    } else if (phase == COLLECT_ESSENCE && !nearbyNPC.interacted) {
+                        canInteract = true;
+                    } else {
+                        shouldShowLockedMessage = true;
+                    }
+
+                } else if (nearbyNPC.npcName.equals("Healer")
+                        || nearbyNPC.npcName.equals("Farmer")
+                        || nearbyNPC.npcName.equals("Woman Villager")) {
+                    if (phase == COLLECT_ESSENCE && !nearbyNPC.interacted) {
+                        canInteract = true;
+                    } else {
+                        shouldShowLockedMessage = true;
+                    }
+
+                } else if (nearbyNPC.npcName.equals("Frankenstein")) {
+                    if (currentMap == 1
+                            && !GameStateManager.get().isMap2Revisit
+                            && nearbyNPC.available
+                            && GameStateManager.get().map2BossSpawned) {
+                        canInteract = true;
+                    } else {
+                        shouldShowLockedMessage = true;
+                    }
+
+                } else {
+                    shouldShowLockedMessage = true;
+                }
+
+                if (canInteract) {
+                    lastInteractedNPCName = nearbyNPC.npcName;
+                    dialogueSystem.open(nearbyNPC, getPlayerDisplayClass());
+                } else if (shouldShowLockedMessage) {
+                    screenMessage.show("Cannot Interact.",
+                            "Proceed with Next Objectives.", 80, false);
+                }
+            }
+        }
+        ePressedLastFrame = keyH.ePressed;
+
+        // ── Audio Updates ──────────────────────────────────
+        if (volumePanel != null) {
+            float vol = volumePanel.getVolume();
+            musicPlayer.updateVolume(vol);
         }
     }
 
-    /**
-     * Opens the inventory panel during exploration
-     */
-    private void openInventory() {
-        if (parentFrame == null) {
-            // Get the parent frame
-            parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+    // ─────────────────────────────────────────────────────────────
+    public void triggerEasterEggFromCode() {
+        if (!GameStateManager.get().easterEggUnlockedByCode) {
+            GameStateManager.get().easterEggUnlockedByCode = true;
+            screenMessage.show(
+                    "Code Unlocked!",
+                    "Map 2 Easter Egg Spawn Guaranteed",
+                    220, false);
+            objectivesHUD.markEggCodeUnlocked();
         }
+    }
 
+    // ═════════════════════════════════════════════════════════════
+    //  INVENTORY & CHARACTER PANEL
+    // ═════════════════════════════════════════════════════════════
+    private void openInventory() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        paused = true;
         inventoryOpen = true;
-
-        // For exploration mode, we don't need item selection callback
         currentInventoryPanel = new InventoryPanel(parentFrame, player, false,
-                (item, target) -> {
-                    // Item selection callback - not used in exploration mode
-                    System.out.println("Cannot use items outside of combat!");
-                },
-                () -> {
-                    // Close inventory callback
-                    closeInventory();
-                }
+                (item, target) -> System.out.println("Cannot use items outside of combat!"),
+                () -> closeInventory()
         );
-
-        // Hide GamePanel and show InventoryPanel
+        currentInventoryPanel.setGamePanel(this);
         this.setVisible(false);
         parentFrame.getContentPane().removeAll();
         parentFrame.add(currentInventoryPanel);
-        parentFrame.revalidate();
-        parentFrame.repaint();
+        parentFrame.revalidate(); parentFrame.repaint();
         currentInventoryPanel.requestFocusInWindow();
     }
 
-    /**
-     * Closes the inventory and returns to GamePanel
-     */
     public void closeInventory() {
         inventoryOpen = false;
         currentInventoryPanel = null;
-
-        // Restore GamePanel
+        paused = false;
         parentFrame.getContentPane().removeAll();
         parentFrame.add(this);
-        parentFrame.revalidate();
-        parentFrame.repaint();
+        parentFrame.revalidate(); parentFrame.repaint();
         this.setVisible(true);
         this.requestFocusInWindow();
     }
 
-    /**
-     * Opens the character panel during exploration
-     */
     private void openCharacter() {
+        if (parentFrame == null) parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        paused = true;
+        characterOpen = true;
+        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
+                () -> closeCharacter()
+        );
+        currentCharacterPanel.setGamePanel(this);
+        this.setVisible(false);
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(currentCharacterPanel);
+        parentFrame.revalidate(); parentFrame.repaint();
+        currentCharacterPanel.requestFocusInWindow();
+    }
+
+    public void closeCharacter() {
+        characterOpen = false;
+        currentCharacterPanel = null;
+        paused = false;
+        parentFrame.getContentPane().removeAll();
+        parentFrame.add(this);
+        parentFrame.revalidate(); parentFrame.repaint();
+        this.setVisible(true);
+        this.requestFocusInWindow();
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  VOLUME PANEL
+    // ═════════════════════════════════════════════════════════════
+    public void showVolumePanel() {
         if (parentFrame == null) {
             parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         }
 
-        characterOpen = true;
+        int centerX = (screenWidth - 350) / 2;
+        int centerY = (screenHeight - 220) / 2;
+        volumePanel.setLocation(centerX, centerY);
 
-        currentCharacterPanel = new CharacterPanel(parentFrame, player, false,
-                () -> {
-                    // Close character panel callback
-                    closeCharacter();
-                }
-        );
+        JLayeredPane layeredPane = parentFrame.getRootPane().getLayeredPane();
 
-        // Hide GamePanel and show CharacterPanel
-        this.setVisible(false);
-        parentFrame.getContentPane().removeAll();
-        parentFrame.add(currentCharacterPanel);
-        parentFrame.revalidate();
-        parentFrame.repaint();
-        currentCharacterPanel.requestFocusInWindow();
+        // Only add if not already added
+        if (volumePanel.getParent() == null) {
+            layeredPane.add(volumePanel, JLayeredPane.POPUP_LAYER);
+        }
+
+        volumePanel.setVisible(true);
+        volumePanel.requestPanelFocus();
+        volumeOpen = true;
+
+        this.setFocusable(false);
     }
 
-    /**
-     * Closes the character panel and returns to GamePanel
-     */
-    public void closeCharacter() {
-        characterOpen = false;
-        currentCharacterPanel = null;
+    public void closeVolumePanel() {
+        if (volumePanel != null && volumeOpen) {
+            volumePanel.setVisible(false);
+            volumeOpen = false;
+            this.setFocusable(true);
+            this.requestFocusInWindow();
+        }
+    }
 
-        // Restore GamePanel
-        parentFrame.getContentPane().removeAll();
-        parentFrame.add(this);
-        parentFrame.revalidate();
-        parentFrame.repaint();
-        this.setVisible(true);
-        this.requestFocusInWindow();
+    // ═════════════════════════════════════════════════════════════
+    //  MAP TRANSITIONS
+    // ═════════════════════════════════════════════════════════════
+
+    /**
+     * Load a map off the EDT so the game loop keeps ticking.
+     * While loading, the game loop skips update() and paintComponent()
+     * draws a loading screen — no concurrent reads of tileM or obj[].
+     */
+    private void transitionToMap(String mapPath, Runnable onComplete) {
+        mapTransitionInProgress = true;
+        SwingWorker<Void, Void> loader = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                tileM.loadMap(mapPath);
+                aSetter.setObject();
+                return null;
+            }
+            @Override
+            protected void done() {
+                try { get(); } catch (Exception e) { e.printStackTrace(); }
+                onComplete.run();
+                mapTransitionInProgress = false;
+            }
+        };
+        loader.execute();
     }
 
     public void checkMapTransition() {
-        if (player == null) return;
+        if (mapTransitionInProgress) return;
 
-        // --- MAP 1  ---
+        // MAP 1 → MAP 2
         if (currentMap == 0) {
-            // EXIT RIGHT -> TO MAP 2
             if (player.worldX > worldWidth - (tileSize * 1.5)) {
-                currentMap = 1;
-                tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
+                if (!GameStateManager.get().map1BossDefeated
+                        && GameStateManager.get().map1Phase
+                        != GameStateManager.Map1Phase.COLLECT_ESSENCE) {
+                    player.worldX = worldWidth - (tileSize * 2);
+                    screenMessage.show("Defeat the Boss first!", null, 60, false);
+                    return;
+                }
+                if (GameStateManager.get().map1Phase == COLLECT_ESSENCE
+                        && !GameStateManager.get().allEssenceCollected()) {
+                    player.worldX = worldWidth - (tileSize * 2);
+                    screenMessage.show("Collect all 5 Essence first!",
+                            "Seek out the villagers.", 80, false);
+                    return;
+                }
+                if (!isEasterEggUnlocked()) {
+                    player.worldX = worldWidth - (tileSize * 2);
+                    screenMessage.show("Secret Code Required! 🥚",
+                            "Solve Notice Board First", 120, false);
+                    return;
+                }
 
-                player.worldX = tileSize * 3;
-                player.worldY = tileSize * 10;
+                currentMap = 1;
+                transitionToMap("/maps/world02.txt", () -> {
+                    mapLabel.reset("Map 2", "The Sorcerer's Lair");
+                    musicPlayer.playMapMusic();
+                    player.worldX = tileSize * 3;
+                    player.worldY = tileSize * 10;
+                    objectivesHUD.clearEggCodeObjective();
+                    map2ExploreShown = false;
+                    map2ExploreReady = false;
+                    if (!GameStateManager.get().map2IntroShown
+                            && !GameStateManager.get().isMap2Revisit) {
+                        triggerMap2Intro();
+                    } else if (GameStateManager.get().isMap2Revisit) {
+                        objectivesHUD.setObjective("Fight the enemies", 0, 2);
+                        map2PlayerFrozen = false;
+                    }
+                });
             }
         }
 
-        // --- MAP 2 ---
+        // MAP 2 → MAP 3 or MAP 2 → MAP 1
         else if (currentMap == 1) {
-            // EXIT LEFT -> TO MAP 1
-            if (player.worldX < tileSize) {
-                currentMap = 0;
-                tileM.loadMap("/maps/world01.txt");
-                aSetter.setObject();
+            if (player.worldX > worldWidth - (tileSize * 1.5)) {
+                if (!GameStateManager.get().isMap2Revisit
+                        && !GameStateManager.get().map2BossDefeated) {
+                    player.worldX = worldWidth - (tileSize * 2);
+                    screenMessage.show("Defeat Zed first!", null, 60, false);
+                    return;
+                }
+                if (GameStateManager.get().isMap2Revisit
+                        && !GameStateManager.get().map2RevisitCleared) {
+                    player.worldX = worldWidth - (tileSize * 2);
+                    screenMessage.show("Defeat the enemies first!", null, 60, false);
+                    return;
+                }
 
-                player.worldX = worldWidth - (tileSize * 3);
-                player.worldY = tileSize * 10;
+                currentMap = 2;
+                transitionToMap("/maps/world03.txt", () -> {
+                    mapLabel.reset("Map 3", "The Sorcerer's Lair - Final Battle");
+                    musicPlayer.playMapMusic();
+                    objectivesHUD.setObjective("Fight the enemy", 0, 1);
+                    player.worldX = tileSize * 2;
+                    player.worldY = tileSize * 2;
+                });
+                return;
             }
 
-            // EXIT RIGHT -> TO MAP 3
-            if (player.worldX > worldWidth - (tileSize * 1.5)) {
-                currentMap = 2;
-                tileM.loadMap("/maps/world03.txt");
-                aSetter.setObject();
-
-                // SPAWN ON MAP 3: Top-Left Corner
-                player.worldX = tileSize * 2;
-                player.worldY = tileSize * 2;
+            if (player.worldX < tileSize && !GameStateManager.get().isMap2Revisit) {
+                currentMap = 0;
+                transitionToMap("/maps/world01.txt", () -> {
+                    mapLabel.reset("Map 1", "The Neverwinter Village");
+                    musicPlayer.playMapMusic();
+                    player.worldX = worldWidth - (tileSize * 3);
+                    player.worldY = tileSize * 10;
+                });
             }
         }
 
-        // --- MAP 3  ---
+        // MAP 3 → MAP 2
         else if (currentMap == 2) {
-            // EXIT LEFT -> TO MAP 2
             if (player.worldX < tileSize) {
                 currentMap = 1;
-                tileM.loadMap("/maps/world02.txt");
-                aSetter.setObject();
-
-                player.worldX = worldWidth - (tileSize * 3);
-                player.worldY = tileSize * 10;
+                transitionToMap("/maps/world02.txt", () -> {
+                    musicPlayer.playMapMusic();
+                    player.worldX = worldWidth - (tileSize * 3);
+                    player.worldY = tileSize * 10;
+                });
             }
         }
     }
 
+    // ═════════════════════════════════════════════════════════════
+    //  MAP 2 INTRO
+    // ═════════════════════════════════════════════════════════════
+    private void triggerMap2Intro() {
+        GameStateManager.get().map2IntroShown = true;
+        map2PlayerFrozen = true;
+
+        screenMessage.show("A week into the journey...", null, 120, false);
+        javax.swing.Timer step2 = new javax.swing.Timer(2500, e -> {
+            screenMessage.show("The ruins of a village...", null, 120, false);
+            javax.swing.Timer step3 = new javax.swing.Timer(2500, ev ->
+                    showMap2PlayerMonologue());
+            step3.setRepeats(false);
+            step3.start();
+        });
+        step2.setRepeats(false);
+        step2.start();
+    }
+
+    private void showMap2PlayerMonologue() {
+        String cls = getPlayerDisplayClass();
+        String displayName;
+        switch (cls) {
+            case "Archer":    displayName = "Khai the Archer";    break;
+            case "Mage":      displayName = "Khai the Mage";      break;
+            case "Swordsman": displayName = "Khai the Swordsman"; break;
+            default:          displayName = "Khai";               break;
+        }
+
+        String line = "The silence here is wrong. This magic... "
+                + "it's the same as the withering. He passed through here. "
+                + "North. He's in the north. I can feel it.";
+
+        final String finalName = displayName;
+        Entities.Characters.NPC monoNPC = new Entities.Characters.NPC(this) {
+            @Override
+            public Dialogue.DialogueTree getDialogue(String c) {
+                Dialogue.DialogueTree t = new Dialogue.DialogueTree();
+                t.addPage(new Dialogue.DialogueTree.Page(finalName, line, true)
+                        .addChoice("Explore the Ruins", -1));
+                return t;
+            }
+        };
+        monoNPC.npcName   = finalName;
+        monoNPC.available = true;
+
+        try {
+            String portraitName = cls.equalsIgnoreCase("ranger")
+                    ? "archer" : cls.toLowerCase();
+            java.awt.image.BufferedImage pp =
+                    javax.imageio.ImageIO.read(getClass().getResourceAsStream(
+                            "/player/" + portraitName + "_portrait.png"));
+            dialogueSystem.setPlayerPortrait(pp);
+        } catch (Exception e) { /* ignore */ }
+
+        dialogueSystem.open(monoNPC, cls);
+        dialogueSystem.setOnMap2MonologueDone(() -> {
+            map2PlayerFrozen = false;
+            objectivesHUD.setObjective("Fight the enemies", 0, 2);
+            screenMessage.show("Explore the ruins...", null, 90, false);
+        });
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  ENEMY SPAWNS & BATTLES — MAP 1
+    // ═════════════════════════════════════════════════════════════
+    public void spawnMap1Enemies() {
+        if (!GameStateManager.get().map1EnemiesDefeated_masklet) {
+            Entities.Enemies.MapEnemy_Masklet masklet =
+                    new Entities.Enemies.MapEnemy_Masklet(this);
+            masklet.worldX = 12 * tileSize;
+            masklet.worldY = 8 * tileSize;
+            setupEnemyOnMap(masklet, true);
+            obj[20] = masklet;
+        }
+        if (!GameStateManager.get().map1EnemiesDefeated_zenzilla) {
+            Entities.Enemies.MapEnemy_Zenzilla zenzilla =
+                    new Entities.Enemies.MapEnemy_Zenzilla(this);
+            zenzilla.worldX = 15 * tileSize;
+            zenzilla.worldY = 10 * tileSize;
+            setupEnemyOnMap(zenzilla, false);
+            obj[21] = zenzilla;
+        }
+    }
+
+    private void setupEnemyOnMap(Entities.Enemies.EnemyEntity enemy, boolean isMasklet) {
+        enemy.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            enemy.markBattleStarted();
+            battleTransition.start(() -> launchEnemyBattle(enemy, isMasklet));
+        });
+    }
+
+    private void launchEnemyBattle(Entities.Enemies.EnemyEntity mapEnemy,
+                                   boolean isMasklet) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(mapEnemy.createBattleEnemy());
+        }
+
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), this);
+        } else {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), enemiesInBattle.get(1), enemiesInBattle.get(2), this);
+        }
+
+        final GamePanel gpRef = this;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
+
+        bp.setOnBattleEnd(() -> {
+            boolean playerWon = player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            //Reset all buffs after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
+                battleTransition = new BattleTransition();
+                map2PlayerFrozen = false;
+            });
+
+            if (won) {
+                int totalExp = 0;
+                int totalGold = 0;
+                for (Entities.Enemies.Enemy e : finalEnemies) {
+                    totalExp += e.getExpYield();
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
+                }
+
+                player.gainExp(totalExp, 1);
+                player.addMoney(totalGold);
+
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                mapEnemy.defeated = true;
+                mapEnemy.available = false;
+
+                if (isMasklet) {
+                    GameStateManager.get().map1EnemiesDefeated_masklet = true;
+                } else {
+                    GameStateManager.get().map1EnemiesDefeated_zenzilla = true;
+                }
+
+                GameStateManager.get().map1EnemiesDefeated++;
+                int count = GameStateManager.get().map1EnemiesDefeated;
+
+                javax.swing.Timer hudTimer = new javax.swing.Timer(200, e -> {
+                    objectivesHUD.updateProgress(count);
+                    if (count >= 2 && !GameStateManager.get().map1BossSpawned) {
+                        GameStateManager.get().map1BossSpawned = true;
+                        GameStateManager.get().map1Phase = GameStateManager.Map1Phase.FIGHT_BOSS;
+                        objectivesHUD.setObjective("Defeat the Boss", 0, 1);
+                        screenMessage.show("The Boss Has Spawned!",
+                                "Find and defeat Thorncrusher!", 180, false);
+                        spawnMap1Boss();
+                    }
+                });
+                hudTimer.setRepeats(false);
+                hudTimer.start();
+
+                resumeMapMusic();
+            } else {
+                javax.swing.Timer t = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
+                t.setRepeats(false);
+                t.start();
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
+            }
+        });
+
+        this.inCombat = true;
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+        bp.requestFocusInWindow();
+    }
+
+    public void startPostBattleCooldown() {
+        postBattleCooldown = true;
+        if (postBattleTimer != null) postBattleTimer.stop();
+        postBattleTimer = new javax.swing.Timer(2000, e -> {
+            postBattleCooldown = false;
+            postBattleTimer = null;
+        });
+        postBattleTimer.setRepeats(false);
+        postBattleTimer.start();
+    }
+
+    private void restorePlayerStats(double atkBeforeBattle, double defBeforeBattle, double spdBeforeBattle) {
+        if (player instanceof Swordsman) {
+            ((Swordsman) player).resetBattleBuffs();
+        } else if (player instanceof Ranger) {
+            ((Ranger) player).resetBattleBuffs();
+        } else if (player instanceof Mage) {
+            ((Mage) player).resetBattleBuffs();
+        }
+
+        player.setAttack(atkBeforeBattle);
+        player.setDefense(defBeforeBattle);
+        player.setSpeed(spdBeforeBattle);
+    }
+
+    private void spawnMap1Boss() {
+        Entities.Enemies.MapBoss_Thorncrusher boss =
+                new Entities.Enemies.MapBoss_Thorncrusher(this);
+        boss.worldX = 25 * tileSize;
+        boss.worldY = 39 * tileSize;
+        boss.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            boss.markBattleStarted();
+            battleTransition.start(() -> launchBossBattle(boss));
+        });
+        obj[30] = boss;
+    }
+
+    private void launchBossBattle(Entities.Enemies.MapBoss_Thorncrusher mapBoss) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        Entities.Enemies.Enemy bossEnemy = mapBoss.createBattleEnemy();
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this);
+        final GamePanel gpRef = this;
+        final Entities.Enemies.Enemy finalBoss = bossEnemy;
+
+        bp.setOnBattleEnd(() -> {
+            boolean playerWon = player.getHp() > 0;
+            boolean bossDefeated = finalBoss.getHp() <= 0;
+            boolean won = playerWon && bossDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
+                battleTransition = new BattleTransition();
+                map2PlayerFrozen = false;
+            });
+
+            if (won) {
+                int totalExp = finalBoss.getExpYield();
+                int totalGold = finalBoss.getGoldYield();
+
+                player.gainExp(totalExp, 1);
+                player.addMoney(totalGold);
+
+                System.out.println("BOSS DEFEATED!");
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                mapBoss.defeated  = true;
+                mapBoss.available = false;
+                GameStateManager.get().map1BossDefeated = true;
+                GameStateManager.get().map1Phase = GameStateManager.Map1Phase.COMPLETE;
+
+                javax.swing.Timer hudTimer = new javax.swing.Timer(200, e -> {
+                    objectivesHUD.updateProgress(1);
+
+                    boolean allObjectivesComplete = GameStateManager.get().allEssenceCollected()
+                            && isEasterEggUnlocked();
+
+                    if (allObjectivesComplete) {
+                        screenMessage.show("ALL OBJECTIVES COMPLETE!",
+                                "The Bridge to the Next Map is NOW OPEN!", 220, true);
+                    } else {
+                        screenMessage.show("Boss Defeated!",
+                                "Complete remaining objectives to unlock Map 2", 180, false);
+                    }
+
+                    lockNPCsExceptShop();
+                });
+                hudTimer.setRepeats(false);
+                hudTimer.start();
+                resumeMapMusic();
+            } else {
+                javax.swing.Timer t = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
+                t.setRepeats(false);
+                t.start();
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
+            }
+        });
+
+        this.inCombat = true;
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  ENEMY SPAWNS & BATTLES — MAP 2
+    // ═════════════════════════════════════════════════════════════
+    public void spawnMap2Enemies() {
+        if (!GameStateManager.get().map2EnemiesDefeated_sanjveil) {
+            Entities.Enemies.MapEnemy_Sanjveil sanjveil =
+                    new Entities.Enemies.MapEnemy_Sanjveil(this);
+            sanjveil.worldX = 25 * tileSize;
+            sanjveil.worldY = 18 * tileSize;
+            setupMap2Enemy(sanjveil, true);
+            obj[20] = sanjveil;
+        }
+        if (!GameStateManager.get().map2EnemiesDefeated_razormaw) {
+            Entities.Enemies.MapEnemy_Razormaw razormaw =
+                    new Entities.Enemies.MapEnemy_Razormaw(this);
+            razormaw.worldX = 32 * tileSize;
+            razormaw.worldY = 24 * tileSize;
+            setupMap2Enemy(razormaw, false);
+            obj[21] = razormaw;
+        }
+    }
+
+    private void setupMap2Enemy(Entities.Enemies.EnemyEntity enemy, boolean isSanjveil) {
+        enemy.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            enemy.markBattleStarted();
+            battleTransition.start(() -> launchMap2EnemyBattle(enemy, isSanjveil));
+        });
+    }
+
+    private void launchMap2EnemyBattle(Entities.Enemies.EnemyEntity mapEnemy,
+                                       boolean isSanjveil) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(mapEnemy.createBattleEnemy());
+        }
+
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1), this);
+        } else {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1),
+                    enemiesInBattle.get(2), this);
+        }
+
+        final GamePanel gpRef = this;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
+
+        bp.setOnBattleEnd(() -> {
+            boolean playerWon = player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
+                battleTransition = new BattleTransition();
+                map2PlayerFrozen = false;
+            });
+
+            if (won) {
+                int totalExp = 0;
+                int totalGold = 0;
+                for (Entities.Enemies.Enemy e : finalEnemies) {
+                    totalExp += e.getExpYield();
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
+                }
+
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
+
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                mapEnemy.defeated = true;
+                mapEnemy.available = false;
+                if (isSanjveil) GameStateManager.get().map2EnemiesDefeated_sanjveil = true;
+                else            GameStateManager.get().map2EnemiesDefeated_razormaw  = true;
+
+                GameStateManager.get().map2EnemiesDefeated++;
+                int count = GameStateManager.get().map2EnemiesDefeated;
+
+                javax.swing.Timer t = new javax.swing.Timer(200, e -> {
+                    objectivesHUD.updateProgress(count);
+                    if (count >= 2
+                            && !GameStateManager.get().map2BossSpawned
+                            && !GameStateManager.get().isMap2Revisit) {
+
+                        GameStateManager.get().map2EnemiesDefeated_run1 = true;
+                        GameStateManager.get().map2BossSpawned = true;
+
+                        if (isEasterEggUnlocked()) {
+                            screenMessage.show("An Easter Egg Boss has been Dropped!",
+                                    "Find it at your own risk!", 180, false);
+
+                            objectivesHUD.setChallenge("Find the Easter Egg Boss!");
+
+                            javax.swing.Timer bossTimer = new javax.swing.Timer(3500, ev -> {
+                                screenMessage.show("Zed the Sorcerer has Spawned!",
+                                        "Defeat the Boss (Easter Egg still active!)", 180, false);
+                                objectivesHUD.setObjective("Defeat the Boss", 0, 1);
+                                spawnMap2Boss();
+                                enableFrankenstein();
+                            });
+                            bossTimer.setRepeats(false);
+                            bossTimer.start();
+                        } else {
+                            screenMessage.show("Zed the Sorcerer has Spawned!",
+                                    "Defeat the Boss", 180, false);
+                            objectivesHUD.setObjective("Defeat the Boss", 0, 1);
+                            spawnMap2Boss();
+                        }
+                    }
+                });
+                t.setRepeats(false);
+                t.start();
+                resumeMapMusic();
+            } else {
+                javax.swing.Timer gameOverTimer = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
+                gameOverTimer.setRepeats(false);
+                gameOverTimer.start();
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
+            }
+        });
+
+        this.inCombat = true;
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+    // ── Map 2 revisit enemy spawns ────────────────────────────────
+    public void spawnMap2RevisitEnemies() {
+        Entities.Enemies.MapEnemy_Sanjveil sanjveil =
+                new Entities.Enemies.MapEnemy_Sanjveil(this);
+        sanjveil.worldX = 25 * tileSize;
+        sanjveil.worldY = 18 * tileSize;
+        sanjveil.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            sanjveil.markBattleStarted();
+            battleTransition.start(() -> launchMap2RevisitEnemyBattle(sanjveil, true));
+        });
+        obj[20] = sanjveil;
+
+        Entities.Enemies.MapEnemy_Razormaw razormaw =
+                new Entities.Enemies.MapEnemy_Razormaw(this);
+        razormaw.worldX = 32 * tileSize;
+        razormaw.worldY = 24 * tileSize;
+        razormaw.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            razormaw.markBattleStarted();
+            battleTransition.start(() -> launchMap2RevisitEnemyBattle(razormaw, false));
+        });
+        obj[21] = razormaw;
+    }
+
+    private void launchMap2RevisitEnemyBattle(Entities.Enemies.EnemyEntity mapEnemy,
+                                              boolean isSanjveil) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        // Randomize number of enemies between 1 and 3
+        int enemyCount = 1 + new Random().nextInt(3);
+
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        java.util.List<Entities.Enemies.Enemy> enemiesInBattle = new java.util.ArrayList<>();
+        for (int i = 0; i < enemyCount; i++) {
+            enemiesInBattle.add(mapEnemy.createBattleEnemy());
+        }
+
+        Combat.BattlePanel bp;
+
+        if (enemyCount == 1) {
+            bp = new Combat.BattlePanel(player, enemiesInBattle.get(0), this);
+        } else if (enemyCount == 2) {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1), this);
+        } else {
+            bp = new Combat.BattlePanel(player,
+                    enemiesInBattle.get(0),
+                    enemiesInBattle.get(1),
+                    enemiesInBattle.get(2), this);
+        }
+
+        final GamePanel gpRef = this;
+        final java.util.List<Entities.Enemies.Enemy> finalEnemies = enemiesInBattle;
+
+        bp.setOnBattleEnd(() -> {
+            boolean playerWon = player.getHp() > 0;
+
+            boolean allEnemiesDefeated = true;
+            for (Entities.Enemies.Enemy e : finalEnemies) {
+                if (e.getHp() > 0) {
+                    allEnemiesDefeated = false;
+                    System.out.println("Enemy still alive: " + e.getName() + " HP: " + e.getHp());
+                    break;
+                }
+            }
+
+            boolean won = playerWon && allEnemiesDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
+                battleTransition = new BattleTransition();
+                map2PlayerFrozen = false;
+            });
+
+            if (won) {
+                int totalExp = 0;
+                int totalGold = 0;
+                for (Entities.Enemies.Enemy e : finalEnemies) {
+                    totalExp += e.getExpYield();
+                    totalGold += e.getGoldYield();
+                    System.out.println("Gained " + e.getExpYield() + " EXP and " + e.getGoldYield() + " Gold from " + e.getName());
+                }
+
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
+
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                mapEnemy.defeated = true;
+                mapEnemy.available = false;
+
+                GameStateManager.get().map2RevisitEnemiesDefeated++;
+                int count = GameStateManager.get().map2RevisitEnemiesDefeated;
+
+                javax.swing.Timer t = new javax.swing.Timer(200, e -> {
+                    objectivesHUD.updateProgress(count);
+                    if (count >= 2) {
+                        GameStateManager.get().map2RevisitCleared = true;
+                        screenMessage.show("Objectives Cleared!",
+                                "Final Fight Unlocked — Proceed to Map 3", 180, false);
+                        objectivesHUD.setSimpleObjective("Proceed to Map 3");
+                    }
+                });
+                t.setRepeats(false); t.start();
+                resumeMapMusic();
+            } else {
+                javax.swing.Timer gameOverTimer = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
+                gameOverTimer.setRepeats(false);
+                gameOverTimer.start();
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
+            }
+        });
+
+        this.inCombat = true;
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  MAP 2 BOSS
+    // ═════════════════════════════════════════════════════════════
+    public void spawnMap2Boss() {
+        Entities.Enemies.MapBoss_Zed zed = new Entities.Enemies.MapBoss_Zed(this);
+        zed.worldX = 8 * tileSize;
+        zed.worldY = 37 * tileSize;
+        zed.setOnBattleTrigger(() -> {
+            if (inCombat) return;
+            if (postBattleCooldown) return;
+            if (battleTransition.isRunning()) return;
+            zed.markBattleStarted();
+            battleTransition.start(() -> launchMap2BossBattle(zed));
+        });
+        obj[30] = zed;
+    }
+
+    public void enableFrankenstein() {
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] instanceof NPC_Frankenstein) {
+                NPC_Frankenstein frank = (NPC_Frankenstein) obj[i];
+
+                frank.available     = false;
+                frank.setVisible(false);
+                frank.showOnMinimap = false;
+
+                System.out.println("✅ Frankenstein scheduled to spawn (first run)");
+
+                frank.setOnFightChosen(() -> {
+                    if (battleTransition.isRunning()) return;
+                    battleTransition.start(() -> launchFrankensteinBattle(frank));
+                });
+
+                javax.swing.Timer revealTimer = new javax.swing.Timer(3500, e -> {
+                    frank.available     = true;
+                    frank.setVisible(true);
+                    frank.showOnMinimap = false;
+                    System.out.println("✅ Frankenstein NOW VISIBLE (first run) at "
+                            + frank.worldX / tileSize + "," + frank.worldY / tileSize);
+                });
+                revealTimer.setRepeats(false);
+                revealTimer.start();
+
+                break;
+            }
+        }
+    }
+
+    private void launchMap2BossBattle(Entities.Enemies.MapBoss_Zed mapBoss) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        Entities.Enemies.Enemy bossEnemy = mapBoss.createBattleEnemy();
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        StoryLine.ThroneRoomCutscene cutscene =
+                new StoryLine.ThroneRoomCutscene(() -> {
+
+                    Combat.BattlePanel bp = new Combat.BattlePanel(player, bossEnemy, this);
+                    final GamePanel gpRef = this;
+                    final Entities.Enemies.Enemy finalBoss = bossEnemy;
+
+                    bp.setOnBattleEnd(() -> {
+                        boolean playerWon = player.getHp() > 0;
+                        boolean bossDefeated = finalBoss.getHp() <= 0;
+                        boolean won = playerWon && bossDefeated;
+
+                        // Reset all buffs and restore stats after battle
+                        restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            frame.getContentPane().removeAll();
+                            frame.revalidate();
+                            frame.repaint();
+
+                            if (won) {
+                                int totalExp = finalBoss.getExpYield();
+                                int totalGold = finalBoss.getGoldYield();
+
+                                player.gainExp(totalExp, 2);
+                                player.addMoney(totalGold);
+
+                                System.out.println("BOSS DEFEATED!");
+                                System.out.println("Total EXP gained: " + totalExp);
+                                System.out.println("Total Gold gained: " + totalGold);
+                                System.out.println("Player Level: " + player.getLevel());
+                                System.out.println("Player Gold: " + player.getMoney());
+
+                                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                                gpRef.inCombat = false;
+                                gpRef.startPostBattleCooldown();
+                                gpRef.musicPlayer.stopAllMusic();
+                                StoryLine.PostDefeatCutscene postCutscene =
+                                        new StoryLine.PostDefeatCutscene(() -> {
+                                            returnToMap1SecondVisit(frame, gpRef);
+                                            map2PlayerFrozen = false;
+                                        });
+                                postCutscene.setGamePanel(gpRef);
+                                frame.getContentPane().removeAll();
+                                frame.add(postCutscene);
+                                frame.revalidate();
+                                frame.repaint();
+                            } else {
+                                javax.swing.Timer t = new javax.swing.Timer(2500,
+                                        ev -> returnToTitleScreen(frame));
+                                t.setRepeats(false);
+                                t.start();
+                                javax.swing.SwingUtilities.invokeLater(() ->
+                                        screenMessage.show("Game Over", null, 120, false));
+                            }
+                        });
+                    });
+
+                    this.inCombat = true;
+                    frame.getContentPane().removeAll();
+                    frame.add(bp);
+                    frame.revalidate();
+                    frame.repaint();
+                });
+
+        cutscene.setGamePanel(this);
+        frame.getContentPane().removeAll();
+        frame.add(cutscene);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void launchFrankensteinBattle(NPC_Frankenstein frankNPC) {
+        final double atkBeforeBattle = player.getAttack();
+        final double defBeforeBattle = player.getDefense();
+        final double spdBeforeBattle = player.getSpeed();
+
+        Entities.Enemies.Enemy battleEnemy = new Entities.Enemies.Frankenstein();
+        javax.swing.JFrame frame =
+                (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (frame == null) return;
+
+        GameStateManager.get().easterEggFound = true;
+        objectivesHUD.completeChallenge();
+
+        Combat.BattlePanel bp = new Combat.BattlePanel(player, battleEnemy, this);
+        final GamePanel gpRef = this;
+        final Entities.Enemies.Enemy finalBoss = battleEnemy;
+
+        bp.setOnBattleEnd(() -> {
+            boolean playerWon = player.getHp() > 0;
+            boolean bossDefeated = finalBoss.getHp() <= 0;
+            boolean won = playerWon && bossDefeated;
+
+            // Reset all buffs and restore stats after battle
+            restorePlayerStats(atkBeforeBattle, defBeforeBattle, spdBeforeBattle);
+
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                frame.getContentPane().removeAll();
+                frame.add(gpRef);
+                frame.revalidate();
+                frame.repaint();
+                gpRef.requestFocusInWindow();
+                gpRef.inCombat = false;
+                gpRef.startPostBattleCooldown();
+                gpRef.battleTransition = new BattleTransition();
+                gpRef.map2PlayerFrozen = false;
+            });
+
+            if (won) {
+                // Grant EXP for defeating Frankenstein (Easter Egg Boss)
+                int totalExp = finalBoss.getExpYield();
+                int totalGold = finalBoss.getGoldYield();
+
+                player.gainExp(totalExp, 2);
+                player.addMoney(totalGold);
+
+                System.out.println("EASTER EGG BOSS DEFEATED!");
+                System.out.println("Total EXP gained: " + totalExp);
+                System.out.println("Total Gold gained: " + totalGold);
+                System.out.println("Player Level: " + player.getLevel());
+                System.out.println("Player Gold: " + player.getMoney());
+
+                screenMessage.show("Gained " + totalExp + " EXP and " + totalGold + " Gold!", null, 60, false);
+
+                frankNPC.defeated = true;
+                frankNPC.available = false;
+                frankNPC.setVisible(false);
+
+                javax.swing.Timer msgTimer = new javax.swing.Timer(300, e ->
+                        screenMessage.show(
+                                "Easter Egg Boss Defeated!",
+                                "Continue your journey...", 180, false));
+                msgTimer.setRepeats(false);
+                msgTimer.start();
+
+                resumeMapMusic();
+
+            } else {
+                javax.swing.Timer t = new javax.swing.Timer(2500,
+                        ev -> returnToTitleScreen(frame));
+                t.setRepeats(false);
+                t.start();
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        screenMessage.show("Game Over", null, 120, false));
+            }
+        });
+
+        this.inCombat = true;
+        frame.getContentPane().removeAll();
+        frame.add(bp);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  HELPERS
+    // ═════════════════════════════════════════════════════════════
+    private String getPlayerDisplayClass() {
+        String cls = player.getClass().getSimpleName();
+        return cls.equals("Ranger") ? "Archer" : cls;
+    }
+
+    private void returnToTitleScreen(javax.swing.JFrame frame) {
+        stopGameThread();
+        musicPlayer.stopAllMusic();
+        Main.GameStateManager.reset();
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            if (frame instanceof Main.CurseOfZed) {
+                Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
+                Main.TitlePanel titlePanel = new Main.TitlePanel();
+                titlePanel.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                titlePanel.setParentFrame(cozFrame);
+                cozFrame.getContentPane().removeAll();
+                cozFrame.add(titlePanel);
+                cozFrame.revalidate(); cozFrame.repaint();
+            } else {
+                Main.CurseOfZed coz = new Main.CurseOfZed();
+                coz.setVisible(true);
+                frame.dispose();
+            }
+        });
+    }
+
+    private void returnToMap1SecondVisit(javax.swing.JFrame frame, GamePanel gpRef) {
+        currentMap = 0;
+        GameStateManager.get().isMap2Revisit = false;
+        GameStateManager.get().map1Phase     = COLLECT_ESSENCE;
+
+        frame.getContentPane().removeAll();
+        frame.add(gpRef);
+        frame.revalidate(); frame.repaint();
+        gpRef.requestFocusInWindow();
+        battleTransition = new BattleTransition();
+        map2PlayerFrozen = false;
+
+        transitionToMap("/maps/world01.txt", () -> {
+            mapLabel.reset("Map 1", "The Neverwinter Village");
+            player.worldX = tileSize * 27;
+            player.worldY = tileSize * 27;
+            objectivesHUD.setObjective("Collect 5 Essence", 0, 5);
+            objectivesHUD.clearChallengeObjective();
+            objectivesHUD.clearEggCodeObjective();
+            screenMessage.show("You have returned...",
+                    "Seek the essence of your village.", 180, false);
+            musicPlayer.playMapMusic();
+        });
+    }
+
+    private void lockNPCsExceptShop() {
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] instanceof Entities.Characters.NPC) {
+                Entities.Characters.NPC npc = (Entities.Characters.NPC) obj[i];
+                if (!npc.npcName.equals("Frank") && !npc.npcName.equals("Bukog")) {
+                    npc.interacted = true;
+                }
+            }
+        }
+    }
+
+    private java.awt.image.BufferedImage getLoadingBg() {
+        if (loadingBgImage == null) {
+            try {
+                loadingBgImage = javax.imageio.ImageIO.read(
+                        getClass().getResourceAsStream("/backgrounds/loading_bg.png"));
+            } catch (Exception ex) {
+                // leave null — paintComponent will fall back to black
+            }
+        }
+        return loadingBgImage;
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    //  PAINT
+    // ═════════════════════════════════════════════════════════════
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -309,48 +1807,149 @@ public class GamePanel extends JPanel implements Runnable {
 
         Graphics2D g2 = (Graphics2D) g;
 
-        // 1. TILE LAYER
-        tileM.draw(g2);
-
-        // 2. FLOOR OBJECT LAYER (Bridges)
-        // Draw these FIRST so they are always at the very bottom
-        for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null) {
-                if (obj[i] instanceof OBJ_BridgeHorizontal || obj[i] instanceof OBJ_Stone || obj[i] instanceof OBJ_BridgeVertical) {
-                    obj[i].draw(g2, this);
-                }
+        if (mapTransitionInProgress) {
+            java.awt.image.BufferedImage loadingBg = getLoadingBg();
+            if (loadingBg != null) {
+                double ia = (double) loadingBg.getWidth() / loadingBg.getHeight();
+                double pa = (double) screenWidth / screenHeight;
+                int bw, bh;
+                if (ia > pa) { bh = screenHeight; bw = (int)(screenHeight * ia); }
+                else         { bw = screenWidth;  bh = (int)(screenWidth  / ia); }
+                g2.drawImage(loadingBg,
+                        (screenWidth  - bw) / 2,
+                        (screenHeight - bh) / 2,
+                        bw, bh, null);
+            } else {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, screenWidth, screenHeight);
             }
+
+            g2.setColor(new Color(0, 0, 0, 100));
+            g2.fillRect(0, 0, screenWidth, screenHeight);
+
+            g2.setColor(new Color(252, 218, 72));
+            g2.setFont(new Font("Serif", Font.BOLD, 28));
+            FontMetrics fm = g2.getFontMetrics();
+            String text = "Loading...";
+            g2.drawString(text,
+                    (screenWidth - fm.stringWidth(text)) / 2,
+                    screenHeight / 2 + fm.getAscent() / 2);
+            return;
         }
 
-        // 3. Y-SORTED LAYER (Player, Trees, Rocks)
-        boolean playerDrawn = false;
+        tileM.draw(g2);
+
         for (int i = 0; i < obj.length; i++) {
-            if (obj[i] != null) {
-
-                // SKIP bridges here because we already drew them!
-                if (obj[i] instanceof OBJ_BridgeHorizontal ||  obj[i] instanceof OBJ_Stone || obj[i] instanceof OBJ_BridgeVertical) {
-                    continue;
-                }
-
-                // Standard Y-Sorting logic
-                int objectBottomY = obj[i].worldY;
-                if (obj[i].image != null) {
-                    objectBottomY += obj[i].image.getHeight() * scale;
-                }
-
-                if (!playerDrawn && player.worldY < objectBottomY) {
-                    player.draw(g2);
-                    playerDrawn = true;
-                }
+            if (obj[i] != null
+                    && (obj[i] instanceof OBJ_BridgeHorizontal
+                    || obj[i] instanceof OBJ_Stone
+                    || obj[i] instanceof OBJ_BridgeVertical)) {
                 obj[i].draw(g2, this);
             }
         }
 
-        // 4. FALLBACK: Draw player if they are in front of EVERYTHING
-        if (!playerDrawn && player != null) {
-            player.draw(g2);
+        boolean playerDrawn = false;
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] == null) continue;
+            if (obj[i] instanceof OBJ_BridgeHorizontal
+                    || obj[i] instanceof OBJ_Stone
+                    || obj[i] instanceof OBJ_BridgeVertical) continue;
+
+            int objectBottomY = obj[i].worldY;
+            if (obj[i].image != null)
+                objectBottomY += obj[i].image.getHeight() * scale;
+
+            if (!playerDrawn && player.worldY < objectBottomY) {
+                player.draw(g2);
+                if (emoteSystem.isPetVisible()) pet.draw(g2);
+                playerDrawn = true;
+            }
+            obj[i].draw(g2, this);
         }
 
+        if (!playerDrawn) {
+            player.draw(g2);
+            if (emoteSystem.isPetVisible()) pet.draw(g2);
+        }
+
+        gossipSystem.draw(g2, this);
+        weatherSystem.draw(g2, screenWidth, screenHeight);
+
+        if (nearbyNPC != null && !dialogueSystem.isActive()) {
+            int nx = nearbyNPC.worldX - player.worldX + player.screenX + tileSize / 2;
+            int ny = nearbyNPC.worldY - player.worldY + player.screenY - 20;
+            interactionPrompt.draw(g2, nx, ny);
+        }
+        if (nearbyBoard != null && !dialogueSystem.isActive()) {
+            int nx = nearbyBoard.worldX - player.worldX + player.screenX + tileSize / 2;
+            int ny = nearbyBoard.worldY - player.worldY + player.screenY - 20;
+            interactionPrompt.draw(g2, nx, ny);
+        }
+
+        mapLabel.draw(g2);
+        dialogueSystem.draw(g2);
+        objectivesHUD.draw(g2);
+        mapLabel.draw(g2);
+        weaponPopup.draw(g2);
+        screenMessage.draw(g2);
+        battleTransition.draw(g2);
+        essenceParticle.draw(g2);
+
+        emoteSystem.drawFloatingEmotes(g2, this);
+        emoteSystem.drawUI(g2, screenWidth);
+
+        minimap.draw(g2, this, weatherSystem);
+
+        drawKeybindGuide(g2);
+
         g2.dispose();
+    }
+
+    private void drawKeybindGuide(Graphics2D g2) {
+        if (dialogueSystem.isActive() || volumeOpen || inventoryOpen || characterOpen) return;
+
+        String[] keys   = {"ESC", "C", "I"};
+        String[] labels = {"Volume", "Character", "Inventory"};
+
+        int btnW = 36, btnH = 20, gap = 6, labelGap = 4;
+        Font keyFont   = new Font("Monospaced", Font.BOLD, 10);
+        Font labelFont = new Font("Serif", Font.PLAIN, 11);
+
+        g2.setFont(labelFont);
+        FontMetrics labelFm = g2.getFontMetrics();
+
+        int totalH = keys.length * (btnH + gap) - gap;
+        int startX = 10;
+        int startY = screenHeight - totalH - 10;
+
+        for (int i = 0; i < keys.length; i++) {
+            int y = startY + i * (btnH + gap);
+
+            // Button box
+            g2.setColor(new Color(20, 10, 5, 160));
+            g2.fillRoundRect(startX, y, btnW, btnH, 6, 6);
+            g2.setColor(new Color(200, 160, 50, 200));
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            g2.drawRoundRect(startX, y, btnW, btnH, 6, 6);
+
+            // Key text
+            g2.setFont(keyFont);
+            FontMetrics keyFm = g2.getFontMetrics();
+            int keyX = startX + (btnW - keyFm.stringWidth(keys[i])) / 2;
+            int keyY = y + (btnH + keyFm.getAscent() - keyFm.getDescent()) / 2;
+            g2.setColor(new Color(255, 220, 80));
+            g2.drawString(keys[i], keyX, keyY);
+
+            // Label
+            g2.setFont(labelFont);
+            int labelX = startX + btnW + labelGap;
+            int labelY = y + (btnH + labelFm.getAscent() - labelFm.getDescent()) / 2;
+            g2.setColor(new Color(240, 230, 200, 210));
+            g2.drawString(labels[i], labelX, labelY);
+        }
+    }
+
+    private boolean isEasterEggUnlocked() {
+        return GameStateManager.get().easterEggUnlockedByCode;
     }
 }

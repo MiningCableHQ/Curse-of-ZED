@@ -1,5 +1,6 @@
 package Moves.Enemy4;
 
+import Combat.StatusEffects.Poison;
 import Entities.Enemies.Razormaw;
 import Entities.Entity;
 import Moves.Move;
@@ -30,6 +31,10 @@ public class Move2 extends Move {
 
                 setDamageDealt(actualDamage);
                 setMessage(razormaw.getName() + " used " + this.name + " and dealt " + (int)actualDamage + " damage!");
+
+                if(rand.nextDouble() <= 0.20){
+                    target.addStatusEffect(new Poison(5));
+                }
             } else {
                 setDamageDealt(0);
                 setMessage(razormaw.getName() + " used " + this.name + " but missed!");

@@ -6,6 +6,9 @@ import java.awt.event.*;
 import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import Audio.SFX.SFXPlayer;
+import Audio.SFX.ClickSFX;
+import Audio.Music.CutsceneMusic;
 
 public class StoryPanel extends JPanel {
     // ── Palette ───────────────────────────────────────────────────
@@ -26,6 +29,8 @@ public class StoryPanel extends JPanel {
     private float alpha = 1.0f;
     private GoldButton nextBtn, backBtn, skipBtn;
     private Runnable onFinish;
+    private final SFXPlayer sfxPlayer = new SFXPlayer();
+    private final CutsceneMusic cutsceneMusic = new CutsceneMusic();
     private Image[] images;
     private float panX = 0;
     private float panSpeed = 0.5f; // Adjust this for faster/slower panning
@@ -55,26 +60,28 @@ public class StoryPanel extends JPanel {
         setupButtons();
         startTypewriter();
         fadeIn();
-
+        cutsceneMusic.preload();
+        cutsceneMusic.play(true);
     }
 
     private void setupButtons() {
         backBtn = new GoldButton("← BACK");
         backBtn.setBounds(62, 670, 140, 45);
         backBtn.setVisible(false);
-        backBtn.addActionListener(e -> changePage(-1));
+        backBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); changePage(-1); });
 
         nextBtn = new GoldButton("NEXT →");
         nextBtn.setBounds(822, 670, 140, 45);
         nextBtn.setVisible(false);
         nextBtn.addActionListener(e -> {
+            sfxPlayer.playSFX(new ClickSFX());
             if (currentPage < pages.length - 1) changePage(1);
             else fadeToFinish();
         });
 
         skipBtn = new GoldButton("SKIP STORY");
         skipBtn.setBounds(822, 30, 140, 40);
-        skipBtn.addActionListener(e -> fadeToFinish());
+        skipBtn.addActionListener(e -> { sfxPlayer.playSFX(new ClickSFX()); fadeToFinish(); });
 
         add(backBtn); add(nextBtn); add(skipBtn);
     }
@@ -84,7 +91,7 @@ public class StoryPanel extends JPanel {
         displayedText = ""; charIndex = 0;
         nextBtn.setVisible(false); backBtn.setVisible(false);
         if (typewriterTimer != null) typewriterTimer.stop();
-        typewriterTimer = new Timer(25, e -> {
+        typewriterTimer = new Timer(38, e -> {
             if (charIndex < pages[currentPage].length()) {
                 displayedText += pages[currentPage].charAt(charIndex++);
                 repaint();
@@ -131,7 +138,11 @@ public class StoryPanel extends JPanel {
     private void fadeToFinish() {
         fadeTimer = new Timer(20, e -> {
             alpha += 0.05f;
-            if (alpha >= 1.0f) { ((Timer)e.getSource()).stop(); onFinish.run(); }
+            if (alpha >= 1.0f) {
+                ((Timer)e.getSource()).stop();
+                cutsceneMusic.stop();
+                onFinish.run();
+            }
             repaint();
         });
         fadeTimer.start();
@@ -154,6 +165,9 @@ public class StoryPanel extends JPanel {
 
         nextBtn.setVisible(false);
         backBtn.setVisible(false);
+
+        cutsceneMusic.stop();
+        cutsceneMusic.play(true);
 
         startPanning();    // Trigger pan for the first page reset
         startTypewriter();

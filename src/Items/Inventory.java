@@ -1,6 +1,7 @@
 package Items;
 
 import Entities.Entity;
+import Items.Weapons.Weapon;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,18 +22,40 @@ public class Inventory {
         addItem(item, 1);
     }
 
+    private Item findExistingByName(String name) {
+        for (Item i : items) {
+            if (i.getName().equals(name)) return i;
+        }
+        return null;
+    }
+
     // Add multiple copies of an item
     public void addItem(Item item, int quantity) {
         if (quantity <= 0) return;
 
-        if (quantityMap.containsKey(item)) {
-            quantityMap.put(item, quantityMap.get(item) + quantity);
+        if (item instanceof Weapon) {
+            // Weapons: max 1 per name; silently ignore duplicates
+            if (findExistingByName(item.getName()) != null) return;
+            items.add(item);
+            quantityMap.put(item, 1);
+            totalQuantity += 1;
+            item.quantity = 1;
+            return;
+        }
+
+        // Consumables: stack by name to handle cross-reference shop instances
+        Item existing = findExistingByName(item.getName());
+        if (existing != null) {
+            int newQty = quantityMap.get(existing) + quantity;
+            quantityMap.put(existing, newQty);
+            totalQuantity += quantity;
+            existing.quantity = newQty;
         } else {
             items.add(item);
             quantityMap.put(item, quantity);
+            totalQuantity += quantity;
+            item.quantity = quantity;
         }
-        totalQuantity += quantity;
-        item.quantity = quantityMap.get(item);
     }
 
     // Remove multiple copies of an item

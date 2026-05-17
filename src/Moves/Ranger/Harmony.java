@@ -7,7 +7,7 @@ public class Harmony extends Move {
     public Harmony() {
         super("Harmony", 0, TargetType.SELF);
         hasUnlocked = true;
-        description = "Increase DEF and ATK by 12 (max 3 stacks)";
+        description = "Increase DEF and ATK by 15 (max 3 stacks)";
     }
 
     @Override

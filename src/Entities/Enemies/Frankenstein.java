@@ -17,7 +17,10 @@ public class Frankenstein extends Boss{
         maxDefense = defense;
         speed = 60;
         dmgResistance = 0.10;
+        expYield = 250;
+        goldYield = 1000;
         loadMoves();
+        loadSprite();
     }
 
     @Override
