@@ -74,6 +74,7 @@ public class CurseOfZed extends JFrame {
                     p.setOnStartCallback(() -> {
                         if (onStartCallback != null) onStartCallback.run();
                     });
+                    p.setParentFrame(CurseOfZed.this);
                     getContentPane().removeAll();
                     add(p);
                     pack();

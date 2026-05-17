@@ -27,7 +27,7 @@ public class GamePanel extends JPanel implements Runnable {
     public KeyHandler        keyH;
     public CollisionChecker  cChecker;
     public AssetSetter       aSetter;
-    Thread gameThread;
+    volatile Thread gameThread;
     public DialogueSystem    dialogueSystem;
     public InteractionPrompt interactionPrompt;
     public MapLabel          mapLabel;
@@ -250,9 +250,9 @@ public class GamePanel extends JPanel implements Runnable {
             final GamePanel gpRef = this;
 
             ShopPanel shopPanel = new ShopPanel(parentFrame, player, sk, () -> {
-                // Restore map music when shop closes
+                // Restore map music (and rain if still raining) when shop closes
                 musicPlayer.stopMapMusic();
-                musicPlayer.playMapMusic();
+                resumeMapMusic();
                 SwingUtilities.invokeLater(() -> {
                     parentFrame.getContentPane().removeAll();
                     parentFrame.add(gpRef);
@@ -345,6 +345,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void resumeMapMusic() {
         musicPlayer.resumeMapMusic();
+        WeatherSystem.WeatherType w = weatherSystem.getCurrent();
+        if (w == WeatherSystem.WeatherType.RAIN || w == WeatherSystem.WeatherType.STORM) {
+            musicPlayer.playRainMusic();
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -377,6 +381,10 @@ public class GamePanel extends JPanel implements Runnable {
         musicPlayer.playMapMusic();
     }
 
+    public void stopGameThread() {
+        gameThread = null;
+    }
+
     @Override
     public void run() {
         double drawInterval = 1_000_000_000.0 / FPS;
@@ -387,6 +395,7 @@ public class GamePanel extends JPanel implements Runnable {
             long currentTime = System.nanoTime();
             delta += (currentTime - lastTime) / drawInterval;
             lastTime = currentTime;
+            if (delta > 3) delta = 1; // Prevent catch-up after game thread is blocked by modal dialogs
 
             if (delta >= 1) {
                 if (!mapTransitionInProgress && !paused) {
@@ -469,6 +478,8 @@ public class GamePanel extends JPanel implements Runnable {
         // ── Player movement ───────────────────────────────────────
         if (!dialogueSystem.isActive() && !map2PlayerFrozen) {
             player.update();
+        } else if (dialogueSystem.isActive() && !map2PlayerFrozen) {
+            player.updateIdleAnimation();
         }
 
         // ── Inventory key press ───────────────────────────────────
@@ -1590,6 +1601,7 @@ public class GamePanel extends JPanel implements Runnable {
 
                                 gpRef.inCombat = false;
                                 gpRef.startPostBattleCooldown();
+                                gpRef.musicPlayer.stopAllMusic();
                                 StoryLine.PostDefeatCutscene postCutscene =
                                         new StoryLine.PostDefeatCutscene(() -> {
                                             returnToMap1SecondVisit(frame, gpRef);
@@ -1717,12 +1729,15 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     private void returnToTitleScreen(javax.swing.JFrame frame) {
+        stopGameThread();
+        musicPlayer.stopAllMusic();
         Main.GameStateManager.reset();
         javax.swing.SwingUtilities.invokeLater(() -> {
             if (frame instanceof Main.CurseOfZed) {
                 Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
                 Main.TitlePanel titlePanel = new Main.TitlePanel();
                 titlePanel.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                titlePanel.setParentFrame(cozFrame);
                 cozFrame.getContentPane().removeAll();
                 cozFrame.add(titlePanel);
                 cozFrame.revalidate(); cozFrame.repaint();

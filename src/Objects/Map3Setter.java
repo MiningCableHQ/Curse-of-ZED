@@ -4536,9 +4536,12 @@ public class Map3Setter {
                     GameStateManager.get().gameWon = true;
 
                     javax.swing.Timer t = new javax.swing.Timer(500, e -> {
+                        gpRef.stopGameThread();
+                        gpRef.musicPlayer.stopAllMusic();
                         StoryLine.VictoryCutscene victory =
                                 new StoryLine.VictoryCutscene(() -> {
                                     javax.swing.SwingUtilities.invokeLater(() -> {
+                                        gp.musicPlayer.stopAllMusic();
                                         Main.LeaderboardPanel lbPanel = new Main.LeaderboardPanel(
                                             frame,
                                             gp.player,
@@ -4564,6 +4567,7 @@ public class Map3Setter {
                                                         Main.CurseOfZed cozFrame = (Main.CurseOfZed) frame;
                                                         Main.TitlePanel tp = new Main.TitlePanel();
                                                         tp.setOnStartCallback(() -> cozFrame.showStoryIntro());
+                                                        tp.setParentFrame(cozFrame);
                                                         cozFrame.getContentPane().removeAll();
                                                         cozFrame.add(tp);
                                                         cozFrame.revalidate();
@@ -4593,8 +4597,11 @@ public class Map3Setter {
 
                 } else {
                     javax.swing.Timer t = new javax.swing.Timer(500, e -> {
+                        gpRef.stopGameThread();
+                        gpRef.musicPlayer.stopAllMusic();
                         StoryLine.DefeatCutscene defeat =
                                 new StoryLine.DefeatCutscene(() -> {
+                                    gpRef.musicPlayer.stopAllMusic();
                                     Main.GameStateManager.reset();
                                     javax.swing.SwingUtilities.invokeLater(() -> {
                                         if (frame instanceof Main.CurseOfZed) {
@@ -4636,6 +4643,8 @@ public class Map3Setter {
                 gp.screenMessage.show("Game Over", null, 120, false));
 
         javax.swing.Timer t = new javax.swing.Timer(2500, ev -> {
+            gpRef.stopGameThread();
+            gpRef.musicPlayer.stopAllMusic();
             Main.GameStateManager.reset();
             javax.swing.SwingUtilities.invokeLater(() -> {
                 if (frame instanceof Main.CurseOfZed) {
