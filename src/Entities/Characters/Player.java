@@ -158,6 +158,17 @@ public abstract class Player extends Entity {
         }
     }
 
+    public void updateIdleAnimation() {
+        isMoving = false;
+        idleSpriteCounter++;
+        if (idleSpriteCounter > IDLE_ANIMATION_SPEED) {
+            idleSpriteNum++;
+            if (idleSpriteNum >= 5) idleSpriteNum = 0;
+            idleSpriteCounter = 0;
+        }
+        spriteNum = 1;
+    }
+
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
 

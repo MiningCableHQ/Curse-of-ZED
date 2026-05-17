@@ -39,6 +39,7 @@ public class MusicPlayer {
     }
 
     public void playMapMusic() {
+        if (cutsceneMusic != null && cutsceneMusic.isPlaying()) return;
         Audio targetMusic = null;
         if (gp.currentMap == 0) targetMusic = map1Music;
         else if (gp.currentMap == 1 || gp.currentMap == 2) targetMusic = map2Music;
@@ -69,6 +70,7 @@ public class MusicPlayer {
             currentPlayingMusic.stop(); // Keep clip open for fast resume
             currentPlayingMusic = null;
         }
+        if (rainMusic.isPlaying()) rainMusic.stop();
     }
 
     public void resetMapMusic() {
@@ -100,6 +102,9 @@ public class MusicPlayer {
 
     public void playCutsceneMusic() {
         if (currentPlayingMusic != null) currentPlayingMusic.stop();
+        if (combatMusic.isPlaying()) combatMusic.stop();
+        if (bossMusic.isPlaying()) bossMusic.stop();
+        if (rainMusic.isPlaying()) rainMusic.stop();
         if (!cutsceneMusic.isClipReady()) cutsceneMusic.resetForReload();
         currentPlayingMusic = cutsceneMusic;
         cutsceneMusic.play(true);
@@ -120,11 +125,21 @@ public class MusicPlayer {
         if (currentPlayingMusic != null) {
             currentPlayingMusic.stop(); // Keep clip open
         }
+        if (rainMusic.isPlaying()) rainMusic.stop();
         if (!shopMusic.isClipReady()) {
             shopMusic.resetForReload();
         }
         currentPlayingMusic = shopMusic;
         shopMusic.play(true);
         System.out.println("[MusicPlayer] Playing shop music");
+    }
+
+    public void stopAllMusic() {
+        if (currentPlayingMusic != null) { currentPlayingMusic.stop(); currentPlayingMusic = null; }
+        if (combatMusic.isPlaying()) combatMusic.stop();
+        if (bossMusic.isPlaying()) bossMusic.stop();
+        if (rainMusic.isPlaying()) rainMusic.stop();
+        if (cutsceneMusic.isPlaying()) cutsceneMusic.stop();
+        if (shopMusic.isPlaying()) shopMusic.stop();
     }
 }
