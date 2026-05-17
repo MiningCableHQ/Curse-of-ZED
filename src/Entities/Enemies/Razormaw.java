@@ -19,7 +19,7 @@ public class Razormaw extends Enemy{
         speed = 32;
         dmgResistance = 0.24;
         expYield = 150;
-        goldYield = 150;
+        goldYield = 100;
         loadMoves();
         loadSprite();
     }

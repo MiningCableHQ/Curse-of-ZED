@@ -19,7 +19,7 @@ public class Sanjveil extends Enemy{
         speed = 26;
         dmgResistance = 0.20;
         expYield = 150;
-        goldYield = 150;
+        goldYield = 100;
         loadMoves();
         loadSprite();
     }

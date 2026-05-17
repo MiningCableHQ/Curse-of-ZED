@@ -18,7 +18,7 @@ public class Zenzilla extends Enemy{
         speed = 25;
         dmgResistance = 0.07;
         expYield = 150;
-        goldYield = 100;
+        goldYield = 50;
         loadMoves();
         loadSprite();
     }

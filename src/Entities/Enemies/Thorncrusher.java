@@ -19,7 +19,7 @@ public class Thorncrusher extends Boss{
         speed = 28;
         dmgResistance = 0.50;
         expYield = 300;
-        goldYield = 400;
+        goldYield = 100;
         loadMoves();
         loadSprite();
     }

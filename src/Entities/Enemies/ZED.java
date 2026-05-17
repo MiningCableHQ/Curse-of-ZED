@@ -25,12 +25,12 @@ public class ZED extends Boss{
         if (isStrongVersion) {
             hp = 10000;
             maxHp = hp;
-            attack = 320;
+            attack = 350;
             maxAttack = attack;
-            defense = 40;
+            defense = 50;
             maxDefense = defense;
-            speed = 45;
-            dmgResistance = 0.20;
+            speed = 61;
+            dmgResistance = 0.35;
             expYield = 300;
             goldYield = 400;
         } else {
@@ -43,7 +43,7 @@ public class ZED extends Boss{
             speed = 45;
             dmgResistance = 0.30;
             expYield = 300;
-            goldYield = 400;
+            goldYield = 500;
         }
 
         originalDefense = defense;

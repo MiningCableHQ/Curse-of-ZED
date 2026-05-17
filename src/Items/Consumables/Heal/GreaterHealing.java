@@ -7,8 +7,8 @@ public class GreaterHealing extends Consumable {
     protected double healingAmount;
 
     public GreaterHealing(){
-        super("Greater Healing Potion", "Restores (30% MaxHP + 750) HP", 150);
-        healingAmount = 0.30;
+        super("Greater Healing Potion", "Restores (25% MaxHP + 800) HP", 150);
+        healingAmount = 0.25;
         useMessage = "Used Greater Healing Potion!";
 
         loadImage("/items/healing_potions/greater_healing_potion.png");
@@ -19,7 +19,7 @@ public class GreaterHealing extends Consumable {
         if (Entity instanceof Entity) {
             Entity target = (Entity) Entity;
             double maxHp = target.getMaxHp();
-            double healValue = (maxHp * healingAmount) + 750;
+            double healValue = (maxHp * healingAmount) + 800;
             double beforeHp = target.getHp();
 
             target.heal(healValue);

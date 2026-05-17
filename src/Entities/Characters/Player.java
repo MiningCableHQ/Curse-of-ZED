@@ -250,18 +250,19 @@ public abstract class Player extends Entity {
         experience -= expNeeded;
 
         // Base stat increases (flat amounts)
-        double hpIncrease = 400;
-        double attackIncrease = 15;
+        double hpIncrease = 190;
+        double attackIncrease = 7;
         double defenseIncrease = 3;
-        double speedIncrease = 3;
+        double speedIncrease = 2;
 
         // For unique class level up
         if (this instanceof Swordsman){
-            hpIncrease = 600;
+            hpIncrease = 400;
+            defenseIncrease = 5;
         } else if (this instanceof Ranger) {
-            speedIncrease = 10;
+            speedIncrease = 7;
         } else if (this instanceof Mage){
-            attackIncrease = 20;
+            attackIncrease = 10;
         }
 
         // Apply stat increases
